@@ -31,3 +31,9 @@ Custom discord bot, features and functionalities to be determined as the project
         - git push origin <branchname>
         - In github, go to the "pull request" tab - and create a new pull request, making the PR name the branch name
     - Code will then be reviewed by team members, tested, and merged into main if it is considered good.
+
+## Installers
+```
+apt install python3-pip
+apt install python3-dotenv
+```
