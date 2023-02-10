@@ -4,20 +4,28 @@
 import os
 
 import discord
+from discord import app_commands
 from dotenv import load_dotenv
 
 # setting up the needed intents
-intents = discord.Intents.default()
-intents.message_content = True  # setting message_content to True in order to read messages
+intents = discord.Intents.all()
 
 load_dotenv() # loads all the content in the .env folder
 TOKEN = os.getenv('DISCORD_API')
+TEST_TOKEN = os.getenv('TEST_CHANNEL')
 
-client = discord.Client(intents=discord.Intents.default())
+client = discord.Client(intents=intents)
+tree = app_commands.CommandTree(client)
+
+# Implement all the slash commands here
+@tree.command(name = "libgen", description = "Trying things out", options=)
+async def first_command(interaction):
+    await interaction.response.send_message("Hello!")
 
 
 @client.event
 async def on_ready():
+    await tree.sync()
     print(f'{client.user} has connected to Discord!')
 
 # Code to respond to messages sent by users
