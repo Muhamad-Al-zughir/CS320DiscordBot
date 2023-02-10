@@ -109,7 +109,7 @@ def storeDropdown(storeName):
 #   =====
 #   store
 #   ========
-def store():
+def store(player):
     name = "Michaels"
     totalSpecialItems = 3
     
