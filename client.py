@@ -38,11 +38,11 @@ async def on_message(message):
     
     # await client.process_commands(message)
 
-# Standard Command Format
+# Standard Slash Command Format
 # sayhello command: Takes string input and bot will respond with hello to said string input
-@tree.command(name = 'sayhello', description = 'Bot will respond with hello to the input given', guild=discord.Object(id=guildId)) #Add the guild ids in which the slash command will appear. If it should be in all, remove the argument, but note that it will take some time (up to an hour) to register the command if it's for all guilds.
+@tree.command(name = 'sayhello', description = 'Bot will respond with hello to the input given', guild=discord.Object(id=guildId))
 @app_commands.describe(input="input")
-async def first_command(interaction: discord.Interaction, input: str):
+async def say_hello(interaction: discord.Interaction, input: str):
     await interaction.response.send_message(f'Hello {input}!')
     
 client.run(TOKEN)
