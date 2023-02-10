@@ -2,9 +2,13 @@
 # Started 1/18/2023
 
 import os
+
 import discord
 from discord import app_commands
 from dotenv import load_dotenv
+# Add your imports below here, if in a folder, use a dot instead of a slash
+import libgen.lib as libby
+import basic.methods as bm # basic methods contains functions that we will use a lot.
 
 # setting up the needed intents
 intents = discord.Intents.all()
@@ -20,9 +24,26 @@ guildId = 1063209733764435998
 load_dotenv() # loads all the content in the .env folder
 TOKEN = os.getenv('DISCORD_API')
 
+client = discord.Client(intents=intents)
+tree = app_commands.CommandTree(client)
+
+# Implement all the slash commands here, write down whos is which.
+@tree.command(name = "libgen", description = "Search for books")
+async def basic_libgen(interaction, type: str, search: str): # Set the arguments here to get options on the slash commands.
+    res = libby.handleValidation(type, search)
+    if (res != True):
+        await bm.send_msg(interaction, res)
+    else:
+        results = libby.basicSearch(type, search)
+        strings = libby.formatResults(results)
+        msg = '\n'.join(strings)
+        await bm.send_msg(interaction, msg)
+# Add new slash commands beneath this
+
+
 @client.event
 async def on_ready():
-    await tree.sync(guild=discord.Object(id=guildId))
+    await tree.sync()
     print(f'{client.user} has connected to Discord!')
 
 # Code to respond to messages sent by users
