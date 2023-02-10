@@ -9,6 +9,7 @@ from dotenv import load_dotenv
 # Add your imports below here, if in a folder, use a dot instead of a slash
 import libgen.lib as libby
 import basic.methods as bm # basic methods contains functions that we will use a lot.
+import scheduler.schedule as schedule
 
 # setting up the needed intents
 intents = discord.Intents.all()
