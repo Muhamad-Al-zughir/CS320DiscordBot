@@ -109,7 +109,7 @@ def storeDropdown(storeName):
 #   =====
 #   store
 #   ========
-def store():
+def store(player):
     name = "Michaels"
     totalSpecialItems = 3
     
@@ -148,26 +148,26 @@ def msgGold(player):
 #   look for character adn chage it within char
     player.gainPg(10)
 
-# player creation
-player = Player("bob")
-print(player.showSelf())
-player.showInventory()
+# # player creation
+# player = Player("bob")
+# print(player.showSelf())
+# player.showInventory()
 
-# item creation
-stickItem = Item("stick", 1, 0)
-player.addItem(stickItem)
-player.showInventory()
+# # item creation
+# stickItem = Item("stick", 1, 0)
+# player.addItem(stickItem)
+# player.showInventory()
 
-# Serverdata creation
-serverPlayers = AllPlayersData()
-if(serverPlayers.searchforPlayer("bob") == 0):
-    print("not found player ")
+# # Serverdata creation
+# serverPlayers = AllPlayersData()
+# if(serverPlayers.searchforPlayer("bob") == 0):
+#     print("not found player ")
     
-serverPlayers.addplayertoList(player)
+# serverPlayers.addplayertoList(player)
 
-if(serverPlayers.searchforPlayer("bob") == 1):
-    print("found player")
+# if(serverPlayers.searchforPlayer("bob") == 1):
+#     print("found player")
     
-# store function
-store()
-print("\nmade it to end\n")
+# # store function
+# store()
+# print("\nmade it to end\n")
