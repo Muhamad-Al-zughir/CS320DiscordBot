@@ -7,6 +7,7 @@ import discord
 from discord import app_commands
 from dotenv import load_dotenv
 # Add your imports below here, if in a folder, use a dot instead of a slash
+import botgame.game as botgame
 import libgen.lib as libby
 import basic.methods as bm # basic methods contains functions that we will use a lot.
 
