@@ -21,6 +21,7 @@ tree = app_commands.CommandTree(client)
 
 # Implement all the slash commands here, write down whos is which.
 @tree.command(name = "libgen", description = "Search for books")
+@app_commands.describe(type="Please enter either \"author\" or \"title\"", search="Search, must be at least 3 characters")
 async def basic_libgen(interaction, type: str, search: str): # Set the arguments here to get options on the slash commands.
     res = libby.handleValidation(type, search)
     if (res != True):
@@ -30,6 +31,19 @@ async def basic_libgen(interaction, type: str, search: str): # Set the arguments
         strings = libby.formatResults(results)
         msg = '\n'.join(strings)
         await bm.send_msg(interaction, msg)
+    reply = await client.wait_for('message')
+    try:
+        num = int(reply.content)
+        if (num > len(strings) or num < 1): raise ValueError("outside bounds")
+    except ValueError:
+        await bm.follow_up(interaction, "Not a number between 1-" + str(len(strings))) # Need to use a follow up after initial sending
+        return
+    obj = results[num]
+    links = libby.getLinksFor(obj)
+    strings2 = libby.formatLinks(links)
+    msg = '\n'.join(strings2)
+    await bm.follow_up(interaction, msg)
+
 # Add new slash commands beneath this
 
 

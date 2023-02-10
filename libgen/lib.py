@@ -22,6 +22,11 @@ def basicSearch(type: str, search: str):
     results = results[:10] # get first 10 elements
     return list(map(clearUneeded, results))
 
+def getLinksFor(obj: dict):
+    s = LibgenSearch()
+    links = s.resolve_download_links(obj)
+    return links
+
 def clearUneeded(tuple):
     return {
         "id": tuple['ID'],
@@ -30,7 +35,7 @@ def clearUneeded(tuple):
         "year": tuple['Year'],
         "size": tuple['Size'],
         "ext": tuple['Extension'],
-        "mirror": tuple['Mirror_1'],
+        "Mirror_1": tuple['Mirror_1'],
     }
 
 # Returns a list of strings
@@ -39,3 +44,9 @@ def formatResults(arr: list):
     for t in arr:
         sarr.append('Author: ' + t['author'] + ', Title: ' + t['title'] + ', Ext.: ' + t['ext'])
     return sarr
+
+def formatLinks(obj: dict):
+    arr = []
+    for key in obj:
+        arr.append(key + ': ' + obj[key])
+    return arr
