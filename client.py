@@ -2,18 +2,16 @@
 # Started 1/18/2023
 
 import os
-
 import discord
 from dotenv import load_dotenv
 
 # setting up the needed intents
-intents = discord.Intents.default()
-intents.message_content = True  # setting message_content to True in order to read messages
+intents = discord.Intents.all()
 
 load_dotenv() # loads all the content in the .env folder
 TOKEN = os.getenv('DISCORD_API')
 
-client = discord.Client(intents=discord.Intents.default())
+client = discord.Client(intents=discord.Intents.all())
 
 
 @client.event
@@ -23,9 +21,13 @@ async def on_ready():
 # Code to respond to messages sent by users
 @client.event
 async def on_message(message):
-    if message.content.startswith('$hello'):
+    if message.author == client.user:
+        return
+
+    if message.content.startswith('!hello'):
         await message.channel.send('Hello!')
-    if message.content.startswith('$bye'):
+
+    if message.content.startswith('!bye'):
         await message.channel.send('Bye!')
         
 client.run(TOKEN)
