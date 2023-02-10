@@ -35,6 +35,6 @@ Custom discord bot, features and functionalities to be determined as the project
 ## Installers
 ```
 apt install python3-pip
-apt install python3-dotenv
+apt install python-dotenv
 pip install libgen-api
 ```

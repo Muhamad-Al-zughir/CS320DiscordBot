@@ -21,6 +21,7 @@ tree = app_commands.CommandTree(client)
 
 # Implement all the slash commands here, write down whos is which.
 @tree.command(name = "libgen", description = "Search for books")
+@app_commands.describe(type="Please enter author or title")
 async def basic_libgen(interaction, type: str, search: str): # Set the arguments here to get options on the slash commands.
     res = libby.handleValidation(type, search)
     if (res != True):
@@ -30,11 +31,6 @@ async def basic_libgen(interaction, type: str, search: str): # Set the arguments
         strings = libby.formatResults(results)
         msg = '\n'.join(strings)
         await bm.send_msg(interaction, msg)
-
-# sayhello command: Takes string input and bot will respond with hello to said string input
-@tree.command(name = 'sayhello', description = 'Bot will respond with hello to the input given')
-async def say_hello(interaction: discord.Interaction, input: str):
-    await interaction.response.send_message(f'Hello {input}!')
 
 # spidergif command: After the running of the command the bot will respond by posting a funny spider gif
 @tree.command(name = 'spidergif', description = 'Bot will post a funny spider gif')
@@ -51,11 +47,8 @@ async def on_ready():
 async def on_message(message):
     if message.author == client.user:
         return
-
+    
     if message.content.startswith('$hello'):
         await message.channel.send('Hello!')
-
-    if message.content.startswith('$bye'):
-        await message.channel.send('Bye!')
 
 client.run(TOKEN)
