@@ -33,8 +33,8 @@ async def basic_libgen(interaction, type: str, search: str): # Set the arguments
 
 # sayhello command: Takes string input and bot will respond with hello to said string input
 @tree.command(name = 'sayhello', description = 'Bot will respond with hello to the input given')
-async def say_hello(interaction: discord.Interaction, input: str, name: str):
-    await interaction.response.send_message(f'Hello {input}! name={name}')
+async def say_hello(interaction: discord.Interaction, input: str):
+    await interaction.response.send_message(f'Hello {input}!')
 
 # spidergif command: After the running of the command the bot will respond by posting a funny spider gif
 @tree.command(name = 'spidergif', description = 'Bot will post a funny spider gif')
