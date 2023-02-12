@@ -6,6 +6,7 @@ import os
 import discord
 from discord import app_commands
 from dotenv import load_dotenv
+from discord.ui import Button, View
 # Add your imports below here, if in a folder, use a dot instead of a slash
 import botgame.game as botgame
 import libgen.lib as libby
@@ -52,6 +53,30 @@ async def basic_libgen(interaction, type: str, search: str): # Set the arguments
 @tree.command(name = 'spidergif', description = 'Bot will post a funny spider gif')
 async def spider_gif(interaction: discord.Interaction):
     await interaction.response.send_message('https://tenor.com/view/to-everyone-that-is-looking-for-this-spider-gif-gif-20691150')
+
+# listProfiles command: After the running of the command the bot will respond by posting a funny spider gif
+@tree.command(name = 'listprofiles', description = 'Bot will list out all the profiles created on this server')
+async def list_profiles_cmd(interaction: discord.Interaction):
+    path = "scheduler/" + str(interaction.guild.id) + ".json"   # grabbing the path of the json file for this server
+    check_file_size = os.stat(path).st_size # grabbing the file size, if check_file_size is 0 that means the file is empty and thus can be ignored
+    # checking file size
+    if(check_file_size == 0):
+        await interaction.response.send_message('No profiles have been created on this server!')
+    else:
+        # responding by printing out the profiles using discord embed features
+        await schedule.list_profiles(interaction)
+
+# client event to take place whenever the client joins a server.
+# it will create a new json file in the scheduler directory to store the data associated with this newly joined guild
+@client.event
+async def on_guild_join(guild):
+    path = "scheduler/" + str(guild.id) + ".json"   # name of the file will be <guildID>.json and it will be located in the scheduler directory 
+    try:
+        open(path, "x")
+        print("Making file" + path)
+    # if the file exists
+    except FileExistsError:
+        print("File exists " + path)
 
 @client.event
 async def on_ready():
