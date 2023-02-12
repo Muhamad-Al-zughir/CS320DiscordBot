@@ -46,7 +46,7 @@ async def basic_libgen(interaction, type: str, search: str): # Set the arguments
     await bm.follow_up(interaction, msg)
 
 # Add new slash commands beneath this
-
+@tree.command(name = "libgen", description = "Search for books")
 
 @client.event
 async def on_ready():
