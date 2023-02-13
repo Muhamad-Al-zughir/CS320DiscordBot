@@ -11,7 +11,7 @@ from dotenv import load_dotenv
 import botgame.game as botgame
 import libgen.lib as libby
 import basic.methods as bm              # basic methods contains functions that we will use a lot.
-import music.muzique as mzb 
+import music.muzique as mzb
 
 # setting up the needed intents
 intents = discord.Intents.all()

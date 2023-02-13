@@ -121,4 +121,19 @@ async def clear(interaction: discord.Interaction):
     await voice_channel.disconnect()
     await interaction.response.send_message(f'Music has been stopped')
 
+
+# Pause Stream and Unpause Stream
+@tree.command(name = 'pause-unpause', description = 'Bot will pause the currently playing song or unpause if one was being played')
+async def pause_yt(interaction: discord.Interaction):
+    
+    vcstatus = interaction.guild.voice_client
+    if vcstatus.is_playing():
+        vcstatus.pause()
+        await interaction.response.send_message('player is now paused')
+    elif vcstatus.is_paused():
+        vcstatus.resume()
+        await interaction.response.send_message('player is now un-paused')
+    else:
+        await interaction.response.send_message('Nothing is currently playing')
+
 client.run(TOKEN)
