@@ -9,7 +9,7 @@ from discord.ext import commands
 from discord import app_commands
 from dotenv import load_dotenv
 import youtube_dl
-
+import ffmpeg
 
 
 # setting up the needed intents
@@ -26,7 +26,7 @@ guildId = 1063209733764435998
 load_dotenv() # loads all the content in the .env folder
 TOKEN = os.getenv('DISCORD_API')
 
-# Member list of people in channel to be streamed to
+# Member list of people in channel to be streamed to (used later)
 streaming_members = {}
 
 # YouTube options list set to best audio settings
@@ -37,7 +37,30 @@ yt_streamObj = youtube_dl.YoutubeDL(yt_params)
 
 # ffmpeg params set to disable video
 # Settings found from https://ffmpeg.org/ffmpeg.html
-ff_params = {'options' : '-vn'}
+ff_params = {'options': '-vn'}
+
+
+# ** NOTE **
+# Class YouTube_linkobj below is borrowed from https://github.com/Rapptz/discord.py/blob/master/examples/basic_voice.py 
+
+class YouTube_linkobj(discord.PCMVolumeTransformer):
+    def __init__(self, source, *, data):
+        super().__init__(source)
+       
+        self.data = data
+        self.title = data.get('title')
+        self.url = data.get('url')
+
+    @classmethod
+    async def from_url(cls, url, *, loop=None, stream=False):
+        loop = loop or asyncio.get_event_loop()
+        data = await loop.run_in_executor(None, lambda: yt_streamObj.extract_info(url, download=not stream))
+
+        if 'entries' in data:
+            data = data['entries'][0]       # 1st item in playlist index
+
+        filename = data['url'] if stream else yt_streamObj.prepare_filename(data)
+        return cls(discord.FFmpegPCMAudio(filename, **ff_params), data=data)       # Return discord.ffmpegpcm audio class 
 
 @client.event
 async def on_ready():
@@ -45,27 +68,40 @@ async def on_ready():
     print(f'{client.user} has connected to Discord!')
 
 
-# Standard Slash Command Format
-# sayhello command: Takes string input and bot will respond with hello to said string input
-@tree.command(name = 'sayhello', description = 'Bot will respond with hello to the input given', guild=discord.Object(id=guildId))
-@app_commands.describe(input="input")
-async def say_hello(interaction: discord.Interaction, input: str):
-    await interaction.response.send_message(f'Hello {input}!')
-
-
 @tree.command(name = 'join', description = 'Bot will join your voice channel', guild=discord.Object(id=guildId))
-#@app_commands.describe(input="input")
-async def join(interaction: discord.Interaction, channel: discord.VoiceChannel):
-        """Joins a voice channel"""
+async def join(interaction: discord.Interaction):     
         try:
-            await interaction.response.send_message(f'Joining {channel}')
-            voice = interaction.guild
-            if voice.voice_client is not None:
-                return await voice.voice_client.move_to(channel)
+            await interaction.response.send_message(f'Joining...')                  # Sends attempt message to server
+            local = interaction.guild                                               # Create local instances of guild and check for existence of voice client
+            voicechan = local.voice_client      
+            if voicechan is not None:                                               # Voice channel exists, move to caller's channel
+                return await voicechan.move_to(interaction.user.voice.channel)
 
-            await channel.connect()
+            await interaction.user.voice.channel.connect()                          # Establish connection after move
 
-        except Exception as err:
+
+
+        except Exception as err:                                                    # Display general catch-all error for debug purposes
             print(err)
+
+# Streams from a YouTube Link
+@tree.command(name = 'play', description = 'Bot will play from a valid YouTube Link', guild=discord.Object(id=guildId))
+async def play_youtube(interaction: discord.Interaction, url:str):
+    
+    server = interaction.guild                                                      # Establish server context
+    voice_channel = server.voice_client                                             # Establish related voice channel
+            
+    filename = await YouTube_linkobj.from_url(url, loop=client.loop, stream=True)
+    voice_channel.play(filename)
+    await interaction.response.send_message(f'Now playing {filename.title}')
+
+# Pauses Stream
+@tree.command(name = 'clear', description = 'Bot will clear all playing music', guild=discord.Object(id=guildId))
+async def clear(interaction: discord.Interaction):
+    server = interaction.guild
+    voice_channel = server.voice_client
+
+    await voice_channel.disconnect()
+    await interaction.response.send_message(f'Music has been stopped')
 
 client.run(TOKEN)
