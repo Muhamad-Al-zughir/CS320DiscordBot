@@ -68,8 +68,8 @@ async def on_ready():
     print(f'{client.user} has connected to Discord!')
 
 
-@tree.command(name = 'join', description = 'Bot will join your voice channel', guild=discord.Object(id=guildId))
-async def join(interaction: discord.Interaction):     
+@tree.command(name = 'move', description = 'Bot will join your voice channel', guild=discord.Object(id=guildId))
+async def move(interaction: discord.Interaction):     
         try:
             await interaction.response.send_message(f'Joining...')                  # Sends attempt message to server
             local = interaction.guild                                               # Create local instances of guild and check for existence of voice client
@@ -85,17 +85,38 @@ async def join(interaction: discord.Interaction):
             print(err)
 
 # Streams from a YouTube Link
-@tree.command(name = 'play', description = 'Bot will play from a valid YouTube Link', guild=discord.Object(id=guildId))
+@tree.command(name = 'play_yt', description = 'Bot will play from a valid YouTube Link', guild=discord.Object(id=guildId))
 async def play_youtube(interaction: discord.Interaction, url:str):
-    
-    server = interaction.guild                                                      # Establish server context
-    voice_channel = server.voice_client                                             # Establish related voice channel
-            
-    filename = await YouTube_linkobj.from_url(url, loop=client.loop, stream=True)
-    voice_channel.play(filename)
-    await interaction.response.send_message(f'Now playing {filename.title}')
 
-# Pauses Stream
+        print("Join being attempted ..")
+        local = interaction.guild                                                  # Establish server context
+        voicechan = local.voice_client                                             # Establish related voice channel
+        
+        if voicechan is not None:                                                  # Disconnect if the bot is already in a voicechannel
+            print("Bot currently not in channel\nJoining...")
+            await local.voice_client.disconnect()
+        
+        await interaction.user.voice.channel.connect()
+
+        server = interaction.guild                                                 # Re-establish server context and voice client after connection
+        voice_channel = server.voice_client                                       
+        
+        print("Before retrieving YouTube Object...")
+        filename = await YouTube_linkobj.from_url(url, loop=client.loop, stream=True)
+
+        print("Before Playing in channel...")
+        voice_channel.play(filename)
+
+        print("Before user-end interaction message...")
+        await interaction.response.send_message(f'Now playing {filename.title}') 
+
+
+               
+        print("Reached here in command")                                           # Debug statements
+
+
+
+# End Stream
 @tree.command(name = 'clear', description = 'Bot will clear all playing music', guild=discord.Object(id=guildId))
 async def clear(interaction: discord.Interaction):
     server = interaction.guild
