@@ -7,6 +7,7 @@ import discord
 from discord import app_commands
 from dotenv import load_dotenv
 from discord.ui import Button, View
+import json
 # Add your imports below here, if in a folder, use a dot instead of a slash
 import botgame.game as botgame
 import libgen.lib as libby
@@ -82,8 +83,12 @@ async def add_event_cmd(interaction: discord.Interaction, profile_name: str, eve
 async def on_guild_join(guild):
     path = "scheduler/" + str(guild.id) + ".json"   # name of the file will be <guildID>.json and it will be located in the scheduler directory 
     try:
-        open(path, "x")
+        file = open(path, "x")
+        # initializing the json file with a list in order that we make easy appends to it
+        listObj = []
+        json.dump(listObj, file)
         print("Making file" + path)
+        file.close()
     # if the file exists
     except FileExistsError:
         print("File exists " + path)
