@@ -6,14 +6,16 @@ import os
 import discord
 from discord import app_commands
 from dotenv import load_dotenv
+
 # Add your imports below here, if in a folder, use a dot instead of a slash
 import botgame.game as botgame
 import libgen.lib as libby
-import basic.methods as bm # basic methods contains functions that we will use a lot.
+import basic.methods as bm              # basic methods contains functions that we will use a lot.
+import music.muzique as mzb 
 
 # setting up the needed intents
 intents = discord.Intents.all()
-intents.message_content = True  # setting message_content to True in order to read messages
+intents.message_content = True          # setting message_content to True in order to read messages
 client = discord.Client(intents=intents)
 
 # tree which will hold all of the client commands
@@ -53,9 +55,8 @@ async def basic_libgen(interaction, type: str, search: str): # Set the arguments
     msg = '\n'.join(strings2)
     await bm.follow_up(interaction, msg)
 
+
 # Add new slash commands beneath this
-
-
 @client.event
 async def on_ready():
     await tree.sync()
