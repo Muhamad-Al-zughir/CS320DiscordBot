@@ -5,12 +5,25 @@ import discord
 import random 
 from dotenv import load_dotenv
 from discord.ext.commands import Bot
+from discord import app_commands
+import basic.methods as bm # basic methods contains functions that we will use a lot.
 
-bot = Bot("!", intents=discord.Intents.all())
 
-@bot.event
-async def on_ready():
-    print('TestBot is online')
+#bot = Bot("!", intents=discord.Intents.all())
+
+intents = discord.Intents.all()
+load_dotenv()
+TOKEN = os.getenv('DISCORD_API')
+client = discord.Client(intents=intents)
+tree = app_commands.CommandTree(client)
+
+
+#@app_commands.descrobe
+#    await interaction.response.send_message("Hello!")
+
+#@client.event
+#async def on_ready():
+#    print('TestBot is online')
     
 
 def simpleCheck(equation):
@@ -18,16 +31,19 @@ def simpleCheck(equation):
 
 
 def checker(equation):
+    '''
     count = 0
     first_node = 0
     last_node = 0
     while count < len(equation):
         if equation[count] == '(':
+            flag = True
             first_node = count
             break
         count += 1
-    count = len(equation) - 1
-    while count != 0:
+    count = len(equation)
+    print(count)
+    while (count > -1):
         if equation[count] == ')':
             last_node = count
             break
@@ -50,7 +66,7 @@ def checker(equation):
         simplified_equation.append(equation[count])
         count += 1
     print(simplified_equation)
-    print(new_equation)
+    print(new_equation)'''
     if '^' in equation:
         equation = exponent(equation)
     if '*' in equation:
@@ -133,11 +149,21 @@ def subtract(equation):
     return equation
 
 
-@bot.command()
-async def equation(ctx, *args):
-    equation = list(args)
+@tree.command(name = "equation", description = "Simple equation")
+@app_commands.describe(simple = "Please enter a simple equation with each spaces in between")
+async def equation(interaction, simple: str):
+    equation = list(simple)
+    outputList = []
+    charToDelete = ' '
+    print("The character to be removed is:", charToDelete)
+    for character in equation:
+        if character == charToDelete:
+            continue
+        outputList.append(character)
+    print("The modified list is:", outputList)
+    equation = outputList
     if not simpleCheck(equation):
-        ctx.send("The equation sent in not a valid simple equation. Try again.")
+        interaction.send("The equation sent in not a valid simple equation. Try again.")
     result = checker(equation)
     #if '^' in equation:
     #    equation = exponent(equation)
@@ -146,8 +172,14 @@ async def equation(ctx, *args):
     #if '+' in equation or '-' in equation:
     #    equation = addsub(equation)
     #print(equation)
-    await ctx.send(result[0])
+    await bm.send_msg(interaction, result)
+    #await interaction.send(result)
 
 
+@client.event
+async def on_ready():
+    await tree.sync()
+    print("Bot it ready and running")
 
-bot.run("MTA2NzAwNzg2ODU1OTE3NTcxMA.GVgbT5.pLTh-Yfbo7lMDHgCnitRgqoHDdWnNcjOPjcVUI")  #TOKEN
+
+client.run('MTA2NzAwNzg2ODU1OTE3NTcxMA.G8cGwK.raLGtufG7HoEj2SlDNS4qkbGcArfju4Rg2LpKs')  #MTA2NzAwNzg2ODU1OTE3NTcxMA.G8cGwK.raLGtufG7HoEj2SlDNS4qkbGcArfju4Rg2LpKs
