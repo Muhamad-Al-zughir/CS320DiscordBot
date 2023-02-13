@@ -79,6 +79,18 @@ async def on_message(message):
     
     # await client.process_commands(message)
 
+#   dropdown menu for character selection
+@tree.command(name = "rp_menu", description = "menu options for rp game")
+async def rp_dropdown_menu_cmd(interaction: discord.Interaction):
+    await botgame.rp_dropdown_menu(interaction)
+ #  ===========================================
+ 
+ #   create rp for character game
+@tree.command(name = "create_rp_character", description = "character creation for game")
+async def rp_character_create_cmd(interaction: discord.Interaction):
+    await botgame.rp_character_create(interaction)
+ #  ==============================================
+
 # Standard Slash Command Format
 # sayhello command: Takes string input and bot will respond with hello to said string input
 @tree.command(name = 'sayhello', description = 'Bot will respond with hello to the input given', guild=discord.Object(id=guildId))
