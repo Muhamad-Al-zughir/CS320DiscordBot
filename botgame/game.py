@@ -147,8 +147,6 @@ def store(player):
 def msgGold(player):
 #   look for character adn chage it within char
     player.gainPg(10)
-    
-
 
 # # player creation
 # player = Player("bob")
