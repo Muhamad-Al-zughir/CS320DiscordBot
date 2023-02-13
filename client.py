@@ -6,10 +6,15 @@ import os
 import discord
 from discord import app_commands
 from dotenv import load_dotenv
+from discord.ui import Button
+from discord.ui import View
+from discord.ui import Select
+
 # Add your imports below here, if in a folder, use a dot instead of a slash
 import botgame.game as botgame
 import libgen.lib as libby
 import basic.methods as bm # basic methods contains functions that we will use a lot.
+import discord
 
 # setting up the needed intents
 intents = discord.Intents.all()
@@ -47,6 +52,18 @@ async def basic_libgen(interaction, type: str, search: str): # Set the arguments
 
 # Add new slash commands beneath this
 
+#   dropdown menu for character selection
+@tree.command(name = "rp_menu", description = "menu options for rp game")
+async def rp_dropdown_menu_cmd(interaction: discord.Interaction):
+    await botgame.rp_dropdown_menu(interaction)
+ #  ===========================================
+ 
+ #   create rp for character game
+@tree.command(name = "create_rp_character", description = "character creation for game")
+async def rp_character_create_cmd(interaction: discord.Interaction):
+    await botgame.rp_character_create(interaction)
+ #  ==============================================
+     
 
 @client.event
 async def on_ready():
