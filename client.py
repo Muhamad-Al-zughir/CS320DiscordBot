@@ -53,7 +53,7 @@ async def basic_libgen(interaction, type: str, search: str): # Set the arguments
 # spidergif command: After the running of the command the bot will respond by posting a funny spider gif
 @tree.command(name = 'spidergif', description = 'Bot will post a funny spider gif')
 async def spider_gif(interaction: discord.Interaction):
-    await interaction.response.send_message('https://tenor.com/view/to-everyone-that-is-looking-for-this-spider-gif-gif-20691150')
+    await interaction.response.send_message('https://media.discordapp.net/attachments/721098895152775288/1001770030352060456/image0.gif')
 
 # listProfiles command: After the running of the command the bot will post all the profiles that have been created 10 profiles at a time. Users will be able to use buttons to view the other profiles if there are more than 10
 @tree.command(name = 'listprofiles', description = 'Bot will list out all the profiles created on this server')
