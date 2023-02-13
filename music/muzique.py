@@ -64,11 +64,11 @@ class YouTube_linkobj(discord.PCMVolumeTransformer):
 
 @client.event
 async def on_ready():
-    await tree.sync(guild=discord.Object(id=guildId))
+    await tree.sync()
     print(f'{client.user} has connected to Discord!')
 
 
-@tree.command(name = 'move', description = 'Bot will join your voice channel', guild=discord.Object(id=guildId))
+@tree.command(name = 'move', description = 'Bot will join your voice channel')
 async def move(interaction: discord.Interaction):     
         try:
             await interaction.response.send_message(f'Joining...')                  # Sends attempt message to server
@@ -85,7 +85,7 @@ async def move(interaction: discord.Interaction):
             print(err)
 
 # Streams from a YouTube Link
-@tree.command(name = 'play_yt', description = 'Bot will play from a valid YouTube Link', guild=discord.Object(id=guildId))
+@tree.command(name = 'play_yt', description = 'Bot will play from a valid YouTube Link')
 async def play_youtube(interaction: discord.Interaction, url:str):
 
         print("Join being attempted ..")
@@ -109,15 +109,11 @@ async def play_youtube(interaction: discord.Interaction, url:str):
 
         print("Before user-end interaction message...")
         await interaction.response.send_message(f'Now playing {filename.title}') 
-
-
                
         print("Reached here in command")                                           # Debug statements
 
-
-
 # End Stream
-@tree.command(name = 'clear', description = 'Bot will clear all playing music', guild=discord.Object(id=guildId))
+@tree.command(name = 'clear', description = 'Bot will clear all playing music')
 async def clear(interaction: discord.Interaction):
     server = interaction.guild
     voice_channel = server.voice_client
