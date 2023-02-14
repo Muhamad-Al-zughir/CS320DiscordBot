@@ -34,7 +34,21 @@ Custom discord bot, features and functionalities to be determined as the project
 
 ## Installers
 ```
+(Make sure python 3 has been installed and is in PATH)
 apt install python3-pip
 apt install python-dotenv
 pip install libgen-api
+pip install youtube-dl
+pip install PyNaCl
+pip install ffmpeg
 ```
+
+## FFMPEG Installation Notes
+```
+pip install 
+import module
+download ffmpeg-git.full.7z from https://www.gyan.dev/ffmpeg/builds/
+Extract or unzip folder
+add Extracted Folder\ffpmeg\bin to PATH
+```
+
