@@ -62,12 +62,38 @@ class YouTube_linkobj(discord.PCMVolumeTransformer):
         filename = data['url'] if stream else yt_streamObj.prepare_filename(data)
         return cls(discord.FFmpegPCMAudio(filename, **ff_params), data=data)       # Return discord.ffmpegpcm audio class 
 
+#  ** Start **
 @client.event
 async def on_ready():
     await tree.sync()
     print(f'{client.user} has connected to Discord!')
 
+# ================================================================================== Universal / Sys functions
 
+# End Stream | Universal
+@tree.command(name = 'clear', description = 'Bot will clear all playing music')
+async def clear(interaction: discord.Interaction):
+    server = interaction.guild
+    voice_channel = server.voice_client
+
+    await voice_channel.disconnect()
+    await interaction.response.send_message(f'Music has been stopped')
+
+# Pause Stream and Unpause Stream | Universal
+@tree.command(name = 'pause-unpause', description = 'Bot will pause the currently playing song or unpause if one was being played')
+async def pause_yt(interaction: discord.Interaction):
+    
+    vcstatus = interaction.guild.voice_client
+    if vcstatus.is_playing():
+        vcstatus.pause()
+        await interaction.response.send_message('player is now paused')
+    elif vcstatus.is_paused():
+        vcstatus.resume()
+        await interaction.response.send_message('player is now un-paused')
+    else:
+        await interaction.response.send_message('Nothing is currently playing')
+
+# Move / Join command | Universal
 @tree.command(name = 'move', description = 'Bot will join your voice channel')
 async def move(interaction: discord.Interaction):     
         try:
@@ -84,7 +110,10 @@ async def move(interaction: discord.Interaction):
         except Exception as err:                                                    # Display general catch-all error for debug purposes
             print(err)
 
-# Streams from a YouTube Link
+# ============================================================================================================
+#
+# ================================================================================== YouTube Centric Functions
+# Play from a link | YouTube
 @tree.command(name = 'play_yt', description = 'Bot will play from a valid YouTube Link')
 async def play_youtube(interaction: discord.Interaction, url:str):
 
@@ -112,28 +141,10 @@ async def play_youtube(interaction: discord.Interaction, url:str):
                
         print("Reached here in command")                                           # Debug statements
 
-# End Stream
-@tree.command(name = 'clear', description = 'Bot will clear all playing music')
-async def clear(interaction: discord.Interaction):
-    server = interaction.guild
-    voice_channel = server.voice_client
+# ============================================================================================================
+#
+# ============================================================================================= Spotify Client
 
-    await voice_channel.disconnect()
-    await interaction.response.send_message(f'Music has been stopped')
+client.run(TOKEN)                                                                  # Run Client 
 
 
-# Pause Stream and Unpause Stream
-@tree.command(name = 'pause-unpause', description = 'Bot will pause the currently playing song or unpause if one was being played')
-async def pause_yt(interaction: discord.Interaction):
-    
-    vcstatus = interaction.guild.voice_client
-    if vcstatus.is_playing():
-        vcstatus.pause()
-        await interaction.response.send_message('player is now paused')
-    elif vcstatus.is_paused():
-        vcstatus.resume()
-        await interaction.response.send_message('player is now un-paused')
-    else:
-        await interaction.response.send_message('Nothing is currently playing')
-
-client.run(TOKEN)
