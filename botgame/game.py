@@ -367,10 +367,10 @@ def store(player):
             print("failed to purchase")
 #   ===================================
 
-#   for everymessage increase gold
-def msgGold(player):
-#   look for character adn chage it within char
-    player.gainPg(10)
+# #   for everymessage increase gold
+# def msgGold(player):
+# #   look for character adn chage it within char
+#     player.gainPg(10)
 
 # testing and creationo of chracter, store, data list, item
 # # player creation
