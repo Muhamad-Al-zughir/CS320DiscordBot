@@ -7,15 +7,16 @@ from discord import app_commands
 from dotenv import load_dotenv
 from discord.ui import Button, View
 import youtube_dl
-import ffmpeg
+#import ffmpeg
 import json
 import asyncio
 # Add your imports below here, if in a folder, use a dot instead of a slash
 import botgame.game as botgame
-import libgen.lib as libby
+#import libgen.lib as libby
 import basic.methods as bm # basic methods contains functions that we will use a lot.
 import scheduler.schedule as schedule
 import music.muzique as mzb
+import mathcalc.math as calc
 
 # setting up the needed intents
 intents = discord.Intents.all()
@@ -237,6 +238,16 @@ async def rp_dropdown_menu_cmd(interaction: discord.Interaction):
 async def rp_character_create_cmd(interaction: discord.Interaction):
     await botgame.rp_character_create(interaction)
  #  ==============================================
+
+@tree.command(name = "equation", description = "Simple equation")
+@app_commands.describe(simple = "Please enter a simple equation with each spaces in between")
+async def equation(interaction: discord.Interaction, simple: str):
+    equation = list(simple.split(" "))
+    #print(equation)
+    if not calc.simpleCheck(equation):
+        interaction.send("The equation sent in not a valid simple equation. Try again.")
+    #result = checker(equation)
+    await interaction.response.send_message(calc.checker(equation))
  
 # Code to respond to any messages sent by users
 @client.event
