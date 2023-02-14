@@ -11,7 +11,7 @@ from dotenv import load_dotenv
 import botgame.game as botgame
 import libgen.lib as libby
 import basic.methods as bm              # basic methods contains functions that we will use a lot.
-import music.muzique as mzb
+# import music.muzique as mzb
 
 # setting up the needed intents
 intents = discord.Intents.all()
@@ -62,22 +62,22 @@ async def on_ready():
     await tree.sync()
     print(f'{client.user} has connected to Discord!')
 
-# Code to respond to messages sent by users
-@client.event
-async def on_message(message):
-    if message.author == client.user:
-        return
+# # Code to respond to messages sent by users
+# @client.event
+# async def on_message(message):
+#     if message.author == client.user:
+#         return
         
-    if message.content.startswith('$hello'):
-        await message.channel.send('Hello!')
+#     if message.content.startswith('$hello'):
+#         await message.channel.send('Hello!')
 
-    if message.content.startswith('/chiefkeef'):
-        await message.channel.send("Fuckers in school telling me, always in the barber shop Chief Keef ain’t bout this, Chief Keef ain’t bout that My boy a BD on fucking Lamron and them He, he they say that nathan don’t be putting in no work SHUT THE FUCK UP! Y'all nathans ain’t know shit All ya motherfuckers talk about Chief Keef ain’t no hitta Chief Keef ain’t this Chief Keef a fake SHUT THE FUCK UP Y'all don’t live with that nathan Y'all know that nathan got caught with a ratchet Shootin' at the police and shit Nathan been on probation since fuckin, I don’t know when! Motherfuckers stop fuckin' playin' him like that Them nathans savages out there If I catch another motherfucker talking sweet about Chief Keef I’m fucking beating they ass! I’m not fucking playing no more You know those nathans role with Lil' Reese and them.")
+#     if message.content.startswith('/chiefkeef'):
+#         await message.channel.send("Fuckers in school telling me, always in the barber shop Chief Keef ain’t bout this, Chief Keef ain’t bout that My boy a BD on fucking Lamron and them He, he they say that nathan don’t be putting in no work SHUT THE FUCK UP! Y'all nathans ain’t know shit All ya motherfuckers talk about Chief Keef ain’t no hitta Chief Keef ain’t this Chief Keef a fake SHUT THE FUCK UP Y'all don’t live with that nathan Y'all know that nathan got caught with a ratchet Shootin' at the police and shit Nathan been on probation since fuckin, I don’t know when! Motherfuckers stop fuckin' playin' him like that Them nathans savages out there If I catch another motherfucker talking sweet about Chief Keef I’m fucking beating they ass! I’m not fucking playing no more You know those nathans role with Lil' Reese and them.")
 
-    if message.content.startswith('$bye'):
-        await message.channel.send('Bye!')
+#     if message.content.startswith('$bye'):
+#         await message.channel.send('Bye!')
     
-    # await client.process_commands(message)
+#     # await client.process_commands(message)
 
 #   dropdown menu for character selection
 @tree.command(name = "rp_menu", description = "menu options for rp game")
