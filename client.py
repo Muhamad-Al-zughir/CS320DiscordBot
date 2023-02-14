@@ -244,10 +244,21 @@ async def rp_character_create_cmd(interaction: discord.Interaction):
 async def equation(interaction: discord.Interaction, simple: str):
     equation = list(simple.split(" "))
     #print(equation)
-    if not calc.simpleCheck(equation):
-        interaction.send("The equation sent in not a valid simple equation. Try again.")
+    if (reason := calc.simpleCheck(equation)) != True:
+        print(reason)
+        await interaction.response.send_message("The equation sent in not a valid simple equation. Try again.\nReason: " + reason)
     #result = checker(equation)
-    await interaction.response.send_message(calc.checker(equation))
+    else:
+        await interaction.response.send_message(calc.checker(equation))
+
+@tree.command(name = "algebra", description = "Algebra calculator with several options")
+@app_commands.describe(equation = "Please enter an algebra equation with spaces in between", answer = "Enter the following: (slope) - slope intercept form, ")
+async def algebra(interaction: discord.Interaction, equation: str, answer: str):
+    equation = list(equation.split(" "))
+    result = (calc.algebra(equation, answer))
+    slope = result[0]
+    intercept = result[1]
+    await interaction.response.send_message("The slope of the equation is " + str(slope) + ".\nThe y-intercept of the equation is " + str(intercept))
  
 # Code to respond to any messages sent by users
 @client.event
@@ -258,4 +269,4 @@ async def on_message(message):
     if message.content.startswith('$hello'):
         await message.channel.send('Hello!')
 
-client.run(TOKEN)
+client.run('MTA2NzAwNzg2ODU1OTE3NTcxMA.GvCjtC.IvcUjOOKvlvDCamN3f8lIHA7j9fwXP0QKHwjuU')

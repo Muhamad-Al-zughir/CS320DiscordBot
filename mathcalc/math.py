@@ -3,7 +3,43 @@ import math
 import random
 
 def simpleCheck(equation):
+    length = len(equation)
+    count = 0
+    last = ''
+    parantheses_check = 0
+    while count < length:
+        if equation[count] == '(':
+            parantheses_check += 1
+            last = '('
+        elif equation[count] == ')':
+            parantheses_check -= 1
+            last = ')'
+        count += 1
+    if parantheses_check != 0:
+        return "Incorrect parantheses count."
+    elif last == '(':
+        return "Incorrect parantheses placement"
     return True
+
+
+def algebra(equation, answer):
+    if answer == "slope":
+        if (equation[0] == 'y') and (equation[1]) == '=':
+            equation.pop(0)
+            equation.pop(0)
+        mx = list(equation[0])
+        if 'x' in mx:
+            mx.remove('x')
+        slope = ""
+        for ele in mx:
+            slope += ele
+        if equation[1] == '-':
+            value = -1
+            intercept = float(equation[2]) * float(value)
+        else:
+            intercept = equation[2]
+
+    return(slope, intercept)
 
 
 def checker(equation):
@@ -14,11 +50,9 @@ def checker(equation):
         count = 0
         paranthesis_count = 0
         while (paranthesis_count != 0) or (first_node == -1):
-            print(paranthesis_count)
             if (equation[count] == '(') and (first_node == -1):
                 first_node = count
-                paranthesis_count += 1 
-                print(first_node)
+                paranthesis_count += 1
             elif equation[count] == '(':
                 paranthesis_count += 1
             elif equation[count] == ')':
