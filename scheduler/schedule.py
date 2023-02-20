@@ -159,12 +159,7 @@ async def list_profiles(interaction: discord.Interaction):
 # creation of the profile, and a 2 represents that a profile with the same name already exists
 async def add_profile(interaction: discord.Interaction, name: str, notes: str):
     path = "scheduler/" + str(interaction.guild.id) + ".json"   # name of the file will be <guildID>.json and it will be located in the scheduler directory
-    
-    listOfProfiles = []
-
-    # Reading JSON file and storing it in listObj as a list of dictionaries, each dictionary is a profile
-    with open(path) as fp:
-        listOfProfiles= json.load(fp)
+    listOfProfiles = ret_list_of_profiles(interaction, path)
 
     # Checking if the profile exists, if not, continue as normal. If so, let the user know and leave the function
     if(profile_exists(interaction, name, listOfProfiles)):
@@ -193,6 +188,13 @@ async def delete_profile(interaction: discord.Interaction, profile_name: str):
     return
 
 async def add_event(interaction: discord.Interaction, profile_name: str, event_name: str, event_notes: str, start_hour: int, start_min: int, end_hour: int, end_min: int):
+    path = "scheduler/" + str(interaction.guild.id) + ".json"   # name of the file will be <guildID>.json and it will be located in the scheduler directory
+    listOfProfiles = ret_list_of_profiles(interaction, path)
+
+    if(profile_exists(interaction, profile_name, listOfProfiles) == 0):
+        await bm.send_msg(interaction, "The profile you want to access does not exist!")
+        return
+
     return
 
 # Takes in the name of the profile and the interaction object, searches through JSON file and checks of a profile of the given name already exists
@@ -212,3 +214,13 @@ def within_bounds(number: int, lowerBound: int, upperBound: int):
         return 1
     else:
         return 0
+
+# Function that takes the path to the file to be accessed and also the interaction object and returns a list of the profiles
+def ret_list_of_profiles(interaction: discord.Interaction, path: str):    
+    listOfProfiles = []
+
+    # Reading JSON file and storing it in listObj as a list of dictionaries, each dictionary is a profile
+    with open(path) as fp:
+        listOfProfiles= json.load(fp)
+
+    return listOfProfiles
