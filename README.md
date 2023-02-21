@@ -4,8 +4,9 @@
     - Muhamad Al-zughir
     - Joe Hernandez
     - Alex Kochenkov
-    - Judah Tanninen
     - Shawyan Tabari
+    - Judah Tanninen
+    
 
 ## Description
 Custom discord bot, features and functionalities to be determined as the project continues
