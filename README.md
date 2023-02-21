@@ -2,10 +2,10 @@
 
 ## Members:
     - Muhamad Al-zughir
-    - Judah Tannien
-    - Shawyan Tabari
     - Joe Hernandez
     - Alex Kochenkov
+    - Judah Tanninen
+    - Shawyan Tabari
 
 ## Description
 Custom discord bot, features and functionalities to be determined as the project continues

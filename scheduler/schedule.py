@@ -5,31 +5,27 @@ import basic.methods as bm
 from discord.ui import Button, View    
 from datetime import time
 
-# constant to represent the max number of profiles
+# constants to represent the max number of profiles and events allowed (this is done to mimic a real product where too much data being used per server may be too expensive to have hosted if thousands of servers are using the bot)
 MAX_NUM_PROFILES = 100
+MAX_NUM_EVENTS = 20
 
 # Event class will store all of the information regarding a particular event. 
 class Event:
-    start_time = time()
-    end_time = time()
-    def __init__(self, name, notes, starthour, endhour, startmin, endmin):
+    def __init__(self, name, notes, starthour, endhour, startmin, endmin, day):
         self.name = name
         self.notes = notes
-        self.start_time.hour = starthour
-        self.start_time.minute = startmin
-        self.start_time.hour = endhour
-        self.start_time.min = endmin
+        self.start_hour= starthour
+        self.start_min = startmin
+        self.end_hour = endhour
+        self.end_min = endmin
+        self.day = day
 
 # List profiles function. 
 async def list_profiles(interaction: discord.Interaction):
-    path = "scheduler/" + str(interaction.guild.id) + ".json"   # grabbing the path of the json file for this server
-
-    listOfProfiles = []
-
-    # Reading JSON file and storing it in listObj as a list of dictionaries, each dictionary is a profile
-    with open(path) as fp:
-        listOfProfiles= json.load(fp)
+    path = "scheduler/" + str(interaction.guild.id) + ".json"   # name of the file will be <guildID>.json and it will be located in the scheduler directory
+    listOfProfiles = ret_list_of_profiles(path)
     
+    # Checking to make sure that there are indeed profiles on the server that have been created. 
     if(len(listOfProfiles) == 0):
         await bm.send_msg(interaction, "No profiles have been created on this server!")
         return
@@ -159,7 +155,7 @@ async def list_profiles(interaction: discord.Interaction):
 # creation of the profile, and a 2 represents that a profile with the same name already exists
 async def add_profile(interaction: discord.Interaction, name: str, notes: str):
     path = "scheduler/" + str(interaction.guild.id) + ".json"   # name of the file will be <guildID>.json and it will be located in the scheduler directory
-    listOfProfiles = ret_list_of_profiles(interaction, path)
+    listOfProfiles = ret_list_of_profiles(path)
 
     # Checking if the profile exists, if not, continue as normal. If so, let the user know and leave the function
     if(profile_exists(interaction, name, listOfProfiles)):
@@ -176,7 +172,7 @@ async def add_profile(interaction: discord.Interaction, name: str, notes: str):
     
     listOfProfiles.append(profile)
 
-    # dumping the profile contents in the JSON
+    # dumping all of the profiles in the list in the JSON
     with open(path, "w") as f:
         json.dump(listOfProfiles, f, 
                   indent=2, 
@@ -187,14 +183,59 @@ async def add_profile(interaction: discord.Interaction, name: str, notes: str):
 async def delete_profile(interaction: discord.Interaction, profile_name: str):
     return
 
-async def add_event(interaction: discord.Interaction, profile_name: str, event_name: str, event_notes: str, start_hour: int, start_min: int, end_hour: int, end_min: int):
+async def add_event(interaction: discord.Interaction, profile_name: str, event_name: str, event_notes: str, start_hour: int, start_min: int, end_hour: int, end_min: int, day: int):
     path = "scheduler/" + str(interaction.guild.id) + ".json"   # name of the file will be <guildID>.json and it will be located in the scheduler directory
-    listOfProfiles = ret_list_of_profiles(interaction, path)
+    listOfProfiles = ret_list_of_profiles(path)
 
+    # Checking if the profile exists
     if(profile_exists(interaction, profile_name, listOfProfiles) == 0):
         await bm.send_msg(interaction, "The profile you want to access does not exist!")
         return
+    
+    # Checking if the given time values are within the needed bounds
+    if(within_bounds(start_hour, 0, 23) == 0):
+        await bm.send_msg(interaction, "Start hour time must be within 0 and 23 inclusive!")
+        return
+    elif(within_bounds(start_min, 0, 59) == 0):
+        await bm.send_msg(interaction, "Start minute time must be within 0 and 59 inclusive!")
+        return
+    elif(within_bounds(end_hour, 0, 23) == 0):
+        await bm.send_msg(interaction, "End hour time must be within 0 and 23 inclusive!")
+        return
+    elif(within_bounds(end_min, 0, 59) == 0):
+        await bm.send_msg(interaction, "End minute time must be within 0 and 59 inclusive!")
+        return
+    elif(within_bounds(day, 1, 7) == 0):
+        await bm.send_msg(interaction, "Day value must be within 1 and 7 inclusive!")
+        return
+    
+    # Making sure the end time is not actually before the end time (may mess with Google Calendar api)
+    if(end_hour < start_hour or (end_hour == start_hour and end_min <= start_min)):
+        await bm.send_msg(interaction, "End time of the event should not be before or same as start time of the event!")
+        return
+        
+    newEvent = Event(event_name, event_notes, start_hour, end_hour, start_min, end_min, day)
 
+    for profile in listOfProfiles:
+        if(profile["name"] == profile_name):
+            if(len(profile["events"]) >= MAX_NUM_EVENTS):
+                await bm.send_msg(interaction, "Max event count reached for this profile")
+                return
+            
+            # Adding the event to the list in the form of a dictionary
+            profile["events"].append(newEvent.__dict__)
+            
+            # Sorting the list of events based on starting hour and starting minute (hour is of course of a higher priority than minute)
+            profile["events"].sort(key = lambda x:x["start_min"])
+            profile["events"].sort(key = lambda x:x["start_hour"])
+
+             # dumping all of the profiles in the list in the JSON after having changed it 
+            with open(path, "w") as f:
+                json.dump(listOfProfiles, f, 
+                        indent=2, 
+                        separators=(",",": "))
+
+    await bm.send_msg(interaction, "New event successfully added!")
     return
 
 # Takes in the name of the profile and the interaction object, searches through JSON file and checks of a profile of the given name already exists
@@ -216,7 +257,7 @@ def within_bounds(number: int, lowerBound: int, upperBound: int):
         return 0
 
 # Function that takes the path to the file to be accessed and also the interaction object and returns a list of the profiles
-def ret_list_of_profiles(interaction: discord.Interaction, path: str):    
+def ret_list_of_profiles(path: str):    
     listOfProfiles = []
 
     # Reading JSON file and storing it in listObj as a list of dictionaries, each dictionary is a profile

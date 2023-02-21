@@ -76,12 +76,12 @@ async def add_profile_cmd(interaction: discord.Interaction, name: str, notes: st
 
 # addevent command: 
 @tree.command(name = 'addevent', description = 'Bot will add a profile with the given name and notes')
-@app_commands.describe(profile_name="Name of the profile for which this event should be added to", event_name="Name of the event to be added",
+@app_commands.describe(profile_name="Name of the profile for which the event should be added to", event_name="Name of the event to be added",
                         event_notes="Notes regarding the event", start_hour="The hour the event starts (must be integer between 0 and 23 inclusive)",
                         start_min="minute the event starts", end_hour="The hour the event ends at (must be integer between 0 and 23 inclusive)",
-                        end_min="The minute which the event ends at")
-async def add_event_cmd(interaction: discord.Interaction, profile_name: str, event_name: str, event_notes: str, start_hour: int, start_min: int, end_hour: int, end_min: int):
-    await schedule.add_event(interaction, profile_name, event_name, event_notes, start_hour, start_min, end_hour, end_min)
+                        end_min="The minute which the event ends at", day="Enter a number 1-7 to represent the day of the week (1=Sunday, 7=saturday)")
+async def add_event_cmd(interaction: discord.Interaction, profile_name: str, event_name: str, event_notes: str, start_hour: int, start_min: int, end_hour: int, end_min: int, day: int):
+    await schedule.add_event(interaction, profile_name, event_name, event_notes, start_hour, start_min, end_hour, end_min, day)
 
 # Bot will join YouTube channel
 @tree.command(name = 'move', description = 'Bot will join your voice channel')
@@ -103,6 +103,18 @@ async def clear(interaction: discord.Interaction):
 async def pause_yt(interaction: discord.Interaction):
     await mzb.pause_yt(interaction)
 
+#   dropdown menu for character selection
+@tree.command(name = "rp_menu", description = "menu options for rp game")
+async def rp_dropdown_menu_cmd(interaction: discord.Interaction):
+    await botgame.rp_dropdown_menu(interaction)
+ #  ===========================================
+ 
+ #   create rp for character game
+@tree.command(name = "create_rp_character", description = "character creation for game")
+async def rp_character_create_cmd(interaction: discord.Interaction):
+    await botgame.rp_character_create(interaction)
+ #  ==============================================
+
 # client event to take place whenever the client joins a server.
 # it will create a new json file in the scheduler directory to store the data associated with this newly joined guild
 @client.event
@@ -122,37 +134,8 @@ async def on_guild_join(guild):
 @client.event
 async def on_ready():
     await tree.sync()
-    print(f'{client.user} has connected to Discord!')
+    print(f'{client.user} has connected to Discord!') 
 
-# # Code to respond to messages sent by users
-# @client.event
-# async def on_message(message):
-#     if message.author == client.user:
-#         return
-        
-#     if message.content.startswith('$hello'):
-#         await message.channel.send('Hello!')
-
-#     if message.content.startswith('/chiefkeef'):
-#         await message.channel.send("Fuckers in school telling me, always in the barber shop Chief Keef ain’t bout this, Chief Keef ain’t bout that My boy a BD on fucking Lamron and them He, he they say that nathan don’t be putting in no work SHUT THE FUCK UP! Y'all nathans ain’t know shit All ya motherfuckers talk about Chief Keef ain’t no hitta Chief Keef ain’t this Chief Keef a fake SHUT THE FUCK UP Y'all don’t live with that nathan Y'all know that nathan got caught with a ratchet Shootin' at the police and shit Nathan been on probation since fuckin, I don’t know when! Motherfuckers stop fuckin' playin' him like that Them nathans savages out there If I catch another motherfucker talking sweet about Chief Keef I’m fucking beating they ass! I’m not fucking playing no more You know those nathans role with Lil' Reese and them.")
-
-#     if message.content.startswith('$bye'):
-#         await message.channel.send('Bye!')
-    
-#     # await client.process_commands(message)
-
-#   dropdown menu for character selection
-@tree.command(name = "rp_menu", description = "menu options for rp game")
-async def rp_dropdown_menu_cmd(interaction: discord.Interaction):
-    await botgame.rp_dropdown_menu(interaction)
- #  ===========================================
- 
- #   create rp for character game
-@tree.command(name = "create_rp_character", description = "character creation for game")
-async def rp_character_create_cmd(interaction: discord.Interaction):
-    await botgame.rp_character_create(interaction)
- #  ==============================================
- 
 # Code to respond to any messages sent by users
 @client.event
 async def on_message(message):
