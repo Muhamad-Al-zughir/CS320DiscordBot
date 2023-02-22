@@ -74,6 +74,13 @@ async def list_profiles_cmd(interaction: discord.Interaction):
 async def add_profile_cmd(interaction: discord.Interaction, name: str, notes: str):
     await schedule.add_profile(interaction, name, notes)
 
+# addprofile command: Takes in profile name and profile notes after running the command the bot will create a profile with the given attributes. 
+# Name of the profile must not already be in use though. 
+@tree.command(name = 'deleteprofile', description = 'Bot will delete a profile with the given name')
+@app_commands.describe(name="Name of the profile to be deleted(PROFILE MUST ALREADY EXIST)")
+async def delete_profile_cmd(interaction: discord.Interaction, name: str):
+    await schedule.delete_profile(interaction, name)
+
 # addevent command: 
 @tree.command(name = 'addevent', description = 'Bot will add a profile with the given name and notes')
 @app_commands.describe(profile_name="Name of the profile for which the event should be added to", event_name="Name of the event to be added",

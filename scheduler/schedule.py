@@ -23,16 +23,16 @@ class Event:
 # List profiles function. 
 async def list_profiles(interaction: discord.Interaction):
     path = "scheduler/" + str(interaction.guild.id) + ".json"   # name of the file will be <guildID>.json and it will be located in the scheduler directory
-    listOfProfiles = ret_list_of_profiles(path)
+    list_of_profiles = ret_list_of_profiles(path)
     
     # Checking to make sure that there are indeed profiles on the server that have been created. 
-    if(len(listOfProfiles) == 0):
+    if(len(list_of_profiles) == 0):
         await bm.send_msg(interaction, "No profiles have been created on this server!")
         return
     
     # Finding the number of pages that will be needed to display all the profiles
     # (10 profiles displayed per page)
-    num_pages = math.ceil(len(listOfProfiles)/10) # total number of pages needed
+    num_pages = math.ceil(len(list_of_profiles)/10) # total number of pages needed
     curr_page = 1   # Variable to keep track of which page you are on
 
     # Generating the footer text by grabbing the names of the profiles. If there are more than 10 profiles then we will grab only the first 10 names and leave out the rest
@@ -40,7 +40,7 @@ async def list_profiles(interaction: discord.Interaction):
     profile_ind = 0
     
     # The [0:] just means start at index 0
-    for profile in listOfProfiles[0:]:
+    for profile in list_of_profiles[0:]:
         footer_text = footer_text + profile["name"] + "\n"
         profile_ind = profile_ind + 1
         if(profile_ind%10 == 0):
@@ -73,7 +73,7 @@ async def list_profiles(interaction: discord.Interaction):
         profile_ind = profile_ind - 10
 
         # The [profile_ind:] just means start at the index of profile_ind
-        for profile in listOfProfiles[profile_ind:]:
+        for profile in list_of_profiles[profile_ind:]:
             footer_text = footer_text + profile["name"] + "\n"
             profile_ind = profile_ind + 1
             if(profile_ind%10 == 0):
@@ -113,7 +113,7 @@ async def list_profiles(interaction: discord.Interaction):
 
         # Grabbing the footer text
         # The [ind:] just means start at index 0
-        for profile in listOfProfiles[profile_ind:]:
+        for profile in list_of_profiles[profile_ind:]:
             footer_text = footer_text + profile["name"] + "\n"
             profile_ind = profile_ind + 1
             if(profile_ind%10 == 0):
@@ -155,40 +155,52 @@ async def list_profiles(interaction: discord.Interaction):
 # creation of the profile, and a 2 represents that a profile with the same name already exists
 async def add_profile(interaction: discord.Interaction, name: str, notes: str):
     path = "scheduler/" + str(interaction.guild.id) + ".json"   # name of the file will be <guildID>.json and it will be located in the scheduler directory
-    listOfProfiles = ret_list_of_profiles(path)
+    list_of_profiles = ret_list_of_profiles(path)
 
     # Checking if the profile exists, if not, continue as normal. If so, let the user know and leave the function
-    if(profile_exists(interaction, name, listOfProfiles)):
+    if(profile_exists(interaction, name, list_of_profiles)):
         await bm.send_msg(interaction, "A profile with the same name already exists!")
         return    
 
     # Making sure the users do not exceed the maximum number of profiles allowed on a server
-    if(len(listOfProfiles) >= MAX_NUM_PROFILES):
+    if(len(list_of_profiles) >= MAX_NUM_PROFILES):
         await bm.send_msg(interaction, f"The max profile limit of {MAX_NUM_PROFILES} has been reached! Please delete some profiles to be able to create a new one.")
         return
     
     # Creating the profile as a dictionary, no events are on it by default
     profile = {"name":name, "notes":notes, "events":[]}
     
-    listOfProfiles.append(profile)
+    list_of_profiles.append(profile)
 
-    # dumping all of the profiles in the list in the JSON
-    with open(path, "w") as f:
-        json.dump(listOfProfiles, f, 
-                  indent=2, 
-                  separators=(",",": "))
+    dump_list_of_profiles(path, list_of_profiles)
 
     await bm.send_msg(interaction, "Profile Successfully Created")
 
 async def delete_profile(interaction: discord.Interaction, profile_name: str):
+    path = "scheduler/" + str(interaction.guild.id) + ".json"   # name of the file will be <guildID>.json and it will be located in the scheduler directory
+    list_of_profiles = ret_list_of_profiles(path)
+
+    # Checking if the profile exists
+    if(profile_exists(interaction, profile_name, list_of_profiles) == 0):
+        await bm.send_msg(interaction, "The profile you want to access does not exist!")
+        return
+    
+    # looping through the list of profiles, and checking each of the profile names to see if a profile exists with the same name as the given name
+    for profile in list_of_profiles:
+        if(profile["name"] == profile_name):
+            list_of_profiles.remove(profile)
+
+            dump_list_of_profiles(path, list_of_profiles)
+    
+    await bm.send_msg(interaction, "Profile successfully deleted!")
     return
 
 async def add_event(interaction: discord.Interaction, profile_name: str, event_name: str, event_notes: str, start_hour: int, start_min: int, end_hour: int, end_min: int, day: int):
     path = "scheduler/" + str(interaction.guild.id) + ".json"   # name of the file will be <guildID>.json and it will be located in the scheduler directory
-    listOfProfiles = ret_list_of_profiles(path)
+    list_of_profiles = ret_list_of_profiles(path)
 
     # Checking if the profile exists
-    if(profile_exists(interaction, profile_name, listOfProfiles) == 0):
+    if(profile_exists(interaction, profile_name, list_of_profiles) == 0):
         await bm.send_msg(interaction, "The profile you want to access does not exist!")
         return
     
@@ -216,7 +228,7 @@ async def add_event(interaction: discord.Interaction, profile_name: str, event_n
         
     newEvent = Event(event_name, event_notes, start_hour, end_hour, start_min, end_min, day)
 
-    for profile in listOfProfiles:
+    for profile in list_of_profiles:
         if(profile["name"] == profile_name):
             if(len(profile["events"]) >= MAX_NUM_EVENTS):
                 await bm.send_msg(interaction, "Max event count reached for this profile")
@@ -229,20 +241,16 @@ async def add_event(interaction: discord.Interaction, profile_name: str, event_n
             profile["events"].sort(key = lambda x:x["start_min"])
             profile["events"].sort(key = lambda x:x["start_hour"])
 
-             # dumping all of the profiles in the list in the JSON after having changed it 
-            with open(path, "w") as f:
-                json.dump(listOfProfiles, f, 
-                        indent=2, 
-                        separators=(",",": "))
+            dump_list_of_profiles(path, list_of_profiles)
 
     await bm.send_msg(interaction, "New event successfully added!")
     return
 
 # Takes in the name of the profile and the interaction object, searches through JSON file and checks of a profile of the given name already exists
 # returns a 0 if the profile doesn't exist, a 1 if it does
-def profile_exists(interaction: discord.Interaction, name: str, listOfProfiles):
+def profile_exists(interaction: discord.Interaction, name: str, list_of_profiles):
     # looping through the list of profiles, and checking each of the profile names to see if a profile exists with the same name as the given name
-    for profile in listOfProfiles:
+    for profile in list_of_profiles:
         if(profile["name"] == name):
             return 1
     return 0
@@ -258,10 +266,23 @@ def within_bounds(number: int, lowerBound: int, upperBound: int):
 
 # Function that takes the path to the file to be accessed and also the interaction object and returns a list of the profiles
 def ret_list_of_profiles(path: str):    
-    listOfProfiles = []
+    list_of_profiles = []
 
     # Reading JSON file and storing it in listObj as a list of dictionaries, each dictionary is a profile
     with open(path) as fp:
-        listOfProfiles= json.load(fp)
+        list_of_profiles= json.load(fp)
 
-    return listOfProfiles
+    return list_of_profiles
+
+# Function that takes a path to a json file and a list of dictionaries (the list of profiles) and writes the list to the json file
+# This function exists in order to help minimize the code and make it more clean, as writing to the JSON is done multiple times. 
+def dump_list_of_profiles(path: str, list_of_profiles):
+    # dumping all of the profiles in the list in the JSON after having changed it 
+            with open(path, "w") as f:
+                json.dump(list_of_profiles, f, 
+                        indent=2, 
+                        separators=(",",": "))
+
+
+def ret_day_of_week(day: int):
+    return "test"
