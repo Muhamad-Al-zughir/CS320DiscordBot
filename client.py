@@ -90,6 +90,14 @@ async def delete_profile_cmd(interaction: discord.Interaction, name: str):
 async def add_event_cmd(interaction: discord.Interaction, profile_name: str, event_name: str, event_notes: str, start_hour: int, start_min: int, end_hour: int, end_min: int, day: int):
     await schedule.add_event(interaction, profile_name, event_name, event_notes, start_hour, start_min, end_hour, end_min, day)
 
+# addprofile command: Takes in profile name and profile notes after running the command the bot will create a profile with the given attributes. 
+# Name of the profile must not already be in use though. 
+@tree.command(name = 'deleteevent', description = 'Bot will delete a event with the given name (if multiple events of same name exist bot will delete one of users choosing)')
+@app_commands.describe(profile_name="Name of the profile to be deleted(PROFILE MUST ALREADY EXIST)",
+                       event_name="Name of event to be deleted (EVENT MUST ALREADY EXIST)")
+async def delete_profile_cmd(interaction: discord.Interaction, profile_name: str, event_name: str):
+    await schedule.delete_event(interaction, profile_name, event_name)
+
 # Bot will join YouTube channel
 @tree.command(name = 'move', description = 'Bot will join your voice channel')
 async def move(interaction: discord.Interaction):     

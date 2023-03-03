@@ -7,7 +7,7 @@ from datetime import time
 
 # constants to represent the max number of profiles and events allowed (this is done to mimic a real product where too much data being used per server may be too expensive to have hosted if thousands of servers are using the bot)
 MAX_NUM_PROFILES = 100
-MAX_NUM_EVENTS = 20
+MAX_NUM_EVENTS = 40
 
 # Event class will store all of the information regarding a particular event. 
 class Event:
@@ -39,6 +39,7 @@ async def list_profiles(interaction: discord.Interaction):
     footer_text = ""
     profile_ind = 0
     
+    # Grabbing the footer text by looping through the list of profiles and grabbing the names and concatenating footer text with it
     # The [0:] just means start at index 0
     for profile in list_of_profiles[0:]:
         footer_text = footer_text + profile["name"] + "\n"
@@ -158,7 +159,7 @@ async def add_profile(interaction: discord.Interaction, name: str, notes: str):
     list_of_profiles = ret_list_of_profiles(path)
 
     # Checking if the profile exists, if not, continue as normal. If so, let the user know and leave the function
-    if(profile_exists(interaction, name, list_of_profiles)):
+    if(profile_exists(name, list_of_profiles)):
         await bm.send_msg(interaction, "A profile with the same name already exists!")
         return    
 
@@ -181,7 +182,7 @@ async def delete_profile(interaction: discord.Interaction, profile_name: str):
     list_of_profiles = ret_list_of_profiles(path)
 
     # Checking if the profile exists
-    if(profile_exists(interaction, profile_name, list_of_profiles) == 0):
+    if(profile_exists(profile_name, list_of_profiles) == 0):
         await bm.send_msg(interaction, "The profile you want to access does not exist!")
         return
     
@@ -200,7 +201,7 @@ async def add_event(interaction: discord.Interaction, profile_name: str, event_n
     list_of_profiles = ret_list_of_profiles(path)
 
     # Checking if the profile exists
-    if(profile_exists(interaction, profile_name, list_of_profiles) == 0):
+    if(profile_exists(profile_name, list_of_profiles) == 0):
         await bm.send_msg(interaction, "The profile you want to access does not exist!")
         return
     
@@ -246,15 +247,51 @@ async def add_event(interaction: discord.Interaction, profile_name: str, event_n
     await bm.send_msg(interaction, "New event successfully added!")
     return
 
-# Takes in the name of the profile and the interaction object, searches through JSON file and checks of a profile of the given name already exists
+async def delete_event(interaction: discord.Interaction, profile_name: str, event_name:str):
+    path = "scheduler/" + str(interaction.guild.id) + ".json"   # name of the file will be <guildID>.json and it will be located in the scheduler directory
+    list_of_profiles = ret_list_of_profiles(path)
+
+    # Checking if the profile exists
+    if(profile_exists(profile_name, list_of_profiles) == 0):
+        await bm.send_msg(interaction, "The profile you want to access does not exist!")
+        return
+    
+    # Checking if an event with the given name existsexists
+    if(event_exists(profile_name, event_name, list_of_profiles) == 0):
+        await bm.send_msg(interaction, "The event you want to access does not exist!")
+        return
+    
+    footer_text = ""
+
+    # Creating the embed to be displayed
+    embed=discord.Embed(title="Profiles", description="All schedules in the server ", color=0x8208d4)
+    embed.add_field(name=f"Events of name {event_name}", value="", inline=False)
+    embed.set_footer(text=footer_text)
+
+
+
+
+# Takes in the name of the profile and the list of all the profiles, searches through list of profiles and checks if a profile of the given name already exists
 # returns a 0 if the profile doesn't exist, a 1 if it does
-def profile_exists(interaction: discord.Interaction, name: str, list_of_profiles):
+def profile_exists(name: str, list_of_profiles):
     # looping through the list of profiles, and checking each of the profile names to see if a profile exists with the same name as the given name
     for profile in list_of_profiles:
         if(profile["name"] == name):
             return 1
     return 0
 
+# Takes in name of the profile, name of the event, and the list of profiles. Loops through list of profiles to find whether or not the event exists
+# Returns 1 if an event with the given name exists, a 0 if it does not exist 
+# Note: One should use the profile_exists function first before using this. 
+def event_exists(profile_name:str, event_name:str, list_of_profiles):
+    # looping through the list of profiles, and checking each of the profile names and stopping when we find the profile with the given name
+    for profile in list_of_profiles:
+        if(profile["name"] == profile_name):
+            for event in profile["events"]:
+                if(event["name"] == event_name):
+                    return 1
+    return 0
+    
 # Takes in 3 integers as input
 # makes sure that the number given as a parameter is less than or equal to the upper bound and greater than or equal to the lower bound
 # returns 0 if the number is not within bounds, returns 1 if the number is within the bounds
