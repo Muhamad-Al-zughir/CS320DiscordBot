@@ -241,13 +241,13 @@ async def add_event(interaction: discord.Interaction, profile_name: str, event_n
             # Sorting the list of events based on starting hour and starting minute (hour is of course of a higher priority than minute)
             profile["events"].sort(key = lambda x:x["start_min"])
             profile["events"].sort(key = lambda x:x["start_hour"])
+            profile["events"].sort(key = lambda x:x["day"])
 
             dump_list_of_profiles(path, list_of_profiles)
 
     await bm.send_msg(interaction, "New event successfully added!")
-    return
 
-async def delete_event(interaction: discord.Interaction, profile_name: str, event_name:str):
+async def delete_event(interaction: discord.Interaction, client: discord.Client, profile_name: str, event_name:str):
     path = "scheduler/" + str(interaction.guild.id) + ".json"   # name of the file will be <guildID>.json and it will be located in the scheduler directory
     list_of_profiles = ret_list_of_profiles(path)
 
@@ -260,16 +260,53 @@ async def delete_event(interaction: discord.Interaction, profile_name: str, even
     if(event_exists(profile_name, event_name, list_of_profiles) == 0):
         await bm.send_msg(interaction, "The event you want to access does not exist!")
         return
-    
+
+    # Grabbing all the events with the same name as the given name and the number of those events
+    numEvents = 0
+    eventsWithSameName = []
+    for profile in list_of_profiles:
+        if(profile["name"] == profile_name):
+            for event in profile["events"]:
+                if(event["name"] == event_name):
+                    eventsWithSameName.append(event)
+                    numEvents = numEvents + 1
+
+    # Creating the footer text to be displayed on the embed by looping through the eventsWithSameName list, and adding the text of each event
+    inc = 1     # incrementer to keep track of which number of profile we are on
     footer_text = ""
+    for event in eventsWithSameName:
+        note = event["notes"]
+        start_hour = event["start_hour"]
+        start_min = str(event["start_min"]) # setting the start_min as a string in order to utilize zfill method
+        start_min = start_min.zfill(2)  # adding zeroes in front of the number until it's 2 digits long. For example, 1 becomes 01
+        end_hour = event["end_hour"]
+        end_min = str(event["end_min"]) # setting the end_min as a string in order to utilize zfill method
+        end_min = end_min.zfill(2)    # adding zeroes in front of the number until it's 2 digits long. For example, 1 becomes 01
+        day_of_week = ret_day_of_week(event["day"])
+
+        footer_text = footer_text + f"({inc})\nNotes: {note}\nTime: {start_hour}:{start_min}-{end_hour}:{end_min}\nDay: {day_of_week}\n\n" 
+        inc = inc+1
 
     # Creating the embed to be displayed
-    embed=discord.Embed(title="Profiles", description="All schedules in the server ", color=0x8208d4)
-    embed.add_field(name=f"Events of name {event_name}", value="", inline=False)
+    embed=discord.Embed(title=f"Found Events from Profile {profile_name}", description=f"", color=0x8208d4)
+    embed.add_field(name=f"Events of name '{event_name}' ({numEvents} total)\nPlease respond with the number of the event to be deleted", value="", inline=False)
     embed.set_footer(text=footer_text)
 
+    await interaction.response.send_message(embed=embed)
 
+    # Grabbing the users response 
+    reply = await client.wait_for("message")
+    # Parsing the input
+    try:
+        num_reply = int(reply.content)
+        if (num_reply > numEvents or num_reply < 1): raise ValueError("outside bounds")
+    except ValueError:
+        await bm.follow_up(interaction, f"Not a number between 1-{numEvents}") # Need to use a follow up after initial sending
+        return
 
+    chosen_event = eventsWithSameName[num_reply - 1]    # Grabbing the event that was chosen
+
+    compare_and_delete(list_of_profiles, profile_name, chosen_event)
 
 # Takes in the name of the profile and the list of all the profiles, searches through list of profiles and checks if a profile of the given name already exists
 # returns a 0 if the profile doesn't exist, a 1 if it does
@@ -291,7 +328,25 @@ def event_exists(profile_name:str, event_name:str, list_of_profiles):
                 if(event["name"] == event_name):
                     return 1
     return 0
-    
+
+# Takes a list of profiles, a profile name, and an event object (an event dictionary)
+# Loops through the list of profiles until it gets to the profile with the given name, then loops through the events of that profile until the event with the exact same specifications 
+# is reached then it is deleted from the list
+# Returns 1 if successful, 0 if not.
+def compare_and_delete(list_of_profiles, profile_name, chosen_event):
+    for profile in list_of_profiles:
+        if(profile["name"] == profile_name):
+            for event in profile["events"]:
+                if(event["name"] == chosen_event["name"] and 
+                   event["notes"] == chosen_event["notes"] and 
+                   event["start_hour"] == chosen_event["start_hour"] and
+                   event["start_min"] == chosen_event["start_min"] and
+                   event["end_hour"] == chosen_event["end_hour"] and
+                   event["end_min"] == chosen_event["end_min"] and
+                   event["day"] == chosen_event["day"]):
+                   return 1
+    return 0
+
 # Takes in 3 integers as input
 # makes sure that the number given as a parameter is less than or equal to the upper bound and greater than or equal to the lower bound
 # returns 0 if the number is not within bounds, returns 1 if the number is within the bounds
@@ -320,6 +375,21 @@ def dump_list_of_profiles(path: str, list_of_profiles):
                         indent=2, 
                         separators=(",",": "))
 
-
+# Given an integer returns the string form of the day of the week. 
 def ret_day_of_week(day: int):
-    return "test"
+    if(day == 1):
+        return "Sunday"
+    elif(day == 2):
+        return "Monday"
+    elif(day == 3):
+        return "Tuesday"
+    elif(day == 4):
+        return "Wednesday"
+    elif(day == 5):
+        return "Thursday"
+    elif(day == 6):
+        return "Friday"
+    elif(day == 7):
+        return "Saturday"
+
+    return "ERROR"
