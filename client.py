@@ -74,14 +74,29 @@ async def list_profiles_cmd(interaction: discord.Interaction):
 async def add_profile_cmd(interaction: discord.Interaction, name: str, notes: str):
     await schedule.add_profile(interaction, name, notes)
 
+# addprofile command: Takes in profile name and profile notes after running the command the bot will create a profile with the given attributes. 
+# Name of the profile must not already be in use though. 
+@tree.command(name = 'deleteprofile', description = 'Bot will delete a profile with the given name')
+@app_commands.describe(name="Name of the profile to be deleted(PROFILE MUST ALREADY EXIST)")
+async def delete_profile_cmd(interaction: discord.Interaction, name: str):
+    await schedule.delete_profile(interaction, name)
+
 # addevent command: 
 @tree.command(name = 'addevent', description = 'Bot will add a profile with the given name and notes')
-@app_commands.describe(profile_name="Name of the profile for which this event should be added to", event_name="Name of the event to be added",
+@app_commands.describe(profile_name="Name of the profile for which the event should be added to", event_name="Name of the event to be added",
                         event_notes="Notes regarding the event", start_hour="The hour the event starts (must be integer between 0 and 23 inclusive)",
                         start_min="minute the event starts", end_hour="The hour the event ends at (must be integer between 0 and 23 inclusive)",
-                        end_min="The minute which the event ends at")
-async def add_event_cmd(interaction: discord.Interaction, profile_name: str, event_name: str, event_notes: str, start_hour: int, start_min: int, end_hour: int, end_min: int):
-    await schedule.add_event(interaction, profile_name, event_name, event_notes, start_hour, start_min, end_hour, end_min)
+                        end_min="The minute which the event ends at", day="Enter a number 1-7 to represent the day of the week (1=Sunday, 7=saturday)")
+async def add_event_cmd(interaction: discord.Interaction, profile_name: str, event_name: str, event_notes: str, start_hour: int, start_min: int, end_hour: int, end_min: int, day: int):
+    await schedule.add_event(interaction, profile_name, event_name, event_notes, start_hour, start_min, end_hour, end_min, day)
+
+# addprofile command: Takes in profile name and profile notes after running the command the bot will create a profile with the given attributes. 
+# Name of the profile must not already be in use though. 
+@tree.command(name = 'deleteevent', description = 'Bot will delete a event with the given name')
+@app_commands.describe(profile_name="Name of the profile to be deleted(PROFILE MUST ALREADY EXIST)",
+                       event_name="Name of event to be deleted (EVENT MUST ALREADY EXIST)")
+async def delete_event_cmd(interaction: discord.Interaction, profile_name: str, event_name: str):
+    await schedule.delete_event(interaction, client, profile_name, event_name)
 
 # Bot will join YouTube channel
 @tree.command(name = 'move', description = 'Bot will join your voice channel')
@@ -102,24 +117,6 @@ async def clear(interaction: discord.Interaction):
 @tree.command(name = 'pause-unpause', description = 'Bot will pause the currently playing song or unpause if one was being played')
 async def pause_yt(interaction: discord.Interaction):
     await mzb.pause_yt(interaction)
-
-# client event to take place whenever the client joins a server.
-# it will create a new json file in the scheduler directory to store the data associated with this newly joined guild
-@client.event
-async def on_guild_join(guild):
-    path = "scheduler/" + str(guild.id) + ".json"   # name of the file will be <guildID>.json and it will be located in the scheduler directory 
-    try:
-        file = open(path, "x")
-        # initializing the json file with a list in order that we make easy appends to it
-        listObj = []
-        json.dump(listObj, file)
-        print("Making file" + path)
-        file.close()
-    # if the file exists
-    except FileExistsError:
-        print("File exists " + path)
-        
-
 #   dropdown menu for character selection
 @tree.command(name = "rp_store", description = "store for rp game")
 async def rp_store(interaction: discord.Interaction):
@@ -150,6 +147,22 @@ async def rp_update_roles(interaction: discord.Interaction):
     await botgame.rp_update_roles_function(interaction)
  #  ===================================================
 
+# client event to take place whenever the client joins a server.
+# it will create a new json file in the scheduler directory to store the data associated with this newly joined guild
+@client.event
+async def on_guild_join(guild):
+    path = "scheduler/" + str(guild.id) + ".json"   # name of the file will be <guildID>.json and it will be located in the scheduler directory 
+    try:
+        file = open(path, "x")
+        # initializing the json file with a list in order that we make easy appends to it
+        listObj = []
+        json.dump(listObj, file)
+        print("Making file" + path)
+        file.close()
+    # if the file exists
+    except FileExistsError:
+        print("File exists " + path)
+        
 #   give gold
 @client.event
 async def on_message(message):
