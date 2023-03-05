@@ -117,6 +117,11 @@ async def clear(interaction: discord.Interaction):
 @tree.command(name = 'pause-unpause', description = 'Bot will pause the currently playing song or unpause if one was being played')
 async def pause_yt(interaction: discord.Interaction):
     await mzb.pause_yt(interaction)
+#   dropdown menu for character selection
+@tree.command(name = "rp_store", description = "store for rp game")
+async def rp_store(interaction: discord.Interaction):
+    await botgame.rp_store_gen(interaction)
+ #  =======================================
 
 #   dropdown menu for character selection
 @tree.command(name = "rp_menu", description = "menu options for rp game")
@@ -129,6 +134,18 @@ async def rp_dropdown_menu_cmd(interaction: discord.Interaction):
 async def rp_character_create_cmd(interaction: discord.Interaction):
     await botgame.rp_character_create(interaction)
  #  ==============================================
+
+ #   create rp for character game
+@tree.command(name = "rp_challenge", description = "able to challenge a member  in rp game")
+async def rp_challenge_calling(interaction: discord.Interaction):
+    await botgame.rp_challenge(interaction)
+ #  =======================================
+
+ #  update roles
+@tree.command(name = "rp_update_roles", description = "updates everyones roles in server")
+async def rp_update_roles(interaction: discord.Interaction):
+    await botgame.rp_update_roles_function(interaction)
+ #  ===================================================
 
 # client event to take place whenever the client joins a server.
 # it will create a new json file in the scheduler directory to store the data associated with this newly joined guild
@@ -145,19 +162,21 @@ async def on_guild_join(guild):
     # if the file exists
     except FileExistsError:
         print("File exists " + path)
-
-@client.event
-async def on_ready():
-    await tree.sync()
-    print(f'{client.user} has connected to Discord!') 
-
-# Code to respond to any messages sent by users
+        
+#   give gold
 @client.event
 async def on_message(message):
     if message.author == client.user:
         return
+    if message.author != client.user:
+        await botgame.rp_message_goldf(message)
+        # await message.channel.send('Hello! user id:' + str(message.author.id))
+#   =============================================================================
+
+@client.event
+async def on_ready():
+    await tree.sync()
+    print(f'{client.user} has connected to Discord!')
     
-    if message.content.startswith('$hello'):
-        await message.channel.send('Hello!')
 
 client.run(TOKEN)

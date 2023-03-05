@@ -292,7 +292,7 @@ async def delete_event(interaction: discord.Interaction, client: discord.Client,
 
     # Creating the embed to be displayed
     embed=discord.Embed(title=f"Found Events From Profile {profile_name}", description=f"", color=0x8208d4)
-    embed.add_field(name=f"Events of name '{event_name}' ({numEvents} total)\nPlease respond with the number of the event to be deleted", value="", inline=False)
+    embed.add_field(name=f"Events of name '{event_name}' ({numEvents} total)\nPlease respond with the number of the event to be deleted\n(respond with any non number to cancel)", value="", inline=False)
     embed.set_footer(text=footer_text)
 
     await interaction.response.send_message(embed=embed)
