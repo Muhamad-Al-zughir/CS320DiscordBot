@@ -1,6 +1,7 @@
 from discord.ui import Button
 from discord.ui import View
 from discord.ui import Select
+from discord.utils import get
 import discord
 
 #       ***************************************************************************************************
@@ -14,7 +15,7 @@ class Player:
     def __init__(self, nameUser,discord_identifation):
         self.name = nameUser
         self.userID = discord_identifation
-        self.pg =0
+        self.pg = 100
         self.hitpoints = 1 
         self.strength = 0 
         self.defense = 0  
@@ -36,12 +37,24 @@ class Player:
             for i in range(0, len(self.inventory)):
                 print(self.inventory[i].showItem())
                 print(self.inventory[i].showItemAttributes())
+
+#   yeah fix it later sell but buy works idk m8                
+    # def sellToStore(self):
+    #     self.inventory[i].name = someFunction()
+    #     self.sell(item)
                 
     def getPg(self):
         return self.pg
     
+    def getInventorySize(self):
+        return len(self.inventory)
+    
     def buy(self, cost):
         self.pg = self.pg - cost
+        
+    def sell(self, item):
+        self.pg = self.pg + item.pg
+        self.inventory.remove(item)
     
     def gainPg(self, gain):
         self.pg = self.pg + gain
@@ -59,14 +72,57 @@ class Player:
         self.hitpoints = self.hitpoints + 1
 #   =======================================
 
+#   =======================================
+#   Player class use to clean up code later
+class Store:
+
+#   two inventories for the store
+#   inventory: one for selling 
+#   inventoryBuyBack: for letting player buy back item
+    def __init__(self, name):
+        self.name = name
+        self.inventory = []
+        self.inventoryBuyBack = []
+        # could add features such as how many items sold 
+        # maybe own rng for specialty items 
+        
+#   for debugging  
+    def showSelf(self):
+        return (self.name + "\n" +
+                "StoreName " + str(self.name) + "\n" +
+                "Inventory Size: " + str(len(self.inventory)) +
+                "Inventory Size: " + str(len(self.inventoryBuyBack))
+                )
+
+    def showInventoryBuyBack(self):
+        if len(self.inventory) == 0:
+            print("Nothing to show")
+        else:
+            for i in range(0, len(self.inventory)):
+                print(self.inventory[i].showItem())
+                print(self.inventory[i].showItemAttributes())
+
+    def getPg(self):
+        return self.pg
+    
+    def getInventoryBuyBackSize(self):
+        return len(self.inventoryBuyBack)
+        
+    def sell(self, item):
+        self.inventoryBuyBack.remove(item)
+    
+    def addItem(self, item):
+        self.inventoryBuyBack.append(item)
+#   ======================================
+
 #   ==========
 #   Item class
 class Item:
-    def __init__(self, itemName, strength, defense):
+    def __init__(self, itemName, strength, defense, pg):
         self.name = itemName
         self.strength = strength 
         self.defense = defense
-        self.pg = 0
+        self.pg = pg
         
     def showItem(self):
         return self.name
@@ -102,7 +158,10 @@ class AllPlayersData():
 #   add player to list
     def addplayertoList(self, player):
         self.playerList.append(player)
-#   ==================================
+
+    def getAllPlayersDataSize(self):
+        return len(self.playerList)
+#   ===============================
 
 # Serverdata creation
 serverPlayers = AllPlayersData()
@@ -174,11 +233,10 @@ class ItemButton(Button):
     async def callback(self, interaction):
 #   should create a function witch sifts throuhg items such as stick and card and outputs corresponding embed
         if self.label == "stick":
-#           create embed
-            embed=discord.Embed(title="stick")
-#           add parts
-            embed.set_image(url="https://newsbugmedia.com/images/2022/05/stick-gun-shaped.jpg")
-
+        #   create embed
+            embed=discord.Embed(title="Paul_Allens_card")
+        #   add parts
+            embed.set_image(url="https://i.seadn.io/gae/LIoXlDW3hzLtQeB6tfOqVC8yvlCsXk6YCMNHu2ixJhl74-bldzJDxJXpCM6p9Vk6MF3g9eeDDZE0zTJvjD9wTYO0xAoQsmLFQvmLffs?auto=format&w=1000")
             
         elif self.label == "card":
         #   create embed
@@ -186,15 +244,110 @@ class ItemButton(Button):
         #   add parts
             embed.set_image(url="https://i.seadn.io/gae/LIoXlDW3hzLtQeB6tfOqVC8yvlCsXk6YCMNHu2ixJhl74-bldzJDxJXpCM6p9Vk6MF3g9eeDDZE0zTJvjD9wTYO0xAoQsmLFQvmLffs?auto=format&w=1000")
     
+        elif self.label == "angel wings":
+        #   create embed
+            embed=discord.Embed(title=self.label)
+        #   add parts
+            embed.set_image(url="https://i.seadn.io/gae/LIoXlDW3hzLtQeB6tfOqVC8yvlCsXk6YCMNHu2ixJhl74-bldzJDxJXpCM6p9Vk6MF3g9eeDDZE0zTJvjD9wTYO0xAoQsmLFQvmLffs?auto=format&w=1000")
+    
+        elif self.label == "steetware":
+        #   create embed
+            embed=discord.Embed(title=self.label)
+        #   add parts
+            embed.set_image(url="https://i.seadn.io/gae/LIoXlDW3hzLtQeB6tfOqVC8yvlCsXk6YCMNHu2ixJhl74-bldzJDxJXpCM6p9Vk6MF3g9eeDDZE0zTJvjD9wTYO0xAoQsmLFQvmLffs?auto=format&w=1000")
+    
+        elif self.label == "pickaxe":
+        #   create embed
+            embed=discord.Embed(title=self.label)
+        #   add parts
+            embed.set_image(url="https://i.seadn.io/gae/LIoXlDW3hzLtQeB6tfOqVC8yvlCsXk6YCMNHu2ixJhl74-bldzJDxJXpCM6p9Vk6MF3g9eeDDZE0zTJvjD9wTYO0xAoQsmLFQvmLffs?auto=format&w=1000")
+        
         else:
         #   create embed
             embed=discord.Embed(title="broken_command_callback_itembutton")
         #   add parts
             embed.set_image(url="https://i0.wp.com/isaratech.com/wp-content/uploads/2018/03/2018-03-04.png")
         
+        
     #   send to discord embed 
         await interaction.response.send_message(embed=embed)
 #   ========================================================
+
+#   ======================
+#   Class StoreItem_Button
+class StoreItem_Button(Button):
+
+#   ===========
+#   constructor
+    def __init__(self, buttonName):
+        super().__init__(
+            label=buttonName, 
+            style=discord.ButtonStyle.gray
+        )
+#       =
+        
+#   callback function
+    async def callback(self, interaction):
+#   should create a function witch does this but for now will leave 
+#   should also create a function of just the items default
+#       get players userID that called interaction
+        userID = interaction.user.id
+    
+#       player not found cant purchase from store 
+        if serverPlayers.searchforPlayer(userID) == 0:
+            await interaction.response.send_message("Character not made cannot purchase I am sorry" + interaction.user.name)
+            return
+        
+#       GET PLAYER
+        user_rp_char = serverPlayers.returnPlayer(userID)
+    
+#       check if enough space to purchase more
+        if self.label == "sell" and (user_rp_char.getInventorySize()  >= 1):
+            user_rp_char.sell()
+            await interaction.response.send_message("you sold" + interaction.user.name)
+    
+#       check if enough space to purchase more
+        if user_rp_char.getInventorySize() > 3:
+            await interaction.response.send_message("you cant have anymore items sorry" + interaction.user.name)
+            return
+
+#       else check all item options as well as if user has enough gold 
+        elif self.label == "stick" and (user_rp_char.getPg()  >= 1):
+            item = Item("stick", 1, 0, 1)
+            user_rp_char.buy(1)
+            user_rp_char.addItem(item)
+            response_to_Buyer = "You have successfully bought " + self.label
+            
+        elif self.label == "card" and (user_rp_char.getPg() >= 5):
+            item = Item("card", 1, 2, 5)
+            user_rp_char.buy(5)
+            user_rp_char.addItem(item)
+            response_to_Buyer = "You have successfully bought " + self.label
+    
+        if self.label == "streetware" and (user_rp_char.getPg() >= 30):
+            item = Item("streetware", 10, 30 , 30)
+            user_rp_char.buy(30)
+            user_rp_char.addItem(item)
+            response_to_Buyer = "You have successfully bought " + self.label
+               
+        elif self.label == "pickaxe"  and (user_rp_char.getPg() >= 15):
+            item = Item("pickaxe", 10,0 ,15)
+            user_rp_char.buy(15)
+            user_rp_char.addItem(item)
+            response_to_Buyer = "You have successfully bought " + self.label
+                
+        elif self.label == "angel wings"  and (user_rp_char.getPg() >= 50):
+            item = Item("angel wings", 25, 25, 50)
+            user_rp_char.buy(50)
+            user_rp_char.addItem(item)
+            response_to_Buyer = "You have successfully bought " + self.label
+            
+        else:
+            response_to_Buyer = "You are a broke and failed to buy a " + self.label
+        
+    #   send to discord embed 
+        await interaction.response.send_message(response_to_Buyer + " " + interaction.user.name)
+#   ============================================================================================
  
 #  =====================
 #  show create character 
@@ -216,9 +369,9 @@ async def rp_character_create(interaction: discord.Integration):
     player = Player(name, userID)
     
 #   item creation
-    stickItem = Item("stick", 1, 0)
+    stickItem = Item("stick", 1, 0, 0)
     player.addItem(stickItem)
-    stickItem = Item("card", 0, 0)
+    stickItem = Item("card", 0, 0, 10)
     player.addItem(stickItem)
         
     serverPlayers.addplayertoList(player)
@@ -292,7 +445,6 @@ async def rp_inventory(interaction: discord.Interaction):
     rp_character = serverPlayers.returnPlayer(userID)
     inventorySize = len(rp_character.inventory)
 
-
 #   create embed
     embed=discord.Embed(title="Inventory")
 #   add parts
@@ -308,70 +460,164 @@ async def rp_inventory(interaction: discord.Interaction):
         view.add_item(button)
         
     await interaction.response.send_message(embed=embed, view=view)# send back embed as well as view
- #  ======================================================================================
+#   ======================================================================================
 
+#  =========
+#  store gen
+async def rp_store_gen(interaction: discord.Interaction):
+
+#   choose name
+    name_rp = "storeName"
+    
+#   show store options as well as buttons
+    embed = rp_store_show(name_rp)
+    view = rp_store_select(interaction)
+    await interaction.response.send_message(embed = embed, view= view)
+#   ======================================================
+
+#  =======
+#    store
+def rp_store_show(store_name):
+#   create embed
+    embed=discord.Embed(title="Welcome to  " + store_name + " store")
+    embed.set_image(url="https://m.media-amazon.com/images/I/416CkZQfMFL._AC_.jpg")
+    return embed 
+#   ============
+
+#  =======
+#    store
+def rp_store_select(interaction: discord.Interaction):
+
+#   **************************************************************************************************
+#   Notes: maybe change store to an entity and do a for loop to get inventory of store like in rp_char
+#           will also allow the ability to make different stores and items instead of hard coding items
+#   ***************************************************************************************************
+
+#   create embed
+    view = View()
+    
+#   create and add buttons to view 
+    button = StoreItem_Button("angel wings")
+    view.add_item(button)
+    button = StoreItem_Button("streetware")
+    view.add_item(button)
+    button = StoreItem_Button("card")
+    view.add_item(button)
+    button = StoreItem_Button("stick")
+    view.add_item(button)
+    button = StoreItem_Button("pickaxe")
+    view.add_item(button)
+    button = StoreItem_Button("sell")
+    view.add_item(button)
+    return view 
+#   ===========
+
+#  ===========
+#    challenge
+async def rp_challenge(interaction: discord.Interaction):
+#   create embed
+    await rp_challenge_message(interaction); 
+    
+    #   do u accept or do u not function 
+#   after if yes sim batle 
+#   else send message declined
+#   ===============================================
+
+#  ===========
+#    challenge
+async def rp_challenge_message(interaction: discord.Interaction):
+#   create embed
+    embed=discord.Embed(title="Challenged by " + interaction.user.name)
+    embed.set_image(url="https://cdn3.iconfinder.com/data/icons/fantasy-1/500/fantasy-01-512.png")
+
+    await interaction.response.send_message(embed=embed); 
+#   ===============================================
+
+#  ===========
+#    challenge
+async def rp_challenge_buttons(interaction: discord.Interaction):
+#   do u accept or do u not function 
+    view = View()
+    await rp_challenge_message(view=view); 
+#   ========================================
 
 #   ============
-#   store option
-def storeDropdown(storeName):
-    name = storeName
-    
-    print("Welcome to the store")
-    print("my name is " + name)
-    
-#   display options fix later to show into disc with ui
-    print("choose what you would like")
-    print("attack boost")
-    print("defense boost")
-    print("hp boost")
-    print("stick")
-    print("Quit\n")
-    
-    return input()
-#   ==============
+#   message gold
+async def rp_message_goldf(message):
+#       get user and search for user
+        userID = message.author.id 
+        if serverPlayers.searchforPlayer(userID) == 0:
+            # await message.channel.send('does not exist person' + message.author.name)
+            return
+#       if found try to give user Gold 
+        userChar = serverPlayers.returnPlayer(userID)
+        
+#       ******************************
+#       Notes:
+#       to get messages for like a 10 i need to make an array for activyt and add to activity 
+#               so i cant just discrod i need to make my own database of user acitivtyt 
+#               so will try to implement in the future for now just add gold
+#               so features such as delete if user not active 
+#               reward for active days in a row etc nneed to be implemented later * maybe just add to user array 
+#               but person needs to create char for that to be used so its not default might change features
+#       *******************************************************************************************************
+        userChar.gainPg(1)
+        return
+        # await message.channel.send('give gold' + message.author.name)
+#       ===============================================================
 
-#   =====
-#   store
-#   ========
-def store(player):
-    name = "Michaels"
-    totalSpecialItems = 3
-    
-#   returns item selected from discord ui
-    itemSelected = storeDropdown(name)
+# fix later already spend an ungodly amount of time
+# need to learn how to go thorugh list
+# learn how to remove roles from list
+# have main logicx down just need to see if syntax exist to let me do what i want 
 
-#   process
-    print("choose what you would like")
-    if itemSelected == "atk":
-        if(player.getPg() >= 10):
-            print("permanent raise to attack")
-        else:
-            print("failed to purchase")
-    
-    elif itemSelected == "def":
-        if(player.getPg() >= 10):
-            print("permanent raise to defense")
-        else:
-            print("failed to purchase")
-    
-    elif itemSelected == "hp":
-        if(player.getPg() >= 10):
-            print("permanent raise to hp")
-        else:
-            print("failed to purchase")
-    
-    elif itemSelected == "stick":
-        if(player.getPg() >= 10):
-            print("hello stick buyer")
-        else:
-            print("failed to purchase")
-#   ===================================
+#   ============
+#   update roles 
+async def rp_update_roles_function(interaction: discord.Interaction):
+    guild = interaction.guild
 
-# #   for everymessage increase gold
-# def msgGold(player):
-# #   look for character adn chage it within char
-#     player.gainPg(10)
-
+#   create roles and wont do anything if it already exists
+    if  not get(guild.roles, name="stone"):
+        await guild.create_role(name="stone")
+        await guild.create_role(name="bronze")
+        await guild.create_role(name="silver")
+        await guild.create_role(name="gold")
+        await guild.create_role(name="plat")
+    
+#   roles 
+    role = discord.utils.get(guild.roles, name='stone')
+    role1 = discord.utils.get(guild.roles, name='bronze')
+    role2 = discord.utils.get(guild.roles, name='silver')
+    role3 = discord.utils.get(guild.roles, name='gold')
+    role4 = discord.utils.get(guild.roles, name='plat')
+    
+#   traverse whole list 
+    for i in range(0, serverPlayers.getAllPlayersDataSize()):
+#   put into proper role
+        if (serverPlayers.playerList[i].getPg() > 0) and (serverPlayers.playerList[i].getPg() <= 100):
+            await interaction.user.edit(roles=[])
+            await interaction.guild._add_role(role,serverPlayers.playerList[i].name )
+            continue
+        elif (serverPlayers.playerList[i].getPg() > 100) and (serverPlayers.playerList[i].getPg() <= 101):
+            await interaction.user.edit(roles=[])
+            await interaction.guild._add_role(role,serverPlayers.playerList[i].name )
+            continue
+        elif (serverPlayers.playerList[i].getPg() > 102) and (serverPlayers.playerList[i].getPg() <= 103):
+            await interaction.user.edit(roles=[])
+            await interaction.guild._add_role(role,serverPlayers.playerList[i].name )
+            continue
+        elif (serverPlayers.playerList[i].getPg() > 104) and (serverPlayers.playerList[i].getPg() <= 105):
+            await interaction.user.edit(roles=[])
+            await interaction.guild._add_role(role,serverPlayers.playerList[i].name )
+            continue
+        elif (serverPlayers.playerList[i].getPg()) > 106:
+            await interaction.guild._remove_role(roles=[])
+            await interaction.guild._add_role(role,serverPlayers.playerList[i].name )
+            continue
+        
+    await interaction.response.send_message("kill me soon update ended")
+#   ===========================================================
+        
 # testing and creationo of chracter, store, data list, item
 # # player creation
 # player = Player("bob")
