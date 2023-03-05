@@ -173,6 +173,9 @@ async def add_profile(interaction: discord.Interaction, name: str, notes: str):
     
     list_of_profiles.append(profile)
 
+    # Sorting the list of events based on starting hour and starting minute (hour is of course of a higher priority than minute)
+    list_of_profiles.sort(key = lambda x:x["name"])
+
     dump_list_of_profiles(path, list_of_profiles)
 
     await bm.send_msg(interaction, "Profile Successfully Created")
@@ -295,7 +298,10 @@ async def delete_event(interaction: discord.Interaction, client: discord.Client,
     await interaction.response.send_message(embed=embed)
 
     # Grabbing the users response 
-    reply = await client.wait_for("message")
+    # function to check if the user responding is the same person who made the command and is responding from the same channel
+    def check(m):
+        return m.channel == interaction.channel and m.author == interaction.user
+    reply = await client.wait_for("message", check=check)
     # Parsing the input
     try:
         num_reply = int(reply.content)
@@ -306,7 +312,9 @@ async def delete_event(interaction: discord.Interaction, client: discord.Client,
 
     chosen_event = eventsWithSameName[num_reply - 1]    # Grabbing the event that was chosen
 
-    compare_and_delete(list_of_profiles, profile_name, chosen_event)
+    list_of_profiles = compare_and_delete(list_of_profiles, profile_name, chosen_event)
+
+    dump_list_of_profiles(path, list_of_profiles)
 
 # Takes in the name of the profile and the list of all the profiles, searches through list of profiles and checks if a profile of the given name already exists
 # returns a 0 if the profile doesn't exist, a 1 if it does
@@ -332,7 +340,7 @@ def event_exists(profile_name:str, event_name:str, list_of_profiles):
 # Takes a list of profiles, a profile name, and an event object (an event dictionary)
 # Loops through the list of profiles until it gets to the profile with the given name, then loops through the events of that profile until the event with the exact same specifications 
 # is reached then it is deleted from the list
-# Returns 1 if successful, 0 if not.
+# Returns the newly updated list of profile regardless of success 
 def compare_and_delete(list_of_profiles, profile_name, chosen_event):
     for profile in list_of_profiles:
         if(profile["name"] == profile_name):
@@ -344,8 +352,9 @@ def compare_and_delete(list_of_profiles, profile_name, chosen_event):
                    event["end_hour"] == chosen_event["end_hour"] and
                    event["end_min"] == chosen_event["end_min"] and
                    event["day"] == chosen_event["day"]):
-                   return 1
-    return 0
+                    profile["events"].remove(event)
+                    return list_of_profiles
+    return list_of_profiles
 
 # Takes in 3 integers as input
 # makes sure that the number given as a parameter is less than or equal to the upper bound and greater than or equal to the lower bound
