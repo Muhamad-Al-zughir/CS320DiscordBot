@@ -291,7 +291,7 @@ async def delete_event(interaction: discord.Interaction, client: discord.Client,
         inc = inc+1
 
     # Creating the embed to be displayed
-    embed=discord.Embed(title=f"Found Events from Profile {profile_name}", description=f"", color=0x8208d4)
+    embed=discord.Embed(title=f"Found Events From Profile {profile_name}", description=f"", color=0x8208d4)
     embed.add_field(name=f"Events of name '{event_name}' ({numEvents} total)\nPlease respond with the number of the event to be deleted", value="", inline=False)
     embed.set_footer(text=footer_text)
 
@@ -315,6 +315,8 @@ async def delete_event(interaction: discord.Interaction, client: discord.Client,
     list_of_profiles = compare_and_delete(list_of_profiles, profile_name, chosen_event)
 
     dump_list_of_profiles(path, list_of_profiles)
+
+    await bm.follow_up(interaction, "Event successfully deleted!")
 
 # Takes in the name of the profile and the list of all the profiles, searches through list of profiles and checks if a profile of the given name already exists
 # returns a 0 if the profile doesn't exist, a 1 if it does
