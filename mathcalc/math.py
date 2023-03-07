@@ -2,6 +2,8 @@ import os
 import math
 import random
 
+#functions for the calculator
+
 def simpleCheck(equation):
     length = len(equation)
     count = 0

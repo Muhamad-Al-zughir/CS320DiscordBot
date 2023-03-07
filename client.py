@@ -158,7 +158,7 @@ async def equation(interaction: discord.Interaction, simple: str):
     else:
         await interaction.response.send_message(calc.checker(equation))
         
- # calculate algebra equation
+ # calculate algebra equation, needs specification of what to do
 @tree.command(name = "algebra", description = "Algebra calculator with several options")
 @app_commands.describe(equation = "Please enter an algebra equation with spaces in between", answer = "Enter the following: (slope) - slope intercept form, ")
 async def algebra(interaction: discord.Interaction, equation: str, answer: str):
