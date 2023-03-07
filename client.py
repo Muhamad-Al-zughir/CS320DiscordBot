@@ -149,12 +149,15 @@ async def rp_update_roles(interaction: discord.Interaction):
  #  ===================================================
 
  # calculate simple equation
-@tree.command(name = "equation", description= "Simple equation")
+@tree.command(name = "equation", description = "Simple equation")
 @app_commands.describe(simple = "Please enter a simple equation with each spaces in between")
 async def equation(interaction: discord.Interaction, simple: str):
     equation = list(simple.split(" "))
-    if(reason := calc.simpleCheack(equation)) != True:
+    print(equation)
+    if (reason := calc.simpleCheck(equation)) != True:
+        print(reason)
         await interaction.response.send_message("The equation sent in not a valid simple equation. Try again.\nReason: " + reason)
+    #result = checker(equation)
     else:
         await interaction.response.send_message(calc.checker(equation))
         
