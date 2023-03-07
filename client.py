@@ -10,6 +10,7 @@ import youtube_dl
 import ffmpeg
 import json
 import asyncio
+import wavelink
 # Add your imports below here, if in a folder, use a dot instead of a slash
 import botgame.game as botgame
 import libgen.lib as libby
@@ -21,6 +22,7 @@ import music.muzique as mzb
 intents = discord.Intents.all()
 intents.message_content = True          # setting message_content to True in order to read messages
 client = discord.Client(intents=intents)
+wavelink_client = wavelink.Client(bot=client)
 
 # tree which will hold all of the client commands
 tree = app_commands.CommandTree(client)
@@ -98,7 +100,7 @@ async def add_event_cmd(interaction: discord.Interaction, profile_name: str, eve
 async def delete_event_cmd(interaction: discord.Interaction, profile_name: str, event_name: str):
     await schedule.delete_event(interaction, client, profile_name, event_name)
 
-# Bot will join YouTube channel
+# Bot will join Discord Voice channel
 @tree.command(name = 'move', description = 'Bot will join your voice channel')
 async def move(interaction: discord.Interaction):     
     await mzb.move(interaction)
@@ -107,6 +109,12 @@ async def move(interaction: discord.Interaction):
 @tree.command(name = 'play_yt', description = 'Bot will play from a valid YouTube Link')
 async def play_youtube(interaction: discord.Interaction, url:str):
     await mzb.play_youtube(interaction,url,client)
+
+
+# Streams from a Spotify Link
+@tree.command(name = 'play_spotify', description = 'Bot will play from a valid Spotify Link')
+async def play_spotify(interaction: discord.Interaction, url:str):
+    await mzb.play_spotify(interaction,url,client)
 
 # End Stream
 @tree.command(name = 'clear', description = 'Bot will clear all playing music')

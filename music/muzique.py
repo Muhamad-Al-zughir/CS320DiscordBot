@@ -10,9 +10,12 @@ from discord import app_commands
 from dotenv import load_dotenv
 import youtube_dl
 import ffmpeg
+import wavelink
+from wavelink.ext import spotify
 
 
-load_dotenv() # loads all the content in the .env folder
+# Loads all the content in the .env folder
+load_dotenv() 
 TOKEN = os.getenv('DISCORD_API')
 
 # Member list of people in channel to be streamed to (used later)
@@ -23,6 +26,10 @@ streaming_members = {}
 # https://github.com/ytdl-org/youtube-dl/blob/master/youtube_dl/YoutubeDL.py#L128-L278
 yt_params = {'format' :  'bestaudio/best'}
 yt_streamObj = youtube_dl.YoutubeDL(yt_params)
+
+# Spotify Developer Tokens
+spotify_client_id = os.getenv('SPOTIFY_CLIENT_ID')
+spotify_client_secret = os.getenv('SPOTIFY_CLIENT_SECRET')
 
 # ffmpeg params set to disable video
 # Settings found from https://ffmpeg.org/ffmpeg.html
@@ -104,7 +111,7 @@ async def move(interaction: discord.Interaction):
 # ============================================================================================================
 #
 # ================================================================================== YouTube Centric Functions
-# Play from a link | YouTube
+# Play from a link | YouTube & SoundCloud
 
 async def play_youtube(interaction: discord.Interaction, url:str, client: discord.Client):
 
@@ -136,5 +143,15 @@ async def play_youtube(interaction: discord.Interaction, url:str, client: discor
 #
 # ============================================================================================= Spotify Client
 
-#client.run(TOKEN)                                                                  # Run Client 
+     
+async def create_nodes(interaction: discord.Interaction,client: discord.Client):
+    await wavelink.NodePool.create_node(bot = client,
+                                        host = "lavalink.sneakynodes.com",
+                                        port = 2333,
+                                        password = "sneakynodes.com",
+                                        https = False,                  # might change
+                                        spotify_client=spotify.SpotifyClient(client_id=spotify_client_id, client_secret=spotify_client_secret)
+                                        )
 
+async def play_spotify(interaction: discord.Interaction, url:str, client: discord.Client):
+     await spotify.SpotifyTrack.search(query=url, return_first=True)
