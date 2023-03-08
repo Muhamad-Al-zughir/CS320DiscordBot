@@ -10,6 +10,9 @@ import youtube_dl
 import ffmpeg
 import json
 import asyncio
+import spotipy
+from spotipy.oauth2 import SpotifyClientCredentials
+
 # Add your imports below here, if in a folder, use a dot instead of a slash
 import botgame.game as botgame
 import libgen.lib as libby
@@ -99,15 +102,15 @@ async def add_event_cmd(interaction: discord.Interaction, profile_name: str, eve
 async def delete_event_cmd(interaction: discord.Interaction, profile_name: str, event_name: str):
     await schedule.delete_event(interaction, client, profile_name, event_name)
 
-# Bot will join YouTube channel
+# Bot will join Discord Voice channel
 @tree.command(name = 'move', description = 'Bot will join your voice channel')
 async def move(interaction: discord.Interaction):     
     await mzb.move(interaction)
 
-# Streams from a YouTube Link
-@tree.command(name = 'play_yt', description = 'Bot will play from a valid YouTube Link')
-async def play_youtube(interaction: discord.Interaction, url:str):
-    await mzb.play_youtube(interaction,url,client)
+# Streams from a YouTube, SoundCloud, or Spotify Link
+@tree.command(name = 'play', description = 'Enter a valid YouTube, SoundCloud, or Spotify Link')
+async def play(interaction: discord.Interaction, url:str):
+    await mzb.play(interaction,url,client)/
 
 # End Stream
 @tree.command(name = 'clear', description = 'Bot will clear all playing music')
@@ -118,6 +121,7 @@ async def clear(interaction: discord.Interaction):
 @tree.command(name = 'pause-unpause', description = 'Bot will pause the currently playing song or unpause if one was being played')
 async def pause_yt(interaction: discord.Interaction):
     await mzb.pause_yt(interaction)
+
 #   dropdown menu for character selection
 @tree.command(name = "rp_store", description = "store for rp game")
 async def rp_store(interaction: discord.Interaction):
