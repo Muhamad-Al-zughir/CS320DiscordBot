@@ -10,7 +10,9 @@ import youtube_dl
 import ffmpeg
 import json
 import asyncio
-import wavelink
+import spotipy
+from spotipy.oauth2 import SpotifyClientCredentials
+
 # Add your imports below here, if in a folder, use a dot instead of a slash
 import botgame.game as botgame
 import libgen.lib as libby
@@ -22,7 +24,6 @@ import music.muzique as mzb
 intents = discord.Intents.all()
 intents.message_content = True          # setting message_content to True in order to read messages
 client = discord.Client(intents=intents)
-wavelink_client = wavelink.Client(bot=client)
 
 # tree which will hold all of the client commands
 tree = app_commands.CommandTree(client)
@@ -105,16 +106,10 @@ async def delete_event_cmd(interaction: discord.Interaction, profile_name: str, 
 async def move(interaction: discord.Interaction):     
     await mzb.move(interaction)
 
-# Streams from a YouTube Link
-@tree.command(name = 'play_yt', description = 'Bot will play from a valid YouTube Link')
-async def play_youtube(interaction: discord.Interaction, url:str):
-    await mzb.play_youtube(interaction,url,client)
-
-
-# Streams from a Spotify Link
-@tree.command(name = 'play_spotify', description = 'Bot will play from a valid Spotify Link')
-async def play_spotify(interaction: discord.Interaction, url:str):
-    await mzb.play_spotify(interaction,url,client)
+# Streams from a YouTube, SoundCloud, or Spotify Link
+@tree.command(name = 'play', description = 'Enter a valid YouTube, SoundCloud, or Spotify Link')
+async def play(interaction: discord.Interaction, url:str):
+    await mzb.play(interaction,url,client)/
 
 # End Stream
 @tree.command(name = 'clear', description = 'Bot will clear all playing music')
@@ -125,6 +120,7 @@ async def clear(interaction: discord.Interaction):
 @tree.command(name = 'pause-unpause', description = 'Bot will pause the currently playing song or unpause if one was being played')
 async def pause_yt(interaction: discord.Interaction):
     await mzb.pause_yt(interaction)
+
 #   dropdown menu for character selection
 @tree.command(name = "rp_store", description = "store for rp game")
 async def rp_store(interaction: discord.Interaction):
