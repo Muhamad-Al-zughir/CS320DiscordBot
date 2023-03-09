@@ -43,6 +43,7 @@ pip install libgen-api
 pip install youtube-dl
 pip install PyNaCl
 pip install ffmpeg
+pip install spotipy
 ```
 
 ## FFMPEG Installation Notes
