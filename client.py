@@ -110,8 +110,8 @@ async def move(interaction: discord.Interaction):
 # Streams from a YouTube, SoundCloud, or Spotify Link
 @tree.command(name = 'play', description = 'Enter a valid YouTube, SoundCloud, or Spotify Link')
 async def play(interaction: discord.Interaction, url:str):
-    await mzb.play(interaction,url,client)/
-
+    await mzb.play(interaction,url,client)
+    
 # End Stream
 @tree.command(name = 'clear', description = 'Bot will clear all playing music')
 async def clear(interaction: discord.Interaction):
