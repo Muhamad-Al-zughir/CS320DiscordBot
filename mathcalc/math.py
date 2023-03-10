@@ -4,6 +4,52 @@ import random
 
 #functions for the calculator
 
+#makes a list of tuples with (digit, varaible, degree, side) if operator then just an operator sign
+
+def makeTuples(element, side):
+    digit = ""
+    variable = None
+    exponentFlag = 0
+    degree = ""
+    for char in element:
+        if exponentFlag == 1:
+            degree = degree + char
+        elif char.isnumeric():
+            digit = digit + char
+        elif char == '^':
+            exponentFlag = 1
+        elif char.isalpha:
+            variable = char
+    if exponentFlag == 0:
+        degree = None
+    if digit == "":
+        digit = "1"
+    return (digit, variable, degree, side)
+            
+def isOperator(operator):
+    if operator == '+' or operator == '-' or operator == '*' or operator == '/' or operator == '^' or operator == '(' or operator == ')':
+        return True  
+
+def tupleList(equation):
+    count = 0
+    side = 'l'
+    newList = []
+    while count < len(equation):
+        #print(count)
+        if equation[count] == '=':
+            side = 'r'
+            count += 1
+            continue
+        if isOperator(equation[count]):
+            result = equation[count]
+        else:
+            result = makeTuples(equation[count], side)
+        count += 1
+        newList.append(result)
+    print(newList)
+        
+        
+
 def simpleCheck(equation):
     length = len(equation)
     count = 0
@@ -24,7 +70,8 @@ def simpleCheck(equation):
     return True
 
 
-def algebra(equation, answer):
+def slope(equation, answer):
+    tupleList(equation)
     if answer == "slope":
         if (equation[0] == 'y') and (equation[1]) == '=':
             equation.pop(0)

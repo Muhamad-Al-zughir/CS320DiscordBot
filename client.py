@@ -12,7 +12,7 @@ import json
 import asyncio
 # Add your imports below here, if in a folder, use a dot instead of a slash
 import botgame.game as botgame
-import libgen.lib as libby
+import lbgen.lib as libby
 import basic.methods as bm # basic methods contains functions that we will use a lot.
 import scheduler.schedule as schedule
 import music.muzique as mzb
@@ -166,11 +166,15 @@ async def equation(interaction: discord.Interaction, simple: str):
 @app_commands.describe(equation = "Please enter an algebra equation with spaces in between", answer = "Enter the following: (slope) - slope intercept form, ")
 async def algebra(interaction: discord.Interaction, equation: str, answer: str):
     equation = list(equation.split(" "))
-    result = (calc.algebra(equation, answer))
-    slope = result[0]
-    intercept = result[1]
-    await interaction.response.send_message("The slope of the equation is " + str(slope) + ".\nThe y-intercept of the equation is " + str(intercept))
- 
+    if answer == "slope":
+        result = (calc.slope(equation, answer))
+        slope = result[0]
+        intercept = result[1]
+        await interaction.response.send_message("The slope of the equation is " + str(slope) + ".\nThe y-intercept of the equation is " + str(intercept))
+    #result = (calc.algebra(equation, answer))
+    #slope = result[0]
+    #intercept = result[1]
+        
 
 # client event to take place whenever the client joins a server.
 # it will create a new json file in the scheduler directory to store the data associated with this newly joined guild
