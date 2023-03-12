@@ -109,7 +109,7 @@ async def move(interaction: discord.Interaction):
 # Streams from a YouTube, SoundCloud, or Spotify Link
 @tree.command(name = 'play', description = 'Enter a valid YouTube, SoundCloud, or Spotify Link')
 async def play(interaction: discord.Interaction, url:str):
-    await mzb.play(interaction,url,client)/
+    await mzb.play(interaction,url,client)
 
 # End Stream
 @tree.command(name = 'clear', description = 'Bot will clear all playing music')
@@ -150,6 +150,12 @@ async def rp_challenge_calling(interaction: discord.Interaction):
 async def rp_update_roles(interaction: discord.Interaction):
     await botgame.rp_update_roles_function(interaction)
  #  ===================================================
+
+@tree.command(name = "shutdown", description = "shuts down the bot SAFELY")
+async def shutdown(interaction: discord.Interaction):
+    await interaction.response.send_message(f'Shutting down bot. Goodbye!')
+    await client.close()
+ 
 
 # client event to take place whenever the client joins a server.
 # it will create a new json file in the scheduler directory to store the data associated with this newly joined guild
