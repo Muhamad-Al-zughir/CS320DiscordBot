@@ -175,7 +175,8 @@ async def play(interaction: discord.Interaction, url:str, client: discord.Client
             await interaction.response.send_message(f'Now playing {filename.title}')                # Happens for every song until queue is empty
 
 
-        print("Reached here in command")                                          
+        print("Reached here in command")      
+        print(songList)                                    
 
 # Supplementary Queuing and Loop function to be used in tandem with 'play' command
 # Note: NOT TREE FUNCTION ACCESSIBLE
@@ -204,6 +205,19 @@ def nextSong(interaction: discord.Interaction, client: discord.Client):         
 
     else:                                                                                           # No songs in queue, disconnect
         asyncio.run_coroutine_threadsafe(interaction.guild.voice_client.disconnect(), client.loop)
-        
+
+# Skipping songs function
+async def skipSong(interaction: discord.Interaction, client: discord.Client):
+    #print("Before Skip")                                                                       # Debug Prints
+    print(songList)
+    local = interaction.guild                                                                   # Establish server context
+    voicechan = local.voice_client                                                              # Establish related voice channel
+
+    if voicechan is not None and voicechan.is_playing():
+        await interaction.response.send_message(f'Skipping song')
+        voicechan.stop()
+    #print("After Skip") 
+    #print(songList)
+
 # ============================================================================================================
 

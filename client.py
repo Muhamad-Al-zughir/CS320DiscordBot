@@ -121,6 +121,11 @@ async def clear(interaction: discord.Interaction):
 async def pause_yt(interaction: discord.Interaction):
     await mzb.pause_yt(interaction)
 
+# Skip currently playing song
+@tree.command(name = 'skip', description = 'Bot will skip the currently playing song')
+async def skipSong(interaction: discord.Interaction):
+    await mzb.skipSong(interaction, client)
+
 #   dropdown menu for character selection
 @tree.command(name = "rp_store", description = "store for rp game")
 async def rp_store(interaction: discord.Interaction):
