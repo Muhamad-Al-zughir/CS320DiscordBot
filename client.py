@@ -19,6 +19,7 @@ import libgen.lib as libby
 import basic.methods as bm # basic methods contains functions that we will use a lot.
 import scheduler.schedule as schedule
 import music.muzique as mzb
+import mathcalc.math as calc
 
 # setting up the needed intents
 intents = discord.Intents.all()
@@ -172,6 +173,26 @@ async def shutdown(interaction: discord.Interaction):
     await interaction.response.send_message(f'Shutting down bot. Goodbye!')
     await client.close()
 #   ===================================================
+
+ # calculate simple equation
+@tree.command(name = "equation", description= "Simple equation")
+@app_commands.describe(simple = "Please enter a simple equation with each spaces in between")
+async def equation(interaction: discord.Interaction, simple: str):
+    equation = list(simple.split(" "))
+    if(reason := calc.simpleCheack(equation)) != True:
+        await interaction.response.send_message("The equation sent in not a valid simple equation. Try again.\nReason: " + reason)
+    else:
+        await interaction.response.send_message(calc.checker(equation))
+        
+ # calculate algebra equation, needs specification of what to do
+@tree.command(name = "algebra", description = "Algebra calculator with several options")
+@app_commands.describe(equation = "Please enter an algebra equation with spaces in between", answer = "Enter the following: (slope) - slope intercept form, ")
+async def algebra(interaction: discord.Interaction, equation: str, answer: str):
+    equation = list(equation.split(" "))
+    result = (calc.algebra(equation, answer))
+    slope = result[0]
+    intercept = result[1]
+    await interaction.response.send_message("The slope of the equation is " + str(slope) + ".\nThe y-intercept of the equation is " + str(intercept))
  
 
 # client event to take place whenever the client joins a server.
