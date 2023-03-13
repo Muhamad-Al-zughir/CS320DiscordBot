@@ -126,6 +126,16 @@ async def pause_yt(interaction: discord.Interaction):
 async def skipSong(interaction: discord.Interaction):
     await mzb.skipSong(interaction, client)
 
+# Display current queue 
+@tree.command(name = 'queue', description = 'Display the current active music queue')
+async def displayQueue(interaction: discord.Interaction):
+    await mzb.displayQueue(interaction, client)
+
+# Shuffle Current Queue
+@tree.command(name = 'shuffle', description = 'Shuffle and display current active music queue')
+async def shuffleQueue(interaction: discord.Interaction):
+    await mzb.shuffleQueue(interaction, client)
+
 #   dropdown menu for character selection
 @tree.command(name = "rp_store", description = "store for rp game")
 async def rp_store(interaction: discord.Interaction):
@@ -156,10 +166,12 @@ async def rp_update_roles(interaction: discord.Interaction):
     await botgame.rp_update_roles_function(interaction)
  #  ===================================================
 
+#   Shut down Bot safely
 @tree.command(name = "shutdown", description = "shuts down the bot SAFELY")
 async def shutdown(interaction: discord.Interaction):
     await interaction.response.send_message(f'Shutting down bot. Goodbye!')
     await client.close()
+#   ===================================================
  
 
 # client event to take place whenever the client joins a server.

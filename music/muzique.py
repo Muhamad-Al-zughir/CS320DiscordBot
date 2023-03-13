@@ -61,11 +61,12 @@ class YouTube_linkobj(discord.PCMVolumeTransformer):
         data = await loop.run_in_executor(None, lambda: yt_streamObj.extract_info(url, download=not stream))
 
         if 'entries' in data:
-            data = data['entries'][0]       # 1st item in playlist index
+            data = data['entries'][0]                                              # 1st item in playlist index
 
         filename = data['url'] if stream else yt_streamObj.prepare_filename(data)
         return cls(discord.FFmpegPCMAudio(filename, **ff_params), data=data)       # Return discord.ffmpegpcm audio class 
-    
+
+    # Added this method independently. Used to search YouTube for Spotify Links OR for a general search query (not a link)
     @classmethod
     async def from_search(cls, search, *, loop=None, stream=False):
         loop = loop or asyncio.get_event_loop()
@@ -218,6 +219,44 @@ async def skipSong(interaction: discord.Interaction, client: discord.Client):
         voicechan.stop()
     #print("After Skip") 
     #print(songList)
+
+# Displays the current queue of songs to be played
+async def displayQueue(interaction: discord.Interaction, client: discord.Client):
+    if len(songList) != 0:                                                           
+        await interaction.response.send_message(f'Current Queue is:')
+        logId = interaction.channel_id
+        logChannel = client.get_channel(logId)
+        i = 1
+        for songs in songList:
+            display = songs.title
+            display = str(i) + ": " + display
+            await logChannel.send(display)
+            i = i+1
+    else: 
+        await interaction.response.send_message(f'No active Queue to be displayed!')
+
+# Shuffles the Current Queue of Songs and Redisplays it
+async def shuffleQueue(interaction: discord.Interaction, client: discord.Client):
+    if len(songList) != 0:
+        await interaction.response.send_message(f'Queue Shuffled. Current Queue is now:')
+        for validIndex in range(len(songList)):
+            randNum = (validIndex * 1629) * 300
+            randNum = randNum + 56 * 80 ^ 2
+            randNum = randNum % (len(songList))
+            songList[validIndex], songList[randNum] = songList[randNum], songList[validIndex]
+        
+        logId = interaction.channel_id
+        logChannel = client.get_channel(logId)
+        i = 1
+        for songs in songList:
+            display = songs.title
+            display = str(i) + ": " + display
+            await logChannel.send(display)
+            i = i+1
+    else:
+        await interaction.response.send_message(f'No active Queue to be shuffled!')
+
+
 
 # ============================================================================================================
 
