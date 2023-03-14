@@ -14,8 +14,6 @@ import ffmpeg
 import spotipy
 from spotipy.oauth2 import SpotifyClientCredentials
 
-
-
 # Loads all the content in the .env folder
 load_dotenv() 
 TOKEN = os.getenv('DISCORD_API')
@@ -28,6 +26,9 @@ streaming_members = {}
 # https://github.com/ytdl-org/youtube-dl/blob/master/youtube_dl/YoutubeDL.py#L128-L278
 yt_params = {'format' :  'bestaudio/best'}
 yt_streamObj = youtube_dl.YoutubeDL(yt_params)
+
+# YouTube API Key for gathering metadata
+yt_API = os.getenv('YOUTUBE_API')
 
 # Spotify Developer Tokens
 spotify_client_id = os.getenv('SPOTIFY_CLIENT_ID')
@@ -85,21 +86,27 @@ async def clear(interaction: discord.Interaction):
     server = interaction.guild
     voice_channel = server.voice_client
 
-    await voice_channel.disconnect()
-    await interaction.response.send_message(f'Music has been stopped')
+    if voice_channel is None:
+        await interaction.response.send_message(f'There is no music to clear!')
+    else:
+        await voice_channel.disconnect()
+        songList.clear()
+        await interaction.response.send_message(f'Music has been stopped & the queue has been cleared')
 
 # Pause Stream and Unpause Stream | Universal
 async def pause_yt(interaction: discord.Interaction):
     
     vcstatus = interaction.guild.voice_client
-    if vcstatus.is_playing():
+    if vcstatus is None:
+        await interaction.response.send_message('Nothing is currently playing')
+    elif vcstatus.is_playing():
         vcstatus.pause()
         await interaction.response.send_message('player is now paused')
     elif vcstatus.is_paused():
         vcstatus.resume()
         await interaction.response.send_message('player is now un-paused')
     else:
-        await interaction.response.send_message('Nothing is currently playing')
+        await interaction.response.send_message(f'Unknown error in PAUSE occured')
 
 # Move / Join command | Universal
 async def move(interaction: discord.Interaction):     
@@ -111,8 +118,6 @@ async def move(interaction: discord.Interaction):
                 return await voicechan.move_to(interaction.user.voice.channel)
 
             await interaction.user.voice.channel.connect()                          # Establish connection after move
-
-
 
         except Exception as err:                                                    # Display general catch-all error for debug purposes
             print(err)
@@ -214,9 +219,13 @@ async def skipSong(interaction: discord.Interaction, client: discord.Client):
     local = interaction.guild                                                                   # Establish server context
     voicechan = local.voice_client                                                              # Establish related voice channel
 
-    if voicechan is not None and voicechan.is_playing():
+    if voicechan is None:
+        await interaction.response.send_message(f'No current song playing to skip!')
+    elif voicechan.is_playing():
         await interaction.response.send_message(f'Skipping song')
         voicechan.stop()
+    else:
+        await interaction.response.send_message(f'Unknown error in SKIP occured')
     #print("After Skip") 
     #print(songList)
 
@@ -255,6 +264,7 @@ async def shuffleQueue(interaction: discord.Interaction, client: discord.Client)
             i = i+1
     else:
         await interaction.response.send_message(f'No active Queue to be shuffled!')
+
 
 
 
