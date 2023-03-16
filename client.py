@@ -152,6 +152,11 @@ async def encore(interaction: discord.Interaction):
 async def swap(interaction: discord.Interaction, indexone: int, indextwo: int):
     await mzb.swap(interaction,client,indexone,indextwo)
 
+# Display Song Informatiom
+@tree.command(name = 'displayinfo', description = 'Display information about the current song / video')
+async def swap(interaction: discord.Interaction):
+    await mzb.displayInfo(interaction,client)
+
 #   dropdown menu for character selection
 @tree.command(name = "rp_store", description = "store for rp game")
 async def rp_store(interaction: discord.Interaction):

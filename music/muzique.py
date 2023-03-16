@@ -60,6 +60,10 @@ class YouTube_linkobj(discord.PCMVolumeTransformer):
         self.title = data.get('title')
         self.url = data.get('url')
         self.songTime = data.get('duration')
+        self.songDescription = data.get('description')
+        self.uploaderID = data.get('uploader')
+        self.uploadDate = data.get('upload_date')
+        self.coverArt = data.get('thumbnail')
         self.startTime = 0
 
 
@@ -401,6 +405,63 @@ async def swap(interaction: discord.Interaction, client: discord.Client, indexon
     
     else:
         await interaction.response.send_message(' Queue is not large enough to swap anything! Or you have entered 0 for one of the indexes ')
+
+# Display Song Info
+async def displayInfo(interaction: discord.Interaction, client: discord.Client):
+    if currentSongObj != None:
+        logId = interaction.channel_id
+        logChannel = client.get_channel(logId)
+
+        calendar = ['January', 'February', 'March', 'April',
+                    'May', 'June', 'July', 'August',
+                    'September', 'October', 'November', 'December']
+        
+        uploadYear = currentSongObj.uploadDate[:4]
+        uploadMonth = currentSongObj.uploadDate[4:6]
+        uploadDay = currentSongObj.uploadDate[6:]
+
+        if uploadMonth == '01':
+            uploadMonth = calendar[0]
+        elif uploadMonth == '02':
+            uploadMonth = calendar[1]
+        elif uploadMonth == '03':
+            uploadMonth = calendar[2]
+        elif uploadMonth == '04':
+            uploadMonth = calendar[3]
+        elif uploadMonth == '05':
+            uploadMonth = calendar[4]
+        elif uploadMonth == '06':
+            uploadMonth = calendar[5]
+        elif uploadMonth == '07':
+            uploadMonth = calendar[6]
+        elif uploadMonth == '08':
+            uploadMonth = calendar[7]
+        elif uploadMonth == '09':
+            uploadMonth = calendar[8]
+        elif uploadMonth == '10':
+            uploadMonth = calendar[9]
+        elif uploadMonth == '11':
+            uploadMonth = calendar[10]
+        elif uploadMonth == '12':
+            uploadMonth = calendar[11]
+
+        totalMinutes = int(currentSongObj.songTime/60)
+        totalSeconds = currentSongObj.songTime % 60
+
+        await interaction.response.send_message('Current Song Information:')
+        await logChannel.send(f'1. Title: {currentSongObj.title}')
+        await logChannel.send(f'2. Song Duration: {totalMinutes} minutes, {totalSeconds} seconds')
+        await logChannel.send(f'3. Uploader: {currentSongObj.uploaderID}')
+        await logChannel.send(f'4. Upload Date: {uploadMonth} {uploadDay}, {uploadYear}')
+        await logChannel.send(f'5. Cover Art: {currentSongObj.coverArt}')
+        await logChannel.send(f'6. Description: {currentSongObj.songDescription}')
+    else:
+        await interaction.response.send_message('No song is currently playing to display information for!')
+
+
+
+
+
 
 # ============================================================================================================
 
