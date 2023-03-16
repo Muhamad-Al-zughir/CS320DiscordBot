@@ -50,6 +50,8 @@ currentSongObj = None
 # ** NOTE **
 # Class YouTube_linkobj below is borrowed from https://github.com/Rapptz/discord.py/blob/master/examples/basic_voice.py 
 # FFMPEG options for seeking found from https://stackoverflow.com/questions/7945747/how-can-you-only-extract-30-seconds-of-audio-using-ffmpeg
+#                                       https://stackoverflow.com/questions/65768920/how-to-make-a-discord-music-bot-to-recognize-the-end-of-song-or-where-it-is-play
+ #                                      https://stackoverflow.com/questions/69169805/audio-wont-play-on-bot-when-in-a-vc
 class YouTube_linkobj(discord.PCMVolumeTransformer):
     def __init__(self, source, *, data):
         super().__init__(source)
@@ -67,8 +69,8 @@ class YouTube_linkobj(discord.PCMVolumeTransformer):
         data = await loop.run_in_executor(None, lambda: yt_streamObj.extract_info(url, download=not stream))
 
         newTime = start
-        ff_params = {'options': f'-vn -ss {newTime}',
-             'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5'}
+        ff_params = {'options': '-vn', 
+                     'before_options': f'-ss {newTime} -reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5'}
         
 
         if 'entries' in data:
@@ -84,8 +86,8 @@ class YouTube_linkobj(discord.PCMVolumeTransformer):
         data = await loop.run_in_executor(None, lambda: yt_streamObj.extract_info(f"ytsearch:{search}", download=not stream))
         print(f'number of seconds to move is{start}')
         newTime = start
-        ff_params = {'options': f'-vn -ss {newTime}',
-             'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5'}
+        ff_params = {'options': '-vn', 
+                     'before_options': f'-ss {newTime} -reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5'}
 
         
         print(f'newtime is {newTime}')
@@ -230,9 +232,8 @@ def nextSong(interaction: discord.Interaction, client: discord.Client):         
         #           Need to access interaction from function while song is playing. Causes weird bugs if not used.
         #           Traceback error 4006 upon too many queue entries. Need threadSafe to access and loop safely.
         #           ** REMEMBER FOR ALL FURTHER FUNCTIONS ACCESSING FROM ASYNC FUNCTION ** 
-        
+
         # Professor Note: Used sources to familiarize with asyncio.run_coroutine_threadsafe:
-        #                 https://stackoverflow.com/questions/65768920/how-to-make-a-discord-music-bot-to-recognize-the-end-of-song-or-where-it-is-play
         #                 https://docs.python.org/3/library/asyncio-task.html#scheduling-from-other-threads
 
     else:                                                                                           # No songs in queue, disconnect
@@ -301,7 +302,7 @@ async def fastForwardSong(interaction: discord.Interaction, client: discord.Clie
     print("CURRNET SONG LISTS ARE")
     print(songList)
     print("Reached Fast Forward")                                                          # Establish related voice channel
-    if currentSongUrl !='':
+    if currentSongUrl !='':                               # NOte: ADD condition for Song Obj existing here, else display error                          
         print("If condition met in Fast forward")
         if (seconds > 0) and (seconds < currentSongObj.songTime):
             #currentSongTime = ((time.time()) - currentSongTime) + seconds
@@ -342,13 +343,46 @@ async def fastForwardSong(interaction: discord.Interaction, client: discord.Clie
             print("Music stopped. New fast forward song added")
             #currentSongTime = time.time()
             print("Time reset in Fast forward")
-            await interaction.response.send_message(f'Fast Forwarding..')
+            await interaction.response.send_message(f'Shifting Track to {seconds} seconds...')
         
         else:
             await interaction.response.send_message(
                 f'Invalid Number of Seconds Entered (check that the value is not 0, and the seconds does not exceed the duration of the song)') 
 
 
+# Repeating a track
+async def encore(interaction: discord.Interaction, client: discord.Client):
+    global currentSongObj
+    if currentSongObj != None and currentSongUrl!= '':
+        print("Passed if in encore")
+        if (currentSongUrl.startswith('https://open.spotify.com/')) :                               # Check if Spotify Link
+                track_id = currentSongUrl.split('/')[-1]                                                # Strip '/' and strings after '?'
+                head, sep, tail = track_id.partition('?')                                               # So we only have Spotify Song ID
+                track_id = head                                                                         # contained in "head" variable
+                
+                track_info = spotifyObj.track(track_id)                                                 # acquire track info given ID
+                track_name = track_info['name']                                                         # Acquire track name, parse for artist names
+                track_artists = [artist['name'] for artist in track_info['artists']]                    # In the event of multiple artists
+                artistsList = ' '.join(track_artists)
+                final = track_name + " by " + artistsList                                               # Join Title and Artists and perform YT search query
+                filename = await YouTube_linkobj.from_search(final, loop=client.loop, stream=True, start=0)
+
+                                                                                                        # Check if YouTube or Soundcloud Link
+                                                                                                        # Note: YouTube_linkobj shares functionality
+                                                                                                        #       with both YouTube and SoundCloud links
+                                                                                                        #       So we can share logic here 
+        elif ((currentSongUrl.startswith('https://www.youtube.com/')) or currentSongUrl.startswith('https://soundcloud.com/') ):   
+                print("Link...")
+                filename = await YouTube_linkobj.from_url(currentSongUrl, loop=client.loop, stream=True, start=0)
+            
+        else:                                                                                       # Else, perform General Search Query (YouTube)
+                print("Search...")
+                filename = await YouTube_linkobj.from_search(currentSongUrl, loop=client.loop, stream=True, start=0)
+        
+        songList.appendleft(filename)                                                               # Append new YouTube obj to top of the list
+        await interaction.response.send_message(f'{currentSongObj.title} queued for repeat ')
+    else:
+        await interaction.response.send_message(' No song is currently playing to repeat! ')
 
 
 

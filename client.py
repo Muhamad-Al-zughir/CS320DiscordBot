@@ -138,9 +138,15 @@ async def shuffleQueue(interaction: discord.Interaction):
     await mzb.shuffleQueue(interaction, client)
 
 # Fast Forward a Song
-@tree.command(name = 'shiftsong', description = 'Fast forward a song for a number of seconds')
+@tree.command(name = 'shiftsong', description = 'Shift a song forward or backward for a valid number of seconds')
 async def fastForwardSong(interaction: discord.Interaction, seconds: int):
     await mzb.fastForwardSong(interaction, client, seconds)
+
+# Repeat a song
+@tree.command(name = 'encore', description = 'Repeat the currently playing song')
+async def encore(interaction: discord.Interaction):
+    await mzb.encore(interaction,client)
+
 
 #   dropdown menu for character selection
 @tree.command(name = "rp_store", description = "store for rp game")
