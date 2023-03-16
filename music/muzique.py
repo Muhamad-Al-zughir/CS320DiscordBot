@@ -15,6 +15,7 @@ import ffmpeg
 import spotipy
 import random
 import time
+import lyricsgenius
 from spotipy.oauth2 import SpotifyClientCredentials
 
 # Loads all the content in the .env folder
@@ -40,6 +41,9 @@ spotify_client_secret = os.getenv('SPOTIFY_CLIENT_SECRET')
 # Spotify Client Setup
 spotifyCredentials = SpotifyClientCredentials(client_id=spotify_client_id, client_secret=spotify_client_secret)
 spotifyObj = spotipy.Spotify(client_credentials_manager=spotifyCredentials)
+
+# Genius API for Lyrics Grabbing 
+genius_API = os.getenv('GENIUS_API')
 
 # Song List for Queuing
 songList = deque()
@@ -458,6 +462,50 @@ async def displayInfo(interaction: discord.Interaction, client: discord.Client):
     else:
         await interaction.response.send_message('No song is currently playing to display information for!')
 
+
+# Display Lyrics for a given song
+async def displayLyrics(interaction: discord.Interaction, client: discord.Client):
+    if currentSongObj is None:
+        await interaction.response.send_message('There is no currently playing song to display lyrics for')
+    else:
+        print("First lyrics condition met")
+        print(currentSongObj.title)                                 # Acquire current song title (likely from youtube unless its from soundcloud)
+        geniusClient = lyricsgenius.Genius(genius_API)              # Establish Genius client with API key from .env
+        filteredTitle = currentSongObj.title                        # New Title variable for filtering stylist title stuff like '[' and '(' 
+        
+        print(filteredTitle)                                        # Debug Prints scattered for Dev for tracing errors
+        print(type(filteredTitle))
+        filteredTitle = filteredTitle.split('[')[0]                 # Filter stylistic things from title
+        filteredTitle = filteredTitle.split('(')[0]
+        print(filteredTitle)
+        
+        geniusSong = geniusClient.search_song(filteredTitle)        # Search with new filtered title ** Note: THIS IS NOT PERFECTLY WORKING, GENIUS API SEARCH IS NOT STELLAR ** 
+        logId = interaction.channel_id                              # Channel ID acquisition to send lyrics to
+        logChannel = client.get_channel(logId)
+        print("Lyrics search has been conducted")
+
+        if geniusSong is not None:                                  # song has been found from Genius website
+            print("Second lyrics condition met")
+            await interaction.response.send_message('Lyrics for this song have been found:')
+            print({geniusSong.lyrics})
+            geniusLyrics = geniusSong.lyrics
+
+            if len(geniusLyrics) < 2000:                            # Due to discord limitations, need to print lyrics 2000 at a time
+                await logChannel.send(geniusLyrics)                 # If less than 2000, send immediately
+            else:
+                newLyrics = ''                                      # Else, declare new variable to track 2000 chars at a tim
+                while len(geniusLyrics) > 2000:                     # Iterate 2000 at a time while geniusLyrics is greater than 2000 **
+                    
+                    newLyrics = geniusLyrics[:2000]                 # string slicing to grab 2000 and send
+                    await logChannel.send(newLyrics)
+                    geniusLyrics = geniusLyrics[2000:]              # genius lyrics updated here                                     **
+            
+            
+            await logChannel.send(geniusLyrics)                     # Send remainder of lyrics
+            
+        
+        else:
+            await interaction.response.send_message('Lyrics for this song could not be found')
 
 
 

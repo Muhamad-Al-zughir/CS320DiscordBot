@@ -157,6 +157,11 @@ async def swap(interaction: discord.Interaction, indexone: int, indextwo: int):
 async def swap(interaction: discord.Interaction):
     await mzb.displayInfo(interaction,client)
 
+# Display Song Lyrics
+@tree.command(name = 'displaylyrics', description = 'Display Lyrics for the current playing song')
+async def displayLyrics(interaction: discord.Interaction):
+    await mzb.displayLyrics(interaction,client)
+
 #   dropdown menu for character selection
 @tree.command(name = "rp_store", description = "store for rp game")
 async def rp_store(interaction: discord.Interaction):
