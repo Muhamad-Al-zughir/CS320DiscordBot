@@ -384,7 +384,23 @@ async def encore(interaction: discord.Interaction, client: discord.Client):
     else:
         await interaction.response.send_message(' No song is currently playing to repeat! ')
 
+# Shift Two Song's indexes
+async def swap(interaction: discord.Interaction, client: discord.Client, indexone: int, indextwo: int):
+    if (len(songList) > 1) and indexone !=0 and indextwo !=0:
+        songList[indexone-1], songList[indextwo-1] = songList[indextwo-1], songList[indexone-1]
+        await interaction.response.send_message(f'Index {indexone} and Index {indextwo} are now swapped! Current Index is now:')
 
+        logId = interaction.channel_id
+        logChannel = client.get_channel(logId)
+        i = 1
+        for songs in songList:
+            display = songs.title
+            display = str(i) + ": " + display
+            await logChannel.send(display)
+            i = i+1
+    
+    else:
+        await interaction.response.send_message(' Queue is not large enough to swap anything! Or you have entered 0 for one of the indexes ')
 
 # ============================================================================================================
 

@@ -147,6 +147,10 @@ async def fastForwardSong(interaction: discord.Interaction, seconds: int):
 async def encore(interaction: discord.Interaction):
     await mzb.encore(interaction,client)
 
+# Swap Two Indexes for a Song queue
+@tree.command(name = 'swap', description = 'Swap two indexes of a queue')
+async def swap(interaction: discord.Interaction, indexone: int, indextwo: int):
+    await mzb.swap(interaction,client,indexone,indextwo)
 
 #   dropdown menu for character selection
 @tree.command(name = "rp_store", description = "store for rp game")
