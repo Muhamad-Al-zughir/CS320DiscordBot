@@ -137,6 +137,11 @@ async def displayQueue(interaction: discord.Interaction):
 async def shuffleQueue(interaction: discord.Interaction):
     await mzb.shuffleQueue(interaction, client)
 
+# Fast Forward a Song
+@tree.command(name = 'shiftsong', description = 'Fast forward a song for a number of seconds')
+async def fastForwardSong(interaction: discord.Interaction, seconds: int):
+    await mzb.fastForwardSong(interaction, client, seconds)
+
 #   dropdown menu for character selection
 @tree.command(name = "rp_store", description = "store for rp game")
 async def rp_store(interaction: discord.Interaction):
