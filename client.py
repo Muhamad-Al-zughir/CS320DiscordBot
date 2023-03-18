@@ -10,12 +10,16 @@ import youtube_dl
 import ffmpeg
 import json
 import asyncio
+import spotipy
+from spotipy.oauth2 import SpotifyClientCredentials
+
 # Add your imports below here, if in a folder, use a dot instead of a slash
 import botgame.game as botgame
 import libgen.lib as libby
 import basic.methods as bm # basic methods contains functions that we will use a lot.
 import scheduler.schedule as schedule
 import music.muzique as mzb
+import mathcalc.math as calc
 
 # setting up the needed intents
 intents = discord.Intents.all()
@@ -98,15 +102,15 @@ async def add_event_cmd(interaction: discord.Interaction, profile_name: str, eve
 async def delete_event_cmd(interaction: discord.Interaction, profile_name: str, event_name: str):
     await schedule.delete_event(interaction, client, profile_name, event_name)
 
-# Bot will join YouTube channel
+# Bot will join Discord Voice channel
 @tree.command(name = 'move', description = 'Bot will join your voice channel')
 async def move(interaction: discord.Interaction):     
     await mzb.move(interaction)
 
-# Streams from a YouTube Link
-@tree.command(name = 'play_yt', description = 'Bot will play from a valid YouTube Link')
-async def play_youtube(interaction: discord.Interaction, url:str):
-    await mzb.play_youtube(interaction,url,client)
+# Streams from a YouTube, SoundCloud, or Spotify Link
+@tree.command(name = 'play', description = 'Enter a valid YouTube, SoundCloud, or Spotify Link')
+async def play(interaction: discord.Interaction, url:str):
+    await mzb.play(interaction,url,client)
 
 # End Stream
 @tree.command(name = 'clear', description = 'Bot will clear all playing music')
@@ -117,6 +121,22 @@ async def clear(interaction: discord.Interaction):
 @tree.command(name = 'pause-unpause', description = 'Bot will pause the currently playing song or unpause if one was being played')
 async def pause_yt(interaction: discord.Interaction):
     await mzb.pause_yt(interaction)
+
+# Skip currently playing song
+@tree.command(name = 'skip', description = 'Bot will skip the currently playing song')
+async def skipSong(interaction: discord.Interaction):
+    await mzb.skipSong(interaction, client)
+
+# Display current queue 
+@tree.command(name = 'queue', description = 'Display the current active music queue')
+async def displayQueue(interaction: discord.Interaction):
+    await mzb.displayQueue(interaction, client)
+
+# Shuffle Current Queue
+@tree.command(name = 'shuffle', description = 'Shuffle and display current active music queue')
+async def shuffleQueue(interaction: discord.Interaction):
+    await mzb.shuffleQueue(interaction, client)
+
 #   dropdown menu for character selection
 @tree.command(name = "rp_store", description = "store for rp game")
 async def rp_store(interaction: discord.Interaction):
@@ -146,6 +166,34 @@ async def rp_challenge_calling(interaction: discord.Interaction):
 async def rp_update_roles(interaction: discord.Interaction):
     await botgame.rp_update_roles_function(interaction)
  #  ===================================================
+
+#   Shut down Bot safely
+@tree.command(name = "shutdown", description = "shuts down the bot SAFELY")
+async def shutdown(interaction: discord.Interaction):
+    await interaction.response.send_message(f'Shutting down bot. Goodbye!')
+    await client.close()
+#   ===================================================
+
+ # calculate simple equation
+@tree.command(name = "equation", description= "Simple equation")
+@app_commands.describe(simple = "Please enter a simple equation with each spaces in between")
+async def equation(interaction: discord.Interaction, simple: str):
+    equation = list(simple.split(" "))
+    if(reason := calc.simpleCheack(equation)) != True:
+        await interaction.response.send_message("The equation sent in not a valid simple equation. Try again.\nReason: " + reason)
+    else:
+        await interaction.response.send_message(calc.checker(equation))
+        
+ # calculate algebra equation, needs specification of what to do
+@tree.command(name = "algebra", description = "Algebra calculator with several options")
+@app_commands.describe(equation = "Please enter an algebra equation with spaces in between", answer = "Enter the following: (slope) - slope intercept form, ")
+async def algebra(interaction: discord.Interaction, equation: str, answer: str):
+    equation = list(equation.split(" "))
+    result = (calc.algebra(equation, answer))
+    slope = result[0]
+    intercept = result[1]
+    await interaction.response.send_message("The slope of the equation is " + str(slope) + ".\nThe y-intercept of the equation is " + str(intercept))
+ 
 
 # client event to take place whenever the client joins a server.
 # it will create a new json file in the scheduler directory to store the data associated with this newly joined guild
