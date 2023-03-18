@@ -2,11 +2,18 @@ from discord.ui import Button
 from discord.ui import View
 from discord.ui import Select
 from discord.utils import get
+from discord import Member
+from apscheduler.schedulers.blocking import AsyncIOScheduler
 import discord
+import random
+
+# just seeds random
+random.seed(2)
 
 #       ***************************************************************************************************
 #       Notes:
 #       data of all charcter will changeed to json in the future for now global for array list of characters
+#       other note needs to download pip install apscheduler to run schedled events
 #       ****************************************************************************************************
 
 #   ============
@@ -20,6 +27,9 @@ class Player:
         self.strength = 0 
         self.defense = 0  
         self.inventory = []
+        self.equipped = []
+        self.msgActivity =0# could be its own array
+        self.inActive_warningS =0# could be its own array
         
     def showSelf(self):
         return (self.name + "\n" 
@@ -42,32 +52,55 @@ class Player:
     # def sellToStore(self):
     #     self.inventory[i].name = someFunction()
     #     self.sell(item)
-                
+    def getName(self):
+        return self.name
+    def getUserID(self):
+        return self.userID
+
+    def getStrength(self):
+        return self.strength
+    def getDefense(self):
+        return self.defense
     def getPg(self):
         return self.pg
     
     def getInventorySize(self):
         return len(self.inventory)
+    def getEquippedSize(self):
+        return len(self.equipped)
+    def getinActive_warningS(self):
+        return self.inActive_warningS
+    def getItem(self, location):
+        return self.inventory[location]
+    def getEquippedItem(self, location):
+        return self.equipped[location]
+    def getmsgAct(self):
+        return self.msgActivity
     
+    def getUserID(self):
+        return self.userID
+ 
+    def clearMsgHist(self):
+        self.msgActivity = 0
+    
+    def addtoIA(self):#add to inactivty
+        self.inActive_warningS = self.inActive_warningS + 1
     def buy(self, cost):
         self.pg = self.pg - cost
-        
     def sell(self, item):
         self.pg = self.pg + item.pg
         self.inventory.remove(item)
-    
     def gainPg(self, gain):
+        
         self.pg = self.pg + gain
-                
     def addItem(self, item):
         self.inventory.append(item)
-        
-    def boostAttack(self):
-        self.strength = self.strength + 1
-    
+    def equipItem(self, item):
+        self.equipped.append(item)
+    def boostAttack(self, boost):
+        self.strength = self.strength + boost
     def boostDefense(self):
         self.defense = self.defense + 1
-    
     def boostHP(self):
         self.hitpoints = self.hitpoints + 1
 #   =======================================
@@ -128,6 +161,10 @@ class Item:
         return self.name
     def showItemAttributes(self):
         return "Strength: " + str(self.strength) + "\nDefense: " + str(self.defense) 
+    def getStrengthItem(self):
+        return self.strength
+    def getDefenseItem(self):
+        return self.defense
 #   ================================================================================
 
 #   ====================
@@ -146,7 +183,7 @@ class AllPlayersData():
                 return self.playerList[i]
         return 0
             
-#   search for player
+#   search for player return 1 if exists else 0 
     def searchforPlayer(self, discord_identification):
         if len(self.playerList) == 0:
             return 0
@@ -154,6 +191,21 @@ class AllPlayersData():
             if(self.playerList[i].userID == discord_identification):
                 return 1
         return 0
+    
+    def deletePlayer(self, discord_identification):
+#       search for player return -1 not found 
+        if len(self.playerList) == 0:
+            return -1
+#       doesnt exist else delete player and return 0 
+        for i in range(0, len(self.playerList)):
+            if(self.playerList[i].userID == discord_identification):
+                self.playerList.pop(i)
+                return 0
+        return -1
+
+#   return player in spot loc
+    def getPlayerat_loc(self,loc):
+        return self.playerList[loc]        
             
 #   add player to list
     def addplayertoList(self, player):
@@ -161,7 +213,7 @@ class AllPlayersData():
 
     def getAllPlayersDataSize(self):
         return len(self.playerList)
-#   ===============================
+#   ===============================      
 
 # Serverdata creation
 serverPlayers = AllPlayersData()
@@ -415,7 +467,7 @@ async def rp_show_self(interaction: discord.Interaction):
         await interaction.response.send_message("character not made yet for " + interaction.user.name)
         return
 
-#   inputs from character
+#   inputs from character 
     name_rp = rp_character.name
     statsHP = rp_character.hitpoints
     statsAtk = rp_character.strength
@@ -617,7 +669,240 @@ async def rp_update_roles_function(interaction: discord.Interaction):
         
     await interaction.response.send_message("kill me soon update ended")
 #   ===========================================================
+
+#   try to add to allplayerslist 
+def tryInsertADPList(serverPlayersList, a_userName, a_userID):
+#       return 1 on fail
+        if serverPlayersList.searchforPlayer(a_userID) == 1:
+            return 1
+#       return 0
+        else:
+            player= Player(a_userName, a_userID)
+            serverPlayersList.addplayertoList(player)
+            return 0
         
+#   return 1 if valid
+#   return 0 if invalid
+#   return 2 if same person for specail message
+#   might put stricter conditions later so that roles cant farm lower roles
+def fight_valid(serverPlayersList, userID1, userID2):
+    if userID1 == userID2:
+        return 2
+    return (serverPlayersList.searchforPlayer(userID1) == 1 and 1 == serverPlayersList.searchforPlayer(userID2))
+
+#   favors challengee (challenger moves second)
+#   return 0 when challenger wins 
+#   returns 1 when challenger loses
+def fight_rpg_sim(challengerHP, challengerAttk, challengeeHP, challengeeAttk):
+
+#   if same char
+    if ((challengerHP == challengeeHP) and (challengeeAttk == challengerAttk)):
+#       how to generate random number return 0 or 1 half the time 
+        return random.random()%2
+     
+#   simulate fight
+    while (True):
+        challengerHP = challengerHP - challengeeAttk
+        if(challengerHP <= 0 ):
+            return 0
+        challengeeHP = challengeeHP - challengerAttk
+        if(challengeeHP <= 0 ):
+            return 1
+
+def get_totalAttack_char(player1):
+#   if no weapon search for weapon 
+    if player1.getEquippedSize() == 0 and player1.getInventorySize() == 0:
+        return player1.getStrength()
+        
+    if player1.getEquippedSize() == 0 and player1.getInventorySize() != 0:
+        defaultAttackItem = 0
+#       search for default item and swap weaker items for it then return total attack
+        for i in range(0, player1.getInventorySize()):
+            item = player1.getItem(i)
+            if(item.getStrengthItem() > defaultAttackItem):
+                defaultAttackItem = item.getStrengthItem()     
+        return (player1.getStrength()+ defaultAttackItem)
+
+    if player1.getEquippedSize() != 0:
+#       go through item list and add up all items to total attack 
+        totalAttack = 0
+        weaponsCarried = player1.getEquippedSize()
+        
+#       penalty for carrying more than 5 items no damage increase
+        if weaponsCarried >= 5:
+            return player1.getStrength()
+        
+        for i in range(0, weaponsCarried):
+            item = player1.getEquippedItem(i)
+            totalAttack = totalAttack + item.getStrengthItem()
+
+#       carry penalty 
+        # carryPenalty = 1-((1-weaponsCarried)(.25))
+        # floatingAttack = totalAttack*carryPenalty
+        return player1.getStrength() + (totalAttack - weaponsCarried*5)
+
+def playersColor_rpg(playerName):
+    letterQuan = 0#283
+    for i in range(len(playerName)):
+        letterQuan = letterQuan + ord(playerName[i])
+    trueColor = letterQuan % 6 
+    
+#   options
+#   AQUA
+    if  trueColor == 0:
+        return 1752220
+#   DARK_GREEN	
+    if  trueColor == 1:
+        return 2067276
+#   DARK_PURPLE	
+    if  trueColor == 2:
+        return 7419530
+#   GOLD
+    if  trueColor == 3:
+        return 15844367
+#   RED
+    if  trueColor == 4:
+        return 15158332
+#   NAVY	
+    if  trueColor == 5:
+        return 15158332
+#   BLURPLe
+    if  trueColor == 6:
+        return 15158332
+        
+#  returns 0 on succsss
+#  returns 1 on failure no messages
+def clearMsgActivity(player_obj):
+    
+    if player_obj.getmsgAct() == 0:
+        return 1
+    else:
+        player_obj.clearMsgHist()
+        return 0
+    
+# return 0 if added to inacitivty count
+# return 1 if deleted
+def manageInactivePlayers(player_obj):
+        
+    if player_obj.getinActive_warningS() == 0:
+        player_obj.addtoIA()
+        return 0
+    else:
+        # delete character function plus messaging and sending stuff 
+        return 1 
+    
+def deletekickmsg_rpg(interaction: discord.Interaction, serverPlayers , rpg_userID):
+#   calls delete char: remove from list 
+    if serverPlayers.manageInactivePlayers(rpg_userID) == 0:
+            user = interaction.guild.get_member(rpg_userID)
+            #send mesage to discord aka the one who called the interaction
+            interaction.send(embed=getDeathEmbed())
+            
+            #send message to kicked person
+            user.send(embed=getDeathEmbed(112233))
+            user.kick(reason=None)
+#   send message to killed bot
+    interaction.send("failed to delete: " + rpg_userID)
+ 
+#  return -1 list empty 
+#  return number of people deleted 
+#  return 0 success
+def cleanup_msgActivity_AllUsers(interaction: discord.Interaction, ServerList):
+    # if empty return 0 
+    i = serverPlayers.getAllPlayersDataSize() 
+    if i == 0:
+        return -1
+    
+    noInactivePlayers  = 0 
+    
+    for i in  range(serverPlayers.getAllPlayersDataSize()):
+        tempPlayer = serverPlayers.getPlayerat_loc(i)
+        userID = tempPlayer.getUserID()
+#       if 1 ie empty
+        if clearMsgActivity(tempPlayer): 
+#           add to total deleted players if plater deleted/kicked and send msg to player 
+            if manageInactivePlayers(tempPlayer):
+                deletekickmsg_rpg(interaction, serverPlayers , userID)
+                noInactivePlayers = noInactivePlayers + 1
+    
+    return noInactivePlayers
+
+# could later mod to send stats of char at time of death 
+def getDeathEmbed(color_num):
+    embed=discord.Embed(title="Due to inactivity you have been killed off and kicked from server", color=color_num)
+    embed.set_image()#sqaure
+    return embed
+
+#send message
+def death_message_rpg():
+    embed=discord.Embed(title="left to a worse place...",description="comraded blah")
+    embed.set_image()#skull
+    return embed
+
+
+#  clears message on time 00::00::00 call it to act on this time 
+#  calls clearMsgActivity_AllUsers()
+async def clearDaily_rpg(interaction: discord.Interaction):
+#  The cron trigger works w/ wall clock
+#  apscheduler.triggers.cron
+#  schedule jobs to be executed in the futur
+#   initializing scheduler
+    scheduler =  AsyncIOScheduler()# comes from apscheduler 
+
+#   sends so add job and set the time to 00:00:00/  pass in function to do as first arguemnet
+    scheduler.add_job(cleanup_msgActivity_AllUsers(interaction, serverPlayers), 'cron', hour=0, minute=00) 
+    
+#   run scheduler
+    scheduler.start()
+
+
+# #have to fix roles in python demotiion and promotion
+
+# #so how to get enemies id ok we just cheat grab  thier id and send it to that
+def sendChallengetoOpponent(interaction: discord.Interaction, rpg_userID, nameChallenger):
+    user = interaction.guild.get_member(rpg_userID)
+#   create a view and some buttons to accept or reject  maybe time period or something and dusaper or diable afterwards
+    view = discord.ui.View(timeout=None)
+    buttonYes =  discord.ui.Button(label="Yes")
+    buttonNo =  discord.ui.Button(label="No")
+    buttonNo.callback = no_callback
+    buttonYes.callback = yes_callback
+    
+    view.add_item(buttonYes)
+    view.add_item(buttonNo)
+    
+    embed=discord.Embed(title="Challenged by " + nameChallenger)
+    embed.set_image()#swords
+    
+    
+    #make button to time out burnout daammit 
+    user.send(view=view, embed=embed)
+#   return response 
+
+#use callback to sim battle i spose 
+def yes_callback(interaction):
+    print("yes")
+#send nothing ithink
+def no_callback(interaction):
+    print("no")
+
+# Johnsons
+# Construction Safety Gear
+# TrackSuit 
+# 
+# Boost Defense// D1
+
+# Ring
+# AngelWings //gives priority Speed D15 
+# Halo	     // covers user in a holy light D 20
+# Boost Defense++// D5
+
+# Jean
+# Hammer Tool//Atk 5
+# Sword // Atk 7
+# Stick// Atk */
+# Boost Attack// D1
+
 # testing and creationo of chracter, store, data list, item
 # # player creation
 # player = Player("bob")
