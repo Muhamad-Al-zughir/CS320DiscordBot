@@ -1,4 +1,4 @@
 .env
 __pycache__
 .json
-.pytest_cache
+*cache*
