@@ -9,6 +9,13 @@ from datetime import time
 MAX_NUM_PROFILES = 100
 MAX_NUM_EVENTS = 40
 
+# Profile class will store all the information regarding a particular class
+class Profile:
+    def __init__(self, name, notes, events):
+        self.name = name
+        self.notes = notes
+        self.events = events
+
 # Event class will store all of the information regarding a particular event. 
 class Event:
     def __init__(self, name, notes, starthour, endhour, startmin, endmin, day):
@@ -167,11 +174,10 @@ async def add_profile(interaction: discord.Interaction, name: str, notes: str):
     if(len(list_of_profiles) >= MAX_NUM_PROFILES):
         await bm.send_msg(interaction, f"The max profile limit of {MAX_NUM_PROFILES} has been reached! Please delete some profiles to be able to create a new one.")
         return
-    
-    # Creating the profile as a dictionary, no events are on it by default
-    profile = {"name":name, "notes":notes, "events":[]}
-    
-    list_of_profiles.append(profile)
+
+    # Creating profile, then appending it as a dictionary
+    profile = Profile(name, notes, [])
+    list_of_profiles.append(profile.__dict__)
 
     # Sorting the list of events based on starting hour and starting minute (hour is of course of a higher priority than minute)
     list_of_profiles.sort(key = lambda x:x["name"])
