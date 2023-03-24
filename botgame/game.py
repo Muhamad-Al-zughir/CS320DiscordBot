@@ -3,7 +3,7 @@ from discord.ui import View
 from discord.ui import Select
 from discord.utils import get
 from discord import Member
-from apscheduler.schedulers.blocking import AsyncIOScheduler
+# from apscheduler.schedulers.blocking import AsyncIOScheduler
 import discord
 import random
 
@@ -245,7 +245,7 @@ class DropdownMenu(Select):
             ]
         )
 #       =
-        
+
 #   callback function
     async def callback(self, interaction: discord.Integration):
 
