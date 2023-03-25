@@ -47,7 +47,23 @@ class Player:
             for i in range(0, len(self.inventory)):
                 print(self.inventory[i].showItem())
                 print(self.inventory[i].showItemAttributes())
+                
+    def searchPlayerInventory(self,itemName):
+        if len(self.inventory) == 0:
+            return 0
+        else:
+            found = 0 
+            for i in range(0, len(self.inventory)):
+                if(self.inventory[i].name == itemName):
+                    found = 1
+            return found
 
+    def returnPlayerInventory(self,itemName):
+        for i in range(0, len(self.inventory)):
+            if(self.inventory[i].name == itemName):
+                itemObj =  self.inventory[i]
+        return itemObj
+        
 #   yeah fix it later sell but buy works idk m8                
     # def sellToStore(self):
     #     self.inventory[i].name = someFunction()
@@ -376,7 +392,7 @@ class StoreItem_Button(Button):
             user_rp_char.addItem(item)
             response_to_Buyer = "You have successfully bought " + self.label
     
-        if self.label == "streetware" and (user_rp_char.getPg() >= 30):
+        elif self.label == "streetware" and (user_rp_char.getPg() >= 30):
             item = Item("streetware", 10, 30 , 30)
             user_rp_char.buy(30)
             user_rp_char.addItem(item)
@@ -400,7 +416,72 @@ class StoreItem_Button(Button):
     #   send to discord embed 
         await interaction.response.send_message(response_to_Buyer + " " + interaction.user.name)
 #   ============================================================================================
- 
+
+#   just to help organize
+def storeItemsresponses(nameofThing, buyersWalletSize):
+#       else check all item options as well as if user has enough gold 
+    if nameofThing == "stick" and (buyersWalletSize  >= 1):
+            response_to_Buyer = "You have successfully bought " + nameofThing
+            
+    elif nameofThing == "card" and (buyersWalletSize >= 5):
+            response_to_Buyer = "You have successfully bought " + nameofThing
+    
+    elif nameofThing == "streetware" and (buyersWalletSize >= 30):
+            response_to_Buyer = "You have successfully bought " + nameofThing
+               
+    elif nameofThing == "pickaxe"  and (buyersWalletSize>= 15):
+            response_to_Buyer = "You have successfully bought " + nameofThing
+                
+    elif nameofThing == "angel wings"  and (buyersWalletSize >= 50):
+            response_to_Buyer = "You have successfully bought " + nameofThing
+            
+    else:
+        response_to_Buyer = "You are a broke and failed to buy a " + nameofThing
+            
+    return response_to_Buyer
+
+def storeItemsInteractionWithBuyer(player, nameofThing):
+#   do stuff to buyer 
+    if nameofThing == "stick" and (player.getPg()  >= 1):
+        item = Item("stick", 1, 0, 1)
+        player.buy(1)
+        player.addItem(item)
+            
+    elif nameofThing == "card" and (player.getPg() >= 5):
+        item = Item("card", 1, 2, 5)
+        player.buy(5)
+        player.addItem(item)
+    
+    elif nameofThing== "streetware" and (player.getPg() >= 30):
+        item = Item("streetware", 10, 30 , 30)
+        player.buy(30)
+        player.addItem(item)
+               
+    elif nameofThing == "pickaxe"  and (player.getPg() >= 15):
+        item = Item("pickaxe", 10,0 ,15)
+        player.buy(15)
+        player.addItem(item)
+                
+    elif nameofThing == "angel wings"  and (player.getPg() >= 50):
+        item = Item("angel wings", 25, 25, 50)
+        player.buy(50)
+        player.addItem(item)
+
+# ok searches for item for a specific person
+def lookForItemId_rpg(serverPlayers, userID, itemName):
+    if(serverPlayers.searchforPlayer(userID) == 0):
+        return 0
+    else:
+        player = serverPlayers.returnPlayer(userID)
+        return player.searchPlayerInventory(itemName) 
+         
+    
+# ok searches for item for a specific person
+def retrieveItemfromId_rpg(serverPlayers, userID, itemName):
+    player = serverPlayers.returnPlayer(userID)
+    if(player.searchPlayerInventory(itemName) == 1):
+        return player.returnPlayerInventory(itemName)
+
 #  =====================
 #  show create character 
 async def rp_character_create(interaction: discord.Integration):
@@ -698,7 +779,7 @@ def fight_rpg_sim(challengerHP, challengerAttk, challengeeHP, challengeeAttk):
 #   if same char
     if ((challengerHP == challengeeHP) and (challengeeAttk == challengerAttk)):
 #       how to generate random number return 0 or 1 half the time 
-        return random.random()%2
+        return random.randint(0, 1)
      
 #   simulate fight
     while (True):
@@ -886,6 +967,19 @@ def yes_callback(interaction):
 def no_callback(interaction):
     print("no")
 
+def fight_rpg(serverPlayers, player1, player2):
+    serverPlayers  
+    player1
+    player2
+#   call from player obj 
+#   call from item exists
+#   check they exist 
+#   call from get_totalAttack_char
+#   so test waepon exists and grab it 
+#   then call fight sim and insert bariable 
+#   return -1 if error in this case no way for it toi work so default to errro for now
+    return -1
+
 # Johnsons
 # Construction Safety Gear
 # TrackSuit 
@@ -927,3 +1021,69 @@ def no_callback(interaction):
 # # store function
 # store()
 # print("\nmade it to end\n")
+
+#   just to help organize
+def storeItemsresponses(nameofThing, buyersWalletSize):
+#       else check all item options as well as if user has enough gold 
+    if nameofThing == "stick" and (buyersWalletSize  >= 1):
+            response_to_Buyer = "You have successfully bought " + nameofThing
+            
+    elif nameofThing == "card" and (buyersWalletSize >= 5):
+            response_to_Buyer = "You have successfully bought " + nameofThing
+    
+    elif nameofThing == "streetware" and (buyersWalletSize >= 30):
+            response_to_Buyer = "You have successfully bought " + nameofThing
+               
+    elif nameofThing == "pickaxe"  and (buyersWalletSize>= 15):
+            response_to_Buyer = "You have successfully bought " + nameofThing
+                
+    elif nameofThing == "angel wings"  and (buyersWalletSize >= 50):
+            response_to_Buyer = "You have successfully bought " + nameofThing
+            
+    else:
+        response_to_Buyer = "You are a broke and failed to buy a " + nameofThing
+            
+    return response_to_Buyer
+
+def storeItemsInteractionWithBuyer(player, nameofThing):
+#   do stuff to buyer 
+    if nameofThing == "stick" and (player.getPg()  >= 1):
+        item = Item("stick", 1, 0, 1)
+        player.buy(1)
+        player.addItem(item)
+            
+    elif nameofThing == "card" and (player.getPg() >= 5):
+        item = Item("card", 1, 2, 5)
+        player.buy(5)
+        player.addItem(item)
+    
+    elif nameofThing== "streetware" and (player.getPg() >= 30):
+        item = Item("streetware", 10, 30 , 30)
+        player.buy(30)
+        player.addItem(item)
+               
+    elif nameofThing == "pickaxe"  and (player.getPg() >= 15):
+        item = Item("pickaxe", 10,0 ,15)
+        player.buy(15)
+        player.addItem(item)
+                
+    elif nameofThing == "angel wings"  and (player.getPg() >= 50):
+        item = Item("angel wings", 25, 25, 50)
+        player.buy(50)
+        player.addItem(item)
+
+# ok searches for item for a specific person
+def lookForItemId_rpg(serverPlayers, userID, itemName):
+    if(serverPlayers.searchforPlayer(userID) == 0):
+        return 0
+    else:
+        player = serverPlayers.returnPlayer(userID)
+        return player.searchPlayerInventory(itemName) 
+         
+    
+# ok searches for item for a specific person
+def retrieveItemfromId_rpg(serverPlayers, userID, itemName):
+    player = serverPlayers.returnPlayer(userID)
+    if(player.searchPlayerInventory(itemName) == 1):
+        return player.returnPlayerInventory(itemName)
+
