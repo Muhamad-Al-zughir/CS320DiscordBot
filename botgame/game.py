@@ -1071,6 +1071,8 @@ def storeItemsInteractionWithBuyer(player, nameofThing):
         item = Item("angel wings", 25, 25, 50)
         player.buy(50)
         player.addItem(item)
+    else:
+        raise ValueError("Invalid Item")
 
 # ok searches for item for a specific person
 def lookForItemId_rpg(serverPlayers, userID, itemName):
