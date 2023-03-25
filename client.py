@@ -154,7 +154,7 @@ async def swap(interaction: discord.Interaction, indexone: int, indextwo: int):
 
 # Display Song Informatiom
 @tree.command(name = 'displayinfo', description = 'Display information about the current song / video')
-async def swap(interaction: discord.Interaction):
+async def displayInfo(interaction: discord.Interaction):
     await mzb.displayInfo(interaction,client)
 
 # Display Song Lyrics
