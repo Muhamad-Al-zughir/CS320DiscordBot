@@ -195,12 +195,9 @@ async def delete_profile(interaction: discord.Interaction, profile_name: str):
         await bm.send_msg(interaction, "The profile you want to access does not exist!")
         return
     
-    # looping through the list of profiles, and checking each of the profile names to see if a profile exists with the same name as the given name
-    for profile in list_of_profiles:
-        if(profile["name"] == profile_name):
-            list_of_profiles.remove(profile)
-
-            dump_list_of_profiles(path, list_of_profiles)
+    list_of_profiles = delete_profile_from_list(list_of_profiles)
+            
+    dump_list_of_profiles(path, list_of_profiles)
     
     await bm.send_msg(interaction, "Profile successfully deleted!")
     return
@@ -214,28 +211,12 @@ async def add_event(interaction: discord.Interaction, profile_name: str, event_n
         await bm.send_msg(interaction, "The profile you want to access does not exist!")
         return
     
-    # Checking if the given time values are within the needed bounds
-    if(within_bounds(start_hour, 0, 23) == 0):
-        await bm.send_msg(interaction, "Start hour time must be within 0 and 23 inclusive!")
-        return
-    elif(within_bounds(start_min, 0, 59) == 0):
-        await bm.send_msg(interaction, "Start minute time must be within 0 and 59 inclusive!")
-        return
-    elif(within_bounds(end_hour, 0, 23) == 0):
-        await bm.send_msg(interaction, "End hour time must be within 0 and 23 inclusive!")
-        return
-    elif(within_bounds(end_min, 0, 59) == 0):
-        await bm.send_msg(interaction, "End minute time must be within 0 and 59 inclusive!")
-        return
-    elif(within_bounds(day, 1, 7) == 0):
-        await bm.send_msg(interaction, "Day value must be within 1 and 7 inclusive!")
+    is_valid_event = valid_event(start_hour, start_min, end_hour, end_min)
+
+    if(is_valid_event != 1):
+        await bm.send_msg(interaction, is_valid_event)
         return
     
-    # Making sure the end time is not actually before the end time (may mess with Google Calendar api)
-    if(end_hour < start_hour or (end_hour == start_hour and end_min <= start_min)):
-        await bm.send_msg(interaction, "End time of the event should not be before or same as start time of the event!")
-        return
-        
     newEvent = Event(event_name, event_notes, start_hour, end_hour, start_min, end_min, day)
 
     for profile in list_of_profiles:
@@ -324,6 +305,15 @@ async def delete_event(interaction: discord.Interaction, client: discord.Client,
 
     await bm.follow_up(interaction, "Event successfully deleted!")
 
+# Takes a profilename and deletes the corresponding profile from the list of profiles
+def delete_profile_from_list(list_of_profiles, profile_name):
+    # looping through the list of profiles, and checking each of the profile names to see if a profile exists with the same name as the given name
+    for profile in list_of_profiles:
+        if(profile["name"] == profile_name):
+            list_of_profiles.remove(profile)
+            return list_of_profiles
+    return list_of_profiles
+
 # Takes in the name of the profile and the list of all the profiles, searches through list of profiles and checks if a profile of the given name already exists
 # returns a 0 if the profile doesn't exist, a 1 if it does
 def profile_exists(name: str, list_of_profiles):
@@ -410,3 +400,22 @@ def ret_day_of_week(day: int):
         return "Saturday"
 
     return "ERROR"
+
+# Returns an integer 1 if the event is valid, otherwise it returns an error string. 
+def valid_event(start_hour, start_min, end_hour, end_min, day):
+     # Checking if the given time values are within the needed bounds
+    if(within_bounds(start_hour, 0, 23) == 0):
+        return "Start hour time must be within 0 and 23 inclusive!"
+    elif(within_bounds(start_min, 0, 59) == 0):
+        return "Start minute time must be within 0 and 59 inclusive!"
+    elif(within_bounds(end_hour, 0, 23) == 0):
+        return "End hour time must be within 0 and 23 inclusive!"
+    elif(within_bounds(end_min, 0, 59) == 0):
+        return "End minute time must be within 0 and 59 inclusive!"
+    elif(within_bounds(day, 1, 7) == 0):
+        return "Day value must be within 1 and 7 inclusive!"
+    # Making sure the end time is not actually before the end time (may mess with Google Calendar api)
+    elif(end_hour < start_hour or (end_hour == start_hour and end_min <= start_min)):
+        return "End time of the event should not be before or same as start time of the event!"
+    
+    return 1
