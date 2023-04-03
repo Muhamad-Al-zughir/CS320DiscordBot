@@ -158,6 +158,87 @@ async def list_profiles(interaction: discord.Interaction):
     view.add_item(right_arrow)
     await interaction.response.send_message(embed=embed, view=view)
 
+# view_profile will list out the events of a profile in a formatted manner through the use of discord buttons
+# function takes in the discord interaction object and the name of the profile. 
+# Note that the function will default to displaying Sunday as the default and initial day of the week for which events would be displayed
+async def view_profile(interaction: discord.Interaction, profile_name: str):
+    day_of_week = 1 # day of week is initally set to sunday (1 = sunday, 7 = saturday)
+    path = "scheduler/" + str(interaction.guild.id) + ".json"   # name of the file will be <guildID>.json and it will be located in the scheduler directory
+    list_of_profiles = ret_list_of_profiles(path)
+
+    # Checking if the profile exists, if not, continue as normal. If so, let the user know and leave the function
+    if(profile_exists(profile_name, list_of_profiles) == 0):
+        await bm.send_msg(interaction, "Profile does not exist!")
+        return
+    
+    selectedProfile = {}
+    for profile in list_of_profiles:
+        if(profile["name"] == profile_name):
+            selectedProfile = profile
+    
+    footer_text = grab_text_events_day(selectedProfile["events"], day_of_week)
+
+    num_events = num_events_on_day(selectedProfile["events"], day_of_week)
+
+    # Creating the embed to be displayed
+    embed = return_embed_view_profile(profile_name, num_events, day_of_week, footer_text)
+    
+    async def sunday_callback(Interaction):
+        day_of_week = 1
+
+    async def monday_callback(Interaction):
+        day_of_week = 2
+
+    async def tuesday_callback(Interaction):
+        day_of_week = 3
+
+    async def wednesday_callback(Interaction):
+        day_of_week = 4
+
+    async def thursday_callback(Interaction):
+        day_of_week = 5
+
+    async def friday_callback(Interaction):
+        day_of_week = 6
+    
+    async def saturday_callback(Interaction):
+        day_of_week = 7
+    
+    # Creating the button
+    sunday_btn = Button(label="Sunday", style=discord.ButtonStyle.primary, disabled=True)
+    sunday_btn.callback = sunday_callback
+
+    monday_btn = Button(label="Monday", style=discord.ButtonStyle.primary)
+    monday_btn.callback = monday_callback
+
+    tuesday_btn = Button(label="Tuesday", style=discord.ButtonStyle.primary)
+    tuesday_btn.callback = tuesday_callback
+
+    wednesday_btn = Button(label="Wednesday", style=discord.ButtonStyle.primary)
+    wednesday_btn.callback = wednesday_callback
+
+    thursday_btn = Button(label="Thursday", style=discord.ButtonStyle.primary)
+    thursday_btn.callback = thursday_callback
+
+    friday_btn = Button(label="Friday", style=discord.ButtonStyle.primary)
+    friday_btn.callback = friday_callback
+
+    saturday_btn = Button(label="Saturday", style=discord.ButtonStyle.primary)
+    saturday_btn.callback = saturday_callback
+
+    # Creating the view to display the buttons
+    view = View()
+    view.add_item(sunday_btn)
+    view.add_item(monday_btn)
+    view.add_item(tuesday_btn)
+    view.add_item(wednesday_btn)
+    view.add_item(thursday_btn)
+    view.add_item(friday_btn)
+    view.add_item(saturday_btn)
+    await interaction.response.send_message(embed=embed, view=view)
+
+    return
+
 # Takes in profile name, profile notes, and the Interaction object. 
 # The function returns either 0, 1, or 2. A 0 indicates a failure to create the profile for any reason, a 1 represents successful 
 # creation of the profile, and a 2 represents that a profile with the same name already exists
@@ -305,6 +386,49 @@ async def delete_event(interaction: discord.Interaction, client: discord.Client,
 
     await bm.follow_up(interaction, "Event successfully deleted!")
 
+
+# returns a discord embed 
+def return_embed_view_profile(profile_name, num_events, day_of_week, footer_text):
+    embed=discord.Embed(title=f"Profile: {profile_name}", description=f"", color=0x8208d4)
+    embed.add_field(name=f"({num_events}) events found on {ret_day_of_week(day_of_week)}", value="", inline=False)
+    embed.set_footer(text=footer_text)
+    return embed 
+
+# Takes in a list of events and an integer from 1-7
+# Returns the number of events found on that given day
+def num_events_on_day(list_of_events, day_of_week):
+    num_events = 0
+    for event in list_of_events:
+        if(event["day"] == day_of_week):
+            num_events = num_events + 1
+    return num_events
+
+# Takes in a list of events and an integer from 1-7 
+# returns a string containing the formatted form of all the events of a specific day
+def grab_text_events_day(list_of_events, day_of_week):
+    if(within_bounds(day_of_week, 1, 7) == 0):
+        print("Error from grab_text_events_day: invalid day_of_week")
+        return "ERROR"
+        # Creating the footer text to be displayed on the embed by looping through the eventsWithSameName list, and adding the text of each event
+
+    inc = 1     # incrementer to keep track of which number of profile we are on
+    footer_text = ""
+    for event in list_of_events:
+        if(event["day"] == day_of_week):
+            note = event["notes"]
+            start_hour = event["start_hour"]
+            start_min = str(event["start_min"]) # setting the start_min as a string in order to utilize zfill method
+            start_min = start_min.zfill(2)  # adding zeroes in front of the number until it's 2 digits long. For example, 1 becomes 01
+            end_hour = event["end_hour"]
+            end_min = str(event["end_min"]) # setting the end_min as a string in order to utilize zfill method
+            end_min = end_min.zfill(2)    # adding zeroes in front of the number until it's 2 digits long. For example, 1 becomes 01
+            day_of_week = ret_day_of_week(event["day"])
+
+            footer_text = footer_text + f"({inc})\nNotes: {note}\nTime: {start_hour}:{start_min}-{end_hour}:{end_min}\nDay: {day_of_week}\n\n" 
+            inc = inc+1
+    return footer_text
+    
+    
 # Takes a profilename and deletes the corresponding profile from the list of profiles
 def delete_profile_from_list(list_of_profiles, profile_name):
     # looping through the list of profiles, and checking each of the profile names to see if a profile exists with the same name as the given name

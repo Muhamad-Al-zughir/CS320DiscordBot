@@ -71,6 +71,13 @@ async def list_profiles_cmd(interaction: discord.Interaction):
     # responding by printing out the profiles using discord embed features
     await schedule.list_profiles(interaction)
 
+# viewprofile command: After the running of the command the bot will list out all of the events of a given profile with the list of events for each given day of the week. 
+@tree.command(name = 'viewprofile', description = 'Bot will list out all the profiles created on this server')
+@app_commands.describe(name="Name of the profile to be viewed (PROFILE MUST EXIST)")
+async def view_profile_cmd(interaction: discord.Interaction, name: str):
+    # responding by printing out the profiles using discord embed features
+    await schedule.view_profile(interaction, name)
+
 # addprofile command: Takes in profile name and profile notes after running the command the bot will create a profile with the given attributes. 
 # Name of the profile must not already be in use though. 
 @tree.command(name = 'addprofile', description = 'Bot will add a profile with the given name and notes')
@@ -78,8 +85,8 @@ async def list_profiles_cmd(interaction: discord.Interaction):
 async def add_profile_cmd(interaction: discord.Interaction, name: str, notes: str):
     await schedule.add_profile(interaction, name, notes)
 
-# addprofile command: Takes in profile name and profile notes after running the command the bot will create a profile with the given attributes. 
-# Name of the profile must not already be in use though. 
+# deleteprofile command: Takes in profile name. After running the command the bot will delete the profile with the given name
+# Name of the profile must be of an existing profile
 @tree.command(name = 'deleteprofile', description = 'Bot will delete a profile with the given name')
 @app_commands.describe(name="Name of the profile to be deleted(PROFILE MUST ALREADY EXIST)")
 async def delete_profile_cmd(interaction: discord.Interaction, name: str):
