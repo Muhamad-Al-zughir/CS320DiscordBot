@@ -79,6 +79,8 @@ class Player:
         return self.defense
     def getPg(self):
         return self.pg
+    def getVitality(self):
+        return (self.defense*5) + self.hitpoints
     
     def getInventorySize(self):
         return len(self.inventory)
@@ -821,6 +823,25 @@ def get_totalAttack_char(player1):
         # carryPenalty = 1-((1-weaponsCarried)(.25))
         # floatingAttack = totalAttack*carryPenalty
         return player1.getStrength() + (totalAttack - weaponsCarried*5)
+    
+def fight_rpg(serverPlayers, player1, player2):
+#   check if val;id fight if so then send msg
+    returnFightCheck = fight_valid(serverPlayers,player1, player2)
+    if returnFightCheck > 0:
+        print("can fight")
+#       will send discord messages to user 
+#       favors challengee (challenger moves second)
+#       return 0 when challenger wins 
+#       returns 1 when challenger loses
+        challengerHP = player1.getVitality()
+        challengerAttk = get_totalAttack_char(player1)
+        challengeeHP = player2.getVitality()
+        challengeeAttk = get_totalAttack_char(player2)
+        returnWinner = fight_rpg_sim(challengerHP, challengerAttk, challengeeHP, challengeeAttk)
+        print(returnWinner)
+    else:
+        print("cannot fight")
+        return -1
 
 def playersColor_rpg(playerName):
     letterQuan = 0#283
@@ -957,12 +978,16 @@ async def clearDaily_rpg(interaction: discord.Interaction):
     await interaction.response.send_message(f'Started The Scheduler will start looping every 24 hours from now')
 #   ============================================================================================================
 
-# def nom(stringS):
-#     print("hello")
-#     print(stringS)
-    
-# #have to fix roles in python demotiion and promotion
+# so dock it use / command menu fight to give option of picking to fight
+#   enter opps userid
+#   fight valid changed to take opponents reaction 
+#   then do other fight stuff afterwards if yes 
+#   have to learn how to dm a user tho pepehands
+#   then maybe send message to loser idk but i jsut need to connect evertything 6 hours pls be enough
+#   then it should check all the good stuff i wont do more checks dont have time 
+# maybe like 200 lines or less 
 
+# #have to fix roles in python demotiion and promotion
 # #so how to get enemies id ok we just cheat grab  thier id and send it to that
 def sendChallengetoOpponent(interaction: discord.Interaction, rpg_userID, nameChallenger):
     user = interaction.guild.get_member(rpg_userID)
@@ -990,19 +1015,6 @@ def yes_callback(interaction):
 #send nothing ithink
 def no_callback(interaction):
     print("no")
-
-def fight_rpg(serverPlayers, player1, player2):
-    # serverPlayers  
-    # player1
-    # player2
-#   call from player obj 
-#   call from item exists
-#   check they exist 
-#   call from get_totalAttack_char
-#   so test waepon exists and grab it 
-#   then call fight sim and insert bariable 
-#   return -1 if error in this case no way for it toi work so default to errro for now
-    return -1
 
 # Johnsons
 # Construction Safety Gear
