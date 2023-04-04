@@ -51,7 +51,7 @@ async def basic_libgen(interaction, type: str, search: str): # Set the arguments
     except ValueError:
         await bm.follow_up(interaction, "Not a number between 1-" + str(len(strings))) # Need to use a follow up after initial sending
         return
-    obj = results[num]
+    obj = results[num - 1]
     links = libby.getLinksFor(obj)
     strings2 = libby.formatLinks(links)
     msg = '\n'.join(strings2)
