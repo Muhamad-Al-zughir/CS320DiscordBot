@@ -3,7 +3,7 @@ from discord.ui import View
 from discord.ui import Select
 from discord.utils import get
 from discord import Member
-# from apscheduler.schedulers.blocking import AsyncIOScheduler
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
 import discord
 import random
 
@@ -854,7 +854,6 @@ def playersColor_rpg(playerName):
 #  returns 0 on succsss
 #  returns 1 on failure no messages
 def clearMsgActivity(player_obj):
-    
     if player_obj.getmsgAct() == 0:
         return 1
     else:
@@ -864,31 +863,34 @@ def clearMsgActivity(player_obj):
 # return 0 if added to inacitivty count
 # return 1 if deleted
 def manageInactivePlayers(player_obj):
-        
-    if player_obj.getinActive_warningS() == 0:
+#   add warning
+    if player_obj.getinActive_warningS() < 1:
         player_obj.addtoIA()
         return 0
+#   else delete character 
     else:
-        # delete character function plus messaging and sending stuff 
+        serverPlayers.deletePlayer(player_obj.getUserID())
         return 1 
     
-def deletekickmsg_rpg(interaction: discord.Interaction, serverPlayers , rpg_userID):
-#   calls delete char: remove from list 
-    if serverPlayers.manageInactivePlayers(rpg_userID) == 0:
-            user = interaction.guild.get_member(rpg_userID)
-            #send mesage to discord aka the one who called the interaction
-            interaction.send(embed=getDeathEmbed())
+# # interaction: discord.Interaction, 
+# def deletekickmsg_rpg(serverPlayers , rpg_userID):
+# #   calls delete char: remove from list 
+#     if serverPlayers.manageInactivePlayers(rpg_userID) == 0:
+#         print()
+# #            user = interaction.guild.get_member(rpg_userID)
+#             #send mesage to discord aka the one who called the interaction
+# #            interaction.send(embed=getDeathEmbed())
             
-            #send message to kicked person
-            user.send(embed=getDeathEmbed(112233))
-            user.kick(reason=None)
-#   send message to killed bot
-    interaction.send("failed to delete: " + rpg_userID)
+#             #send message to kicked person
+#             # user.send(embed=getDeathEmbed(112233))
+#             # user.kick(reason=None)
+# #   send message to killed bot
+#     # interaction.send("failed to delete: " + rpg_userID)
  
 #  return -1 list empty 
 #  return number of people deleted 
 #  return 0 success
-def cleanup_msgActivity_AllUsers(interaction: discord.Interaction, ServerList):
+def cleanup_msgActivity_AllUsers(serverPlayers):
     # if empty return 0 
     i = serverPlayers.getAllPlayersDataSize() 
     if i == 0:
@@ -903,7 +905,8 @@ def cleanup_msgActivity_AllUsers(interaction: discord.Interaction, ServerList):
         if clearMsgActivity(tempPlayer): 
 #           add to total deleted players if plater deleted/kicked and send msg to player 
             if manageInactivePlayers(tempPlayer):
-                deletekickmsg_rpg(interaction, serverPlayers , userID)
+#               fix interaction
+                # deletekickmsg_rpg(serverPlayers , userID)
                 noInactivePlayers = noInactivePlayers + 1
     
     return noInactivePlayers
@@ -920,23 +923,44 @@ def death_message_rpg():
     embed.set_image()#skull
     return embed
 
+# mainly a wrapper for functions that clearDaily_rpg needs to call 
+def wrapperForDaily():
+#   return -1 list empty 
+#   return number of people deleted 
+#   return 0 success no inactive players
+    dieded = cleanup_msgActivity_AllUsers(serverPlayers)
 
+    if dieded == 0: 
+        print("not 0 dieded complete")
+    elif dieded > 0: 
+        print("dieded complete " + str(dieded))
+    else:
+        print("-1 dieded complete")
+
+#   =============================================================
 #  clears message on time 00::00::00 call it to act on this time 
 #  calls clearMsgActivity_AllUsers()
 async def clearDaily_rpg(interaction: discord.Interaction):
-#  The cron trigger works w/ wall clock
-#  apscheduler.triggers.cron
-#  schedule jobs to be executed in the futur
+#  The cron trigger works w/ wall clock 'cron'
+#  schedule jobs to be executed in the future
+
 #   initializing scheduler
     scheduler =  AsyncIOScheduler()# comes from apscheduler 
 
-#   sends so add job and set the time to 00:00:00/  pass in function to do as first arguemnet
-    scheduler.add_job(cleanup_msgActivity_AllUsers(interaction, serverPlayers), 'cron', hour=0, minute=00) 
+    # scheduler.add_job(print("hello"), 'cron', hour=0, minute=00) 
+#   schedular add job(function, args, trigger setting, minute, hour)
+    # scheduler.add_job(nom,args=[var1],trigger='cron', minute='*/1', hour='*') 
+    scheduler.add_job(wrapperForDaily,trigger='cron', minute='*/1', hour='*') 
     
 #   run scheduler
     scheduler.start()
+    await interaction.response.send_message(f'Started The Scheduler will start looping every 24 hours from now')
+#   ============================================================================================================
 
-
+# def nom(stringS):
+#     print("hello")
+#     print(stringS)
+    
 # #have to fix roles in python demotiion and promotion
 
 # #so how to get enemies id ok we just cheat grab  thier id and send it to that
@@ -968,9 +992,9 @@ def no_callback(interaction):
     print("no")
 
 def fight_rpg(serverPlayers, player1, player2):
-    serverPlayers  
-    player1
-    player2
+    # serverPlayers  
+    # player1
+    # player2
 #   call from player obj 
 #   call from item exists
 #   check they exist 
