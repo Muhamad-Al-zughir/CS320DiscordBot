@@ -176,36 +176,120 @@ async def view_profile(interaction: discord.Interaction, profile_name: str):
         if(profile["name"] == profile_name):
             selectedProfile = profile
     
+    # Grabbing the footer text
     footer_text = grab_text_events_day(selectedProfile["events"], day_of_week)
-
+    # Grabbing the number of events on a specific day
     num_events = num_events_on_day(selectedProfile["events"], day_of_week)
-
     # Creating the embed to be displayed
     embed = return_embed_view_profile(profile_name, num_events, day_of_week, footer_text)
     
-    async def sunday_callback(Interaction):
+    async def sunday_callback(interaction):
+        nonlocal day_of_week
+        disable_button(day_of_week, sunday_btn, monday_btn, tuesday_btn, wednesday_btn, thursday_btn, friday_btn, saturday_btn)
+        sunday_btn.disabled = True
         day_of_week = 1
 
-    async def monday_callback(Interaction):
+        # Grabbing the footer text
+        footer_text = grab_text_events_day(selectedProfile["events"], day_of_week)
+        # Grabbing the number of events on a specific day
+        num_events = num_events_on_day(selectedProfile["events"], day_of_week)
+        # Creating the embed to be displayed
+        embed = return_embed_view_profile(profile_name, num_events, day_of_week, footer_text)
+
+        await interaction.response.edit_message(embed=embed, view=view)
+
+    async def monday_callback(interaction):
+        nonlocal day_of_week
+        disable_button(day_of_week, sunday_btn, monday_btn, tuesday_btn, wednesday_btn, thursday_btn, friday_btn, saturday_btn)
+        monday_btn.disabled = True
         day_of_week = 2
 
-    async def tuesday_callback(Interaction):
+        # Grabbing the footer text
+        footer_text = grab_text_events_day(selectedProfile["events"], day_of_week)
+        # Grabbing the number of events on a specific day
+        num_events = num_events_on_day(selectedProfile["events"], day_of_week)
+        # Creating the embed to be displayed
+        embed = return_embed_view_profile(profile_name, num_events, day_of_week, footer_text)
+
+        await interaction.response.edit_message(embed=embed, view=view)
+
+    async def tuesday_callback(interaction):
+        nonlocal day_of_week
+        disable_button(day_of_week, sunday_btn, monday_btn, tuesday_btn, wednesday_btn, thursday_btn, friday_btn, saturday_btn)
+        tuesday_btn.disabled = True
         day_of_week = 3
 
-    async def wednesday_callback(Interaction):
+        # Grabbing the footer text
+        footer_text = grab_text_events_day(selectedProfile["events"], day_of_week)
+        # Grabbing the number of events on a specific day
+        num_events = num_events_on_day(selectedProfile["events"], day_of_week)
+        # Creating the embed to be displayed
+        embed = return_embed_view_profile(profile_name, num_events, day_of_week, footer_text)
+
+        await interaction.response.edit_message(embed=embed, view=view)
+
+    async def wednesday_callback(interaction):
+        nonlocal day_of_week
+        disable_button(day_of_week, sunday_btn, monday_btn, tuesday_btn, wednesday_btn, thursday_btn, friday_btn, saturday_btn)
+        wednesday_btn.disabled = True
         day_of_week = 4
 
-    async def thursday_callback(Interaction):
+        # Grabbing the footer text
+        footer_text = grab_text_events_day(selectedProfile["events"], day_of_week)
+        # Grabbing the number of events on a specific day
+        num_events = num_events_on_day(selectedProfile["events"], day_of_week)
+        # Creating the embed to be displayed
+        embed = return_embed_view_profile(profile_name, num_events, day_of_week, footer_text)
+
+        await interaction.response.edit_message(embed=embed, view=view)
+
+    async def thursday_callback(interaction):
+        nonlocal day_of_week
+        disable_button(day_of_week, sunday_btn, monday_btn, tuesday_btn, wednesday_btn, thursday_btn, friday_btn, saturday_btn)
+        thursday_btn.disabled = True
         day_of_week = 5
 
-    async def friday_callback(Interaction):
+        # Grabbing the footer text
+        footer_text = grab_text_events_day(selectedProfile["events"], day_of_week)
+        # Grabbing the number of events on a specific day
+        num_events = num_events_on_day(selectedProfile["events"], day_of_week)
+        # Creating the embed to be displayed
+        embed = return_embed_view_profile(profile_name, num_events, day_of_week, footer_text)
+
+        await interaction.response.edit_message(embed=embed, view=view)
+
+    async def friday_callback(interaction):
+        nonlocal day_of_week
+        disable_button(day_of_week, sunday_btn, monday_btn, tuesday_btn, wednesday_btn, thursday_btn, friday_btn, saturday_btn)
+        friday_btn.disabled = True
         day_of_week = 6
     
-    async def saturday_callback(Interaction):
+        # Grabbing the footer text
+        footer_text = grab_text_events_day(selectedProfile["events"], day_of_week)
+        # Grabbing the number of events on a specific day
+        num_events = num_events_on_day(selectedProfile["events"], day_of_week)
+        # Creating the embed to be displayed
+        embed = return_embed_view_profile(profile_name, num_events, day_of_week, footer_text)
+
+        await interaction.response.edit_message(embed=embed, view=view)
+
+    async def saturday_callback(interaction):
+        nonlocal day_of_week
+        disable_button(day_of_week, sunday_btn, monday_btn, tuesday_btn, wednesday_btn, thursday_btn, friday_btn, saturday_btn)
+        saturday_btn.disabled = True
         day_of_week = 7
+
+        # Grabbing the footer text
+        footer_text = grab_text_events_day(selectedProfile["events"], day_of_week)
+        # Grabbing the number of events on a specific day
+        num_events = num_events_on_day(selectedProfile["events"], day_of_week)
+        # Creating the embed to be displayed
+        embed = return_embed_view_profile(profile_name, num_events, day_of_week, footer_text)
+
+        await interaction.response.edit_message(embed=embed, view=view)
     
-    # Creating the button
-    sunday_btn = Button(label="Sunday", style=discord.ButtonStyle.primary, disabled=True)
+    # Creating the buttons
+    sunday_btn = Button(label="Sunday", style=discord.ButtonStyle.primary, disabled=True)   # Sunday button is initally disabled because 
     sunday_btn.callback = sunday_callback
 
     monday_btn = Button(label="Monday", style=discord.ButtonStyle.primary)
@@ -292,7 +376,7 @@ async def add_event(interaction: discord.Interaction, profile_name: str, event_n
         await bm.send_msg(interaction, "The profile you want to access does not exist!")
         return
     
-    is_valid_event = valid_event(start_hour, start_min, end_hour, end_min)
+    is_valid_event = valid_event(start_hour, start_min, end_hour, end_min, day)
 
     if(is_valid_event != 1):
         await bm.send_msg(interaction, is_valid_event)
@@ -317,8 +401,9 @@ async def add_event(interaction: discord.Interaction, profile_name: str, event_n
             dump_list_of_profiles(path, list_of_profiles)
 
     await bm.send_msg(interaction, "New event successfully added!")
+    
 
-async def delete_event(interaction: discord.Interaction, client: discord.Client, profile_name: str, event_name:str):
+async def delete_event(interaction: discord.Interaction, client, profile_name: str, event_name:str):
     path = "scheduler/" + str(interaction.guild.id) + ".json"   # name of the file will be <guildID>.json and it will be located in the scheduler directory
     list_of_profiles = ret_list_of_profiles(path)
 
@@ -369,9 +454,10 @@ async def delete_event(interaction: discord.Interaction, client: discord.Client,
     # function to check if the user responding is the same person who made the command and is responding from the same channel
     def check(m):
         return m.channel == interaction.channel and m.author == interaction.user
-    reply = await client.wait_for("message", check=check)
+    
     # Parsing the input
     try:
+        reply = await client.wait_for("message", check=check)
         num_reply = int(reply.content)
         if (num_reply > numEvents or num_reply < 1): raise ValueError("outside bounds")
     except ValueError:
@@ -386,6 +472,30 @@ async def delete_event(interaction: discord.Interaction, client: discord.Client,
 
     await bm.follow_up(interaction, "Event successfully deleted!")
 
+
+def disable_button(day_of_week, sunday_btn, monday_btn, tuesday_btn, wednesday_btn, thursday_btn, friday_btn, saturday_btn):
+    # using day of week to know which button to disable
+        if(day_of_week == 1):
+            sunday_btn.disabled=False
+            return
+        elif(day_of_week == 2):
+            monday_btn.disabled=False
+            return
+        elif(day_of_week == 3):
+            tuesday_btn.disabled=False
+            return
+        elif(day_of_week == 4):
+            wednesday_btn.disabled=False
+            return
+        elif(day_of_week == 5):
+            thursday_btn.disabled=False
+            return
+        elif(day_of_week == 6):
+            friday_btn.disabled=False
+            return
+        elif(day_of_week == 7):
+            saturday_btn.disabled=False
+            return
 
 # returns a discord embed 
 def return_embed_view_profile(profile_name, num_events, day_of_week, footer_text):
@@ -411,10 +521,12 @@ def grab_text_events_day(list_of_events, day_of_week):
         return "ERROR"
         # Creating the footer text to be displayed on the embed by looping through the eventsWithSameName list, and adding the text of each event
 
+
     inc = 1     # incrementer to keep track of which number of profile we are on
     footer_text = ""
     for event in list_of_events:
         if(event["day"] == day_of_week):
+            name = event["name"]
             note = event["notes"]
             start_hour = event["start_hour"]
             start_min = str(event["start_min"]) # setting the start_min as a string in order to utilize zfill method
@@ -422,10 +534,11 @@ def grab_text_events_day(list_of_events, day_of_week):
             end_hour = event["end_hour"]
             end_min = str(event["end_min"]) # setting the end_min as a string in order to utilize zfill method
             end_min = end_min.zfill(2)    # adding zeroes in front of the number until it's 2 digits long. For example, 1 becomes 01
-            day_of_week = ret_day_of_week(event["day"])
+            string_day_of_week = ret_day_of_week(event["day"])
 
-            footer_text = footer_text + f"({inc})\nNotes: {note}\nTime: {start_hour}:{start_min}-{end_hour}:{end_min}\nDay: {day_of_week}\n\n" 
+            footer_text = footer_text + f"{inc}: {name}\nNotes: {note}\nTime: {start_hour}:{start_min}-{end_hour}:{end_min}\nDay: {string_day_of_week}\n\n" 
             inc = inc+1
+
     return footer_text
     
     

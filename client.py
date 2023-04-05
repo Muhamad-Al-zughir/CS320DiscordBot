@@ -74,7 +74,7 @@ async def list_profiles_cmd(interaction: discord.Interaction):
 # viewprofile command: After the running of the command the bot will list out all of the events of a given profile with the list of events for each given day of the week. 
 @tree.command(name = 'viewprofile', description = 'Bot will list out all the profiles created on this server')
 @app_commands.describe(name="Name of the profile to be viewed (PROFILE MUST EXIST)")
-async def view_profile_cmd(interaction: discord.Interaction, name: str):
+async def view_profile_cmd(interaction: discord.Interaction, name: str):    
     # responding by printing out the profiles using discord embed features
     await schedule.view_profile(interaction, name)
 
@@ -97,7 +97,7 @@ async def delete_profile_cmd(interaction: discord.Interaction, name: str):
 @app_commands.describe(profile_name="Name of the profile for which the event should be added to", event_name="Name of the event to be added",
                         event_notes="Notes regarding the event", start_hour="The hour the event starts (must be integer between 0 and 23 inclusive)",
                         start_min="minute the event starts", end_hour="The hour the event ends at (must be integer between 0 and 23 inclusive)",
-                        end_min="The minute which the event ends at", day="Enter a number 1-7 to represent the day of the week (1=Sunday, 7=saturday)")
+                        end_min="The minute which the event ends at", day="Enter a number 1-7 to represent the day of the week (1=Sun, 2=Mon, 3=Tue, 4=Wed, 5=Thu, 6=Fri, 7=saturday)")
 async def add_event_cmd(interaction: discord.Interaction, profile_name: str, event_name: str, event_notes: str, start_hour: int, start_min: int, end_hour: int, end_min: int, day: int):
     await schedule.add_event(interaction, profile_name, event_name, event_notes, start_hour, start_min, end_hour, end_min, day)
 
