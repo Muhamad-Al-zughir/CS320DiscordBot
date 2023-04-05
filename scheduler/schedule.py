@@ -367,7 +367,7 @@ async def delete_profile(interaction: discord.Interaction, profile_name: str):
     await bm.send_msg(interaction, "Profile successfully deleted!")
     return
 
-async def add_event(interaction: discord.Interaction, profile_name: str, event_name: str, event_notes: str, start_hour: int, start_min: int, end_hour: int, end_min: int, day: int):
+async def add_event(interaction: discord.Interaction, client: discord.Client, profile_name: str, event_name: str, event_notes: str, start_hour: int, start_min: int, end_hour: int, end_min: int, day: int):
     path = "scheduler/" + str(interaction.guild.id) + ".json"   # name of the file will be <guildID>.json and it will be located in the scheduler directory
     list_of_profiles = ret_list_of_profiles(path)
 
@@ -384,23 +384,44 @@ async def add_event(interaction: discord.Interaction, profile_name: str, event_n
     
     newEvent = Event(event_name, event_notes, start_hour, end_hour, start_min, end_min, day)
 
-    for profile in list_of_profiles:
-        if(profile["name"] == profile_name):
-            if(len(profile["events"]) >= MAX_NUM_EVENTS):
-                await bm.send_msg(interaction, "Max event count reached for this profile")
-                return
-            
-            # Adding the event to the list in the form of a dictionary
-            profile["events"].append(newEvent.__dict__)
-            
-            # Sorting the list of events based on starting hour and starting minute (hour is of course of a higher priority than minute)
-            profile["events"].sort(key = lambda x:x["start_min"])
-            profile["events"].sort(key = lambda x:x["start_hour"])
-            profile["events"].sort(key = lambda x:x["day"])
+    # Creating the embed to be displayed
+    embed=discord.Embed(title=f"Event to be created (reply 1 to confirm, anything else to cancel)", description=f"", color=0x8208d4)
+    embed.add_field(name=f"Name: {event_name}\nNotes: {event_notes}\nTime: {start_hour}:{str(start_min).zfill(2)}-{end_hour}:{str(end_min).zfill(2)}", value="", inline=False)
 
-            dump_list_of_profiles(path, list_of_profiles)
+    await interaction.response.send_message(embed=embed)
 
-    await bm.send_msg(interaction, "New event successfully added!")
+     # Grabbing the users response 
+    # function to check if the user responding is the same person who made the command and is responding from the same channel
+    def check(m):
+        return m.channel == interaction.channel and m.author == interaction.user
+    
+    reply = await client.wait_for("message", check=check)
+    # Parsing the input
+    try:
+        num_reply = int(reply.content)
+        if (num_reply != 1): raise ValueError("outside bounds")
+    except ValueError:
+        await bm.follow_up(interaction, f"Ok! Event creation has been cancelled!") # Need to use a follow up after initial sending
+        return
+
+    if(num_reply == 1):
+        for profile in list_of_profiles:
+            if(profile["name"] == profile_name):
+                if(len(profile["events"]) >= MAX_NUM_EVENTS):
+                    await bm.send_msg(interaction, "Max event count reached for this profile")
+                    return
+                
+                # Adding the event to the list in the form of a dictionary
+                profile["events"].append(newEvent.__dict__)
+                
+                # Sorting the list of events based on starting hour and starting minute (hour is of course of a higher priority than minute)
+                profile["events"].sort(key = lambda x:x["start_min"])
+                profile["events"].sort(key = lambda x:x["start_hour"])
+                profile["events"].sort(key = lambda x:x["day"])
+
+                dump_list_of_profiles(path, list_of_profiles)
+
+    await bm.follow_up(interaction, "New event successfully added!")
     
 
 async def delete_event(interaction: discord.Interaction, client, profile_name: str, event_name:str):
@@ -447,7 +468,7 @@ async def delete_event(interaction: discord.Interaction, client, profile_name: s
     embed=discord.Embed(title=f"Found Events From Profile {profile_name}", description=f"", color=0x8208d4)
     embed.add_field(name=f"Events of name '{event_name}' ({numEvents} total)\nPlease respond with the number of the event to be deleted\n(respond with any non number to cancel)", value="", inline=False)
     embed.set_footer(text=footer_text)
-
+    
     await interaction.response.send_message(embed=embed)
 
     # Grabbing the users response 
@@ -455,9 +476,9 @@ async def delete_event(interaction: discord.Interaction, client, profile_name: s
     def check(m):
         return m.channel == interaction.channel and m.author == interaction.user
     
+    reply = await client.wait_for("message", check=check)
     # Parsing the input
     try:
-        reply = await client.wait_for("message", check=check)
         num_reply = int(reply.content)
         if (num_reply > numEvents or num_reply < 1): raise ValueError("outside bounds")
     except ValueError:
