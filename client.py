@@ -144,6 +144,31 @@ async def displayQueue(interaction: discord.Interaction):
 async def shuffleQueue(interaction: discord.Interaction):
     await mzb.shuffleQueue(interaction, client)
 
+# Fast Forward a Song
+@tree.command(name = 'shiftsong', description = 'Shift a song forward or backward for a valid number of seconds')
+async def fastForwardSong(interaction: discord.Interaction, seconds: int):
+    await mzb.fastForwardSong(interaction, client, seconds)
+
+# Repeat a song
+@tree.command(name = 'encore', description = 'Repeat the currently playing song')
+async def encore(interaction: discord.Interaction):
+    await mzb.encore(interaction,client)
+
+# Swap Two Indexes for a Song queue
+@tree.command(name = 'swap', description = 'Swap two indexes of a queue')
+async def swap(interaction: discord.Interaction, indexone: int, indextwo: int):
+    await mzb.swap(interaction,client,indexone,indextwo)
+
+# Display Song Informatiom
+@tree.command(name = 'displayinfo', description = 'Display information about the current song / video')
+async def swap(interaction: discord.Interaction):
+    await mzb.displayInfo(interaction,client)
+
+# Display Song Lyrics
+@tree.command(name = 'displaylyrics', description = 'Display Lyrics for the current playing song')
+async def displayLyrics(interaction: discord.Interaction):
+    await mzb.displayLyrics(interaction,client)
+
 #   dropdown menu for character selection
 @tree.command(name = "rp_store", description = "store for rp game")
 async def rp_store(interaction: discord.Interaction):
