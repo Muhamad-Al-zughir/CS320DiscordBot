@@ -122,7 +122,6 @@ async def clear(interaction: discord.Interaction):
 
 # Pause Stream and Unpause Stream | Universal
 async def pause_yt(interaction: discord.Interaction):
-    
     vcstatus = interaction.guild.voice_client
     if vcstatus is None:
         await interaction.response.send_message('Nothing is currently playing')
@@ -136,7 +135,7 @@ async def pause_yt(interaction: discord.Interaction):
         await interaction.response.send_message(f'Unknown error in PAUSE occured')
 
 # Move / Join command | Universal
-async def move(interaction: discord.Interaction):     
+async def move(interaction: discord.Interaction):    
         try:
             await interaction.response.send_message(f'Joining...')                  # Sends attempt message to server
             local = interaction.guild                                               # Create local instances of guild and check for existence of voice client
@@ -198,17 +197,17 @@ async def play(interaction: discord.Interaction, url:str, client: discord.Client
             filename = await YouTube_linkobj.from_search(url, loop=client.loop, stream=True, start=0)
 
         print("Before Playing in channel...")
-
+        await interaction.response.defer() 
         if voice_channel.is_playing():                                                              # If the bot is playing, add song to a queue
             songList.append(filename)
-            await interaction.response.send_message(f'Added {filename.title} to queue')             # Send user friendly message
+            await interaction.followup.send(f'Added {filename.title} to queue')             # Send user friendly message
 
         else:                                                                                       # Else, begin playing the next song
             voice_channel.play(filename, after=lambda next: nextSong(interaction, client))          # Upon .play operation ending, after uses lambda function next
             print("Before user-end interaction message...")                                         # Calls upon nextSong given interaction and client to loop through queue
             currentSongUrl = filename.title
             currentSongObj = filename
-            await interaction.response.send_message(f'Now playing {filename.title}')                # Happens for every song until queue is empty
+            await interaction.followup.send(f'Now playing {filename.title}')                # Happens for every song until queue is empty
 
         #print("Reached here in command")      
         #print("Song Lists and URLS in PLAY command")
@@ -285,6 +284,7 @@ async def displayQueue(interaction: discord.Interaction, client: discord.Client)
 
 # Shuffles the Current Queue of Songs and Redisplays it
 async def shuffleQueue(interaction: discord.Interaction, client: discord.Client):
+
     if len(songList) != 0:
         await interaction.response.send_message(f'Queue Shuffled. Current Queue is now:')
 
@@ -412,6 +412,7 @@ async def swap(interaction: discord.Interaction, client: discord.Client, indexon
 
 # Display Song Info
 async def displayInfo(interaction: discord.Interaction, client: discord.Client):
+    
     if currentSongObj != None:
         logId = interaction.channel_id
         logChannel = client.get_channel(logId)
@@ -465,8 +466,9 @@ async def displayInfo(interaction: discord.Interaction, client: discord.Client):
 
 # Display Lyrics for a given song
 async def displayLyrics(interaction: discord.Interaction, client: discord.Client):
+    await interaction.response.defer() 
     if currentSongObj is None:
-        await interaction.response.send_message('There is no currently playing song to display lyrics for')
+        await interaction.followup.send('There is no currently playing song to display lyrics for')
     else:
         print("First lyrics condition met")
         print(currentSongObj.title)                                 # Acquire current song title (likely from youtube unless its from soundcloud)
@@ -486,7 +488,7 @@ async def displayLyrics(interaction: discord.Interaction, client: discord.Client
 
         if geniusSong is not None:                                  # song has been found from Genius website
             print("Second lyrics condition met")
-            await interaction.response.send_message('Lyrics for this song have been found:')
+            await interaction.followup.send('Lyrics for this song have been found:')
             print({geniusSong.lyrics})
             geniusLyrics = geniusSong.lyrics
 
@@ -505,7 +507,7 @@ async def displayLyrics(interaction: discord.Interaction, client: discord.Client
             
         
         else:
-            await interaction.response.send_message('Lyrics for this song could not be found')
+            await interaction.followup.send('Lyrics for this song could not be found')
 
 
 
