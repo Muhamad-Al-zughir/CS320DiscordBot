@@ -2,11 +2,18 @@ from discord.ui import Button
 from discord.ui import View
 from discord.ui import Select
 from discord.utils import get
+from discord import Member
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
 import discord
+import random
+
+# just seeds random
+random.seed(2)
 
 #       ***************************************************************************************************
 #       Notes:
 #       data of all charcter will changeed to json in the future for now global for array list of characters
+#       other note needs to download pip install apscheduler to run schedled events
 #       ****************************************************************************************************
 
 #   ============
@@ -20,6 +27,9 @@ class Player:
         self.strength = 0 
         self.defense = 0  
         self.inventory = []
+        self.equipped = []
+        self.msgActivity =0# could be its own array
+        self.inActive_warningS =0# could be its own array
         
     def showSelf(self):
         return (self.name + "\n" 
@@ -37,37 +47,78 @@ class Player:
             for i in range(0, len(self.inventory)):
                 print(self.inventory[i].showItem())
                 print(self.inventory[i].showItemAttributes())
+                
+    def searchPlayerInventory(self,itemName):
+        if len(self.inventory) == 0:
+            return 0
+        else:
+            found = 0 
+            for i in range(0, len(self.inventory)):
+                if(self.inventory[i].name == itemName):
+                    found = 1
+            return found
 
+    def returnPlayerInventory(self,itemName):
+        for i in range(0, len(self.inventory)):
+            if(self.inventory[i].name == itemName):
+                itemObj =  self.inventory[i]
+        return itemObj
+        
 #   yeah fix it later sell but buy works idk m8                
     # def sellToStore(self):
     #     self.inventory[i].name = someFunction()
     #     self.sell(item)
-                
+    def getName(self):
+        return self.name
+    def getUserID(self):
+        return self.userID
+
+    def getStrength(self):
+        return self.strength
+    def getDefense(self):
+        return self.defense
     def getPg(self):
         return self.pg
+    def getVitality(self):
+        return (self.defense*5) + self.hitpoints
     
     def getInventorySize(self):
         return len(self.inventory)
+    def getEquippedSize(self):
+        return len(self.equipped)
+    def getinActive_warningS(self):
+        return self.inActive_warningS
+    def getItem(self, location):
+        return self.inventory[location]
+    def getEquippedItem(self, location):
+        return self.equipped[location]
+    def getmsgAct(self):
+        return self.msgActivity
     
+    def getUserID(self):
+        return self.userID
+ 
+    def clearMsgHist(self):
+        self.msgActivity = 0
+    
+    def addtoIA(self):#add to inactivty
+        self.inActive_warningS = self.inActive_warningS + 1
     def buy(self, cost):
         self.pg = self.pg - cost
-        
     def sell(self, item):
         self.pg = self.pg + item.pg
         self.inventory.remove(item)
-    
     def gainPg(self, gain):
+        
         self.pg = self.pg + gain
-                
     def addItem(self, item):
         self.inventory.append(item)
-        
-    def boostAttack(self):
-        self.strength = self.strength + 1
-    
+    def equipItem(self, item):
+        self.equipped.append(item)
+    def boostAttack(self, boost):
+        self.strength = self.strength + boost
     def boostDefense(self):
         self.defense = self.defense + 1
-    
     def boostHP(self):
         self.hitpoints = self.hitpoints + 1
 #   =======================================
@@ -128,6 +179,10 @@ class Item:
         return self.name
     def showItemAttributes(self):
         return "Strength: " + str(self.strength) + "\nDefense: " + str(self.defense) 
+    def getStrengthItem(self):
+        return self.strength
+    def getDefenseItem(self):
+        return self.defense
 #   ================================================================================
 
 #   ====================
@@ -146,7 +201,7 @@ class AllPlayersData():
                 return self.playerList[i]
         return 0
             
-#   search for player
+#   search for player return 1 if exists else 0 
     def searchforPlayer(self, discord_identification):
         if len(self.playerList) == 0:
             return 0
@@ -154,6 +209,21 @@ class AllPlayersData():
             if(self.playerList[i].userID == discord_identification):
                 return 1
         return 0
+    
+    def deletePlayer(self, discord_identification):
+#       search for player return -1 not found 
+        if len(self.playerList) == 0:
+            return -1
+#       doesnt exist else delete player and return 0 
+        for i in range(0, len(self.playerList)):
+            if(self.playerList[i].userID == discord_identification):
+                self.playerList.pop(i)
+                return 0
+        return -1
+
+#   return player in spot loc
+    def getPlayerat_loc(self,loc):
+        return self.playerList[loc]        
             
 #   add player to list
     def addplayertoList(self, player):
@@ -161,7 +231,7 @@ class AllPlayersData():
 
     def getAllPlayersDataSize(self):
         return len(self.playerList)
-#   ===============================
+#   ===============================      
 
 # Serverdata creation
 serverPlayers = AllPlayersData()
@@ -193,7 +263,7 @@ class DropdownMenu(Select):
             ]
         )
 #       =
-        
+
 #   callback function
     async def callback(self, interaction: discord.Integration):
 
@@ -324,7 +394,7 @@ class StoreItem_Button(Button):
             user_rp_char.addItem(item)
             response_to_Buyer = "You have successfully bought " + self.label
     
-        if self.label == "streetware" and (user_rp_char.getPg() >= 30):
+        elif self.label == "streetware" and (user_rp_char.getPg() >= 30):
             item = Item("streetware", 10, 30 , 30)
             user_rp_char.buy(30)
             user_rp_char.addItem(item)
@@ -348,7 +418,72 @@ class StoreItem_Button(Button):
     #   send to discord embed 
         await interaction.response.send_message(response_to_Buyer + " " + interaction.user.name)
 #   ============================================================================================
- 
+
+#   just to help organize
+def storeItemsresponses(nameofThing, buyersWalletSize):
+#       else check all item options as well as if user has enough gold 
+    if nameofThing == "stick" and (buyersWalletSize  >= 1):
+            response_to_Buyer = "You have successfully bought " + nameofThing
+            
+    elif nameofThing == "card" and (buyersWalletSize >= 5):
+            response_to_Buyer = "You have successfully bought " + nameofThing
+    
+    elif nameofThing == "streetware" and (buyersWalletSize >= 30):
+            response_to_Buyer = "You have successfully bought " + nameofThing
+               
+    elif nameofThing == "pickaxe"  and (buyersWalletSize>= 15):
+            response_to_Buyer = "You have successfully bought " + nameofThing
+                
+    elif nameofThing == "angel wings"  and (buyersWalletSize >= 50):
+            response_to_Buyer = "You have successfully bought " + nameofThing
+            
+    else:
+        response_to_Buyer = "You are a broke and failed to buy a " + nameofThing
+            
+    return response_to_Buyer
+
+def storeItemsInteractionWithBuyer(player, nameofThing):
+#   do stuff to buyer 
+    if nameofThing == "stick" and (player.getPg()  >= 1):
+        item = Item("stick", 1, 0, 1)
+        player.buy(1)
+        player.addItem(item)
+            
+    elif nameofThing == "card" and (player.getPg() >= 5):
+        item = Item("card", 1, 2, 5)
+        player.buy(5)
+        player.addItem(item)
+    
+    elif nameofThing== "streetware" and (player.getPg() >= 30):
+        item = Item("streetware", 10, 30 , 30)
+        player.buy(30)
+        player.addItem(item)
+               
+    elif nameofThing == "pickaxe"  and (player.getPg() >= 15):
+        item = Item("pickaxe", 10,0 ,15)
+        player.buy(15)
+        player.addItem(item)
+                
+    elif nameofThing == "angel wings"  and (player.getPg() >= 50):
+        item = Item("angel wings", 25, 25, 50)
+        player.buy(50)
+        player.addItem(item)
+
+# ok searches for item for a specific person
+def lookForItemId_rpg(serverPlayers, userID, itemName):
+    if(serverPlayers.searchforPlayer(userID) == 0):
+        return 0
+    else:
+        player = serverPlayers.returnPlayer(userID)
+        return player.searchPlayerInventory(itemName) 
+         
+    
+# ok searches for item for a specific person
+def retrieveItemfromId_rpg(serverPlayers, userID, itemName):
+    player = serverPlayers.returnPlayer(userID)
+    if(player.searchPlayerInventory(itemName) == 1):
+        return player.returnPlayerInventory(itemName)
+
 #  =====================
 #  show create character 
 async def rp_character_create(interaction: discord.Integration):
@@ -415,7 +550,7 @@ async def rp_show_self(interaction: discord.Interaction):
         await interaction.response.send_message("character not made yet for " + interaction.user.name)
         return
 
-#   inputs from character
+#   inputs from character 
     name_rp = rp_character.name
     statsHP = rp_character.hitpoints
     statsAtk = rp_character.strength
@@ -617,7 +752,287 @@ async def rp_update_roles_function(interaction: discord.Interaction):
         
     await interaction.response.send_message("kill me soon update ended")
 #   ===========================================================
+
+#   try to add to allplayerslist 
+def tryInsertADPList(serverPlayersList, a_userName, a_userID):
+#       return 1 on fail
+        if serverPlayersList.searchforPlayer(a_userID) == 1:
+            return 1
+#       return 0
+        else:
+            player= Player(a_userName, a_userID)
+            serverPlayersList.addplayertoList(player)
+            return 0
         
+#   return 1 if valid
+#   return 0 if invalid
+#   return 2 if same person for specail message
+#   might put stricter conditions later so that roles cant farm lower roles
+def fight_valid(serverPlayersList, userID1, userID2):
+    if userID1 == userID2:
+        return 2
+    return (serverPlayersList.searchforPlayer(userID1) == 1 and 1 == serverPlayersList.searchforPlayer(userID2))
+
+#   favors challengee (challenger moves second)
+#   return 0 when challenger wins 
+#   returns 1 when challenger loses
+def fight_rpg_sim(challengerHP, challengerAttk, challengeeHP, challengeeAttk):
+
+#   if same char
+    if ((challengerHP == challengeeHP) and (challengeeAttk == challengerAttk)):
+#       how to generate random number return 0 or 1 half the time 
+        return random.randint(0, 1)
+     
+#   simulate fight
+    while (True):
+        challengerHP = challengerHP - challengeeAttk
+        if(challengerHP <= 0 ):
+            return 0
+        challengeeHP = challengeeHP - challengerAttk
+        if(challengeeHP <= 0 ):
+            return 1
+
+def get_totalAttack_char(player1):
+#   if no weapon search for weapon 
+    if player1.getEquippedSize() == 0 and player1.getInventorySize() == 0:
+        return player1.getStrength()
+        
+    if player1.getEquippedSize() == 0 and player1.getInventorySize() != 0:
+        defaultAttackItem = 0
+#       search for default item and swap weaker items for it then return total attack
+        for i in range(0, player1.getInventorySize()):
+            item = player1.getItem(i)
+            if(item.getStrengthItem() > defaultAttackItem):
+                defaultAttackItem = item.getStrengthItem()     
+        return (player1.getStrength()+ defaultAttackItem)
+
+    if player1.getEquippedSize() != 0:
+#       go through item list and add up all items to total attack 
+        totalAttack = 0
+        weaponsCarried = player1.getEquippedSize()
+        
+#       penalty for carrying more than 5 items no damage increase
+        if weaponsCarried >= 5:
+            return player1.getStrength()
+        
+        for i in range(0, weaponsCarried):
+            item = player1.getEquippedItem(i)
+            totalAttack = totalAttack + item.getStrengthItem()
+
+#       carry penalty 
+        # carryPenalty = 1-((1-weaponsCarried)(.25))
+        # floatingAttack = totalAttack*carryPenalty
+        return player1.getStrength() + (totalAttack - weaponsCarried*5)
+    
+def fight_rpg(serverPlayers, player1, player2):
+#   check if val;id fight if so then send msg
+    returnFightCheck = fight_valid(serverPlayers,player1, player2)
+    if returnFightCheck > 0:
+        print("can fight")
+#       will send discord messages to user 
+#       favors challengee (challenger moves second)
+#       return 0 when challenger wins 
+#       returns 1 when challenger loses
+        challengerHP = player1.getVitality()
+        challengerAttk = get_totalAttack_char(player1)
+        challengeeHP = player2.getVitality()
+        challengeeAttk = get_totalAttack_char(player2)
+        returnWinner = fight_rpg_sim(challengerHP, challengerAttk, challengeeHP, challengeeAttk)
+        print(returnWinner)
+    else:
+        print("cannot fight")
+        return -1
+
+def playersColor_rpg(playerName):
+    letterQuan = 0#283
+    for i in range(len(playerName)):
+        letterQuan = letterQuan + ord(playerName[i])
+    trueColor = letterQuan % 6 
+    
+#   options
+#   AQUA
+    if  trueColor == 0:
+        return 1752220
+#   DARK_GREEN	
+    if  trueColor == 1:
+        return 2067276
+#   DARK_PURPLE	
+    if  trueColor == 2:
+        return 7419530
+#   GOLD
+    if  trueColor == 3:
+        return 15844367
+#   RED
+    if  trueColor == 4:
+        return 15158332
+#   NAVY	
+    if  trueColor == 5:
+        return 15158332
+#   BLURPLe
+    if  trueColor == 6:
+        return 15158332
+        
+#  returns 0 on succsss
+#  returns 1 on failure no messages
+def clearMsgActivity(player_obj):
+    if player_obj.getmsgAct() == 0:
+        return 1
+    else:
+        player_obj.clearMsgHist()
+        return 0
+    
+# return 0 if added to inacitivty count
+# return 1 if deleted
+def manageInactivePlayers(player_obj):
+#   add warning
+    if player_obj.getinActive_warningS() < 1:
+        player_obj.addtoIA()
+        return 0
+#   else delete character 
+    else:
+        serverPlayers.deletePlayer(player_obj.getUserID())
+        return 1 
+    
+# # interaction: discord.Interaction, 
+# def deletekickmsg_rpg(serverPlayers , rpg_userID):
+# #   calls delete char: remove from list 
+#     if serverPlayers.manageInactivePlayers(rpg_userID) == 0:
+#         print()
+# #            user = interaction.guild.get_member(rpg_userID)
+#             #send mesage to discord aka the one who called the interaction
+# #            interaction.send(embed=getDeathEmbed())
+            
+#             #send message to kicked person
+#             # user.send(embed=getDeathEmbed(112233))
+#             # user.kick(reason=None)
+# #   send message to killed bot
+#     # interaction.send("failed to delete: " + rpg_userID)
+ 
+#  return -1 list empty 
+#  return number of people deleted 
+#  return 0 success
+def cleanup_msgActivity_AllUsers(serverPlayers):
+    # if empty return 0 
+    i = serverPlayers.getAllPlayersDataSize() 
+    if i == 0:
+        return -1
+    
+    noInactivePlayers  = 0 
+    
+    for i in  range(serverPlayers.getAllPlayersDataSize()):
+        tempPlayer = serverPlayers.getPlayerat_loc(i)
+        userID = tempPlayer.getUserID()
+#       if 1 ie empty
+        if clearMsgActivity(tempPlayer): 
+#           add to total deleted players if plater deleted/kicked and send msg to player 
+            if manageInactivePlayers(tempPlayer):
+#               fix interaction
+                # deletekickmsg_rpg(serverPlayers , userID)
+                noInactivePlayers = noInactivePlayers + 1
+    
+    return noInactivePlayers
+
+# could later mod to send stats of char at time of death 
+def getDeathEmbed(color_num):
+    embed=discord.Embed(title="Due to inactivity you have been killed off and kicked from server", color=color_num)
+    embed.set_image()#sqaure
+    return embed
+
+#send message
+def death_message_rpg():
+    embed=discord.Embed(title="left to a worse place...",description="comraded blah")
+    embed.set_image()#skull
+    return embed
+
+# mainly a wrapper for functions that clearDaily_rpg needs to call 
+def wrapperForDaily():
+#   return -1 list empty 
+#   return number of people deleted 
+#   return 0 success no inactive players
+    dieded = cleanup_msgActivity_AllUsers(serverPlayers)
+
+    if dieded == 0: 
+        print("not 0 dieded complete")
+    elif dieded > 0: 
+        print("dieded complete " + str(dieded))
+    else:
+        print("-1 dieded complete")
+
+#   =============================================================
+#  clears message on time 00::00::00 call it to act on this time 
+#  calls clearMsgActivity_AllUsers()
+async def clearDaily_rpg(interaction: discord.Interaction):
+#  The cron trigger works w/ wall clock 'cron'
+#  schedule jobs to be executed in the future
+
+#   initializing scheduler
+    scheduler =  AsyncIOScheduler()# comes from apscheduler 
+
+    # scheduler.add_job(print("hello"), 'cron', hour=0, minute=00) 
+#   schedular add job(function, args, trigger setting, minute, hour)
+    # scheduler.add_job(nom,args=[var1],trigger='cron', minute='*/1', hour='*') 
+    scheduler.add_job(wrapperForDaily,trigger='cron', minute='*/1', hour='*') 
+    
+#   run scheduler
+    scheduler.start()
+    await interaction.response.send_message(f'Started The Scheduler will start looping every 24 hours from now')
+#   ============================================================================================================
+
+# so dock it use / command menu fight to give option of picking to fight
+#   enter opps userid
+#   fight valid changed to take opponents reaction 
+#   then do other fight stuff afterwards if yes 
+#   have to learn how to dm a user tho pepehands
+#   then maybe send message to loser idk but i jsut need to connect evertything 6 hours pls be enough
+#   then it should check all the good stuff i wont do more checks dont have time 
+# maybe like 200 lines or less 
+
+# #have to fix roles in python demotiion and promotion
+# #so how to get enemies id ok we just cheat grab  thier id and send it to that
+def sendChallengetoOpponent(interaction: discord.Interaction, rpg_userID, nameChallenger):
+    user = interaction.guild.get_member(rpg_userID)
+#   create a view and some buttons to accept or reject  maybe time period or something and dusaper or diable afterwards
+    view = discord.ui.View(timeout=None)
+    buttonYes =  discord.ui.Button(label="Yes")
+    buttonNo =  discord.ui.Button(label="No")
+    buttonNo.callback = no_callback
+    buttonYes.callback = yes_callback
+    
+    view.add_item(buttonYes)
+    view.add_item(buttonNo)
+    
+    embed=discord.Embed(title="Challenged by " + nameChallenger)
+    embed.set_image()#swords
+    
+    
+    #make button to time out burnout daammit 
+    user.send(view=view, embed=embed)
+#   return response 
+
+#use callback to sim battle i spose 
+def yes_callback(interaction):
+    print("yes")
+#send nothing ithink
+def no_callback(interaction):
+    print("no")
+
+# Johnsons
+# Construction Safety Gear
+# TrackSuit 
+# 
+# Boost Defense// D1
+
+# Ring
+# AngelWings //gives priority Speed D15 
+# Halo	     // covers user in a holy light D 20
+# Boost Defense++// D5
+
+# Jean
+# Hammer Tool//Atk 5
+# Sword // Atk 7
+# Stick// Atk */
+# Boost Attack// D1
+
 # testing and creationo of chracter, store, data list, item
 # # player creation
 # player = Player("bob")
@@ -642,3 +1057,71 @@ async def rp_update_roles_function(interaction: discord.Interaction):
 # # store function
 # store()
 # print("\nmade it to end\n")
+
+#   just to help organize
+def storeItemsresponses(nameofThing, buyersWalletSize):
+#       else check all item options as well as if user has enough gold 
+    if nameofThing == "stick" and (buyersWalletSize  >= 1):
+            response_to_Buyer = "You have successfully bought " + nameofThing
+            
+    elif nameofThing == "card" and (buyersWalletSize >= 5):
+            response_to_Buyer = "You have successfully bought " + nameofThing
+    
+    elif nameofThing == "streetware" and (buyersWalletSize >= 30):
+            response_to_Buyer = "You have successfully bought " + nameofThing
+               
+    elif nameofThing == "pickaxe"  and (buyersWalletSize>= 15):
+            response_to_Buyer = "You have successfully bought " + nameofThing
+                
+    elif nameofThing == "angel wings"  and (buyersWalletSize >= 50):
+            response_to_Buyer = "You have successfully bought " + nameofThing
+            
+    else:
+        response_to_Buyer = "You are a broke and failed to buy a " + nameofThing
+            
+    return response_to_Buyer
+
+def storeItemsInteractionWithBuyer(player, nameofThing):
+#   do stuff to buyer 
+    if nameofThing == "stick" and (player.getPg()  >= 1):
+        item = Item("stick", 1, 0, 1)
+        player.buy(1)
+        player.addItem(item)
+            
+    elif nameofThing == "card" and (player.getPg() >= 5):
+        item = Item("card", 1, 2, 5)
+        player.buy(5)
+        player.addItem(item)
+    
+    elif nameofThing== "streetware" and (player.getPg() >= 30):
+        item = Item("streetware", 10, 30 , 30)
+        player.buy(30)
+        player.addItem(item)
+               
+    elif nameofThing == "pickaxe"  and (player.getPg() >= 15):
+        item = Item("pickaxe", 10,0 ,15)
+        player.buy(15)
+        player.addItem(item)
+                
+    elif nameofThing == "angel wings"  and (player.getPg() >= 50):
+        item = Item("angel wings", 25, 25, 50)
+        player.buy(50)
+        player.addItem(item)
+    else:
+        raise ValueError("Invalid Item")
+
+# ok searches for item for a specific person
+def lookForItemId_rpg(serverPlayers, userID, itemName):
+    if(serverPlayers.searchforPlayer(userID) == 0):
+        return 0
+    else:
+        player = serverPlayers.returnPlayer(userID)
+        return player.searchPlayerInventory(itemName) 
+         
+    
+# ok searches for item for a specific person
+def retrieveItemfromId_rpg(serverPlayers, userID, itemName):
+    player = serverPlayers.returnPlayer(userID)
+    if(player.searchPlayerInventory(itemName) == 1):
+        return player.returnPlayerInventory(itemName)
+

@@ -51,7 +51,7 @@ async def basic_libgen(interaction, type: str, search: str): # Set the arguments
     except ValueError:
         await bm.follow_up(interaction, "Not a number between 1-" + str(len(strings))) # Need to use a follow up after initial sending
         return
-    obj = results[num]
+    obj = results[num - 1]
     links = libby.getLinksFor(obj)
     strings2 = libby.formatLinks(links)
     msg = '\n'.join(strings2)
@@ -71,6 +71,13 @@ async def list_profiles_cmd(interaction: discord.Interaction):
     # responding by printing out the profiles using discord embed features
     await schedule.list_profiles(interaction)
 
+# viewprofile command: After the running of the command the bot will list out all of the events of a given profile with the list of events for each given day of the week. 
+@tree.command(name = 'viewprofile', description = 'Bot will list out all the profiles created on this server')
+@app_commands.describe(name="Name of the profile to be viewed (PROFILE MUST EXIST)")
+async def view_profile_cmd(interaction: discord.Interaction, name: str): 
+    # responding by printing out the profiles using discord embed features
+    await schedule.view_profile(interaction, name)
+
 # addprofile command: Takes in profile name and profile notes after running the command the bot will create a profile with the given attributes. 
 # Name of the profile must not already be in use though. 
 @tree.command(name = 'addprofile', description = 'Bot will add a profile with the given name and notes')
@@ -78,8 +85,8 @@ async def list_profiles_cmd(interaction: discord.Interaction):
 async def add_profile_cmd(interaction: discord.Interaction, name: str, notes: str):
     await schedule.add_profile(interaction, name, notes)
 
-# addprofile command: Takes in profile name and profile notes after running the command the bot will create a profile with the given attributes. 
-# Name of the profile must not already be in use though. 
+# deleteprofile command: Takes in profile name. After running the command the bot will delete the profile with the given name
+# Name of the profile must be of an existing profile
 @tree.command(name = 'deleteprofile', description = 'Bot will delete a profile with the given name')
 @app_commands.describe(name="Name of the profile to be deleted(PROFILE MUST ALREADY EXIST)")
 async def delete_profile_cmd(interaction: discord.Interaction, name: str):
@@ -90,9 +97,9 @@ async def delete_profile_cmd(interaction: discord.Interaction, name: str):
 @app_commands.describe(profile_name="Name of the profile for which the event should be added to", event_name="Name of the event to be added",
                         event_notes="Notes regarding the event", start_hour="The hour the event starts (must be integer between 0 and 23 inclusive)",
                         start_min="minute the event starts", end_hour="The hour the event ends at (must be integer between 0 and 23 inclusive)",
-                        end_min="The minute which the event ends at", day="Enter a number 1-7 to represent the day of the week (1=Sunday, 7=saturday)")
+                        end_min="The minute which the event ends at", day="Enter a number 1-7 to represent the day of the week (1=Sun, 2=Mon, 3=Tue, 4=Wed, 5=Thu, 6=Fri, 7=saturday)")
 async def add_event_cmd(interaction: discord.Interaction, profile_name: str, event_name: str, event_notes: str, start_hour: int, start_min: int, end_hour: int, end_min: int, day: int):
-    await schedule.add_event(interaction, profile_name, event_name, event_notes, start_hour, start_min, end_hour, end_min, day)
+    await schedule.add_event(interaction, client, profile_name, event_name, event_notes, start_hour, start_min, end_hour, end_min, day)
 
 # addprofile command: Takes in profile name and profile notes after running the command the bot will create a profile with the given attributes. 
 # Name of the profile must not already be in use though. 
@@ -111,7 +118,7 @@ async def move(interaction: discord.Interaction):
 @tree.command(name = 'play', description = 'Enter a valid YouTube, SoundCloud, or Spotify Link')
 async def play(interaction: discord.Interaction, url:str):
     await mzb.play(interaction,url,client)
-
+    
 # End Stream
 @tree.command(name = 'clear', description = 'Bot will clear all playing music')
 async def clear(interaction: discord.Interaction):
@@ -192,6 +199,12 @@ async def rp_update_roles(interaction: discord.Interaction):
     await botgame.rp_update_roles_function(interaction)
  #  ===================================================
 
+ #  update roles
+@tree.command(name = "rp_schedule", description = "checks up on everyone")
+async def rp_schedule(interaction: discord.Interaction):
+    await botgame.clearDaily_rpg(interaction)
+ #  =========================================
+ 
 #   Shut down Bot safely
 @tree.command(name = "shutdown", description = "shuts down the bot SAFELY")
 async def shutdown(interaction: discord.Interaction):
