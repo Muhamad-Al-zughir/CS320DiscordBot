@@ -420,7 +420,6 @@ async def swap(interaction: discord.Interaction, client: discord.Client, indexon
 
 # Display Song Info
 async def displayInfo(interaction: discord.Interaction, client: discord.Client):
-    
     await interaction.response.defer()
     if currentSongObj != None:
         logId = interaction.channel_id
@@ -430,9 +429,9 @@ async def displayInfo(interaction: discord.Interaction, client: discord.Client):
                     'May', 'June', 'July', 'August',
                     'September', 'October', 'November', 'December']
         
-        uploadYear = currentSongObj.uploadDate[:4]
-        uploadMonth = currentSongObj.uploadDate[4:6]
-        uploadDay = currentSongObj.uploadDate[6:]
+        uploadYear = processYear(currentSongObj.uploadDate)
+        uploadMonth = processMonth(currentSongObj.uploadDate)
+        uploadDay = processDay(currentSongObj.uploadDate)
 
         if uploadMonth == '01':
             uploadMonth = calendar[0]
@@ -475,7 +474,7 @@ async def displayInfo(interaction: discord.Interaction, client: discord.Client):
 
 # Display Lyrics for a given song
 async def displayLyrics(interaction: discord.Interaction, client: discord.Client):
-    await interaction.response.defer() 
+    await interaction.response.defer()
     if currentSongObj is None:
         await interaction.followup.send('There is no currently playing song to display lyrics for')
     else:
@@ -486,12 +485,11 @@ async def displayLyrics(interaction: discord.Interaction, client: discord.Client
         
         print(filteredTitle)                                        # Debug Prints scattered for Dev for tracing errors
         print(type(filteredTitle))
-        filteredTitle = filteredTitle.split('[')[0]                 # Filter stylistic things from title
-        filteredTitle = filteredTitle.split('(')[0]
-        print(filteredTitle)
         
-        geniusSong = geniusClient.search_song(filteredTitle)        # Search with new filtered title ** Note: THIS IS NOT PERFECTLY WORKING, GENIUS API SEARCH IS NOT STELLAR ** 
-        logId = interaction.channel_id                              # Channel ID acquisition to send lyrics to
+        finalTitle = filterTitle(filteredTitle)
+        
+        geniusSong = geniusClient.search_song(title = finalTitle)   # Search with new filtered title ** Note: THIS IS NOT PERFECTLY WORKING, GENIUS API SEARCH IS NOT STELLAR ** 
+        logId = interaction.channel_id                                  # Channel ID acquisition to send lyrics to
         logChannel = client.get_channel(logId)
         print("Lyrics search has been conducted")
 
@@ -517,6 +515,62 @@ async def displayLyrics(interaction: discord.Interaction, client: discord.Client
         
         else:
             await interaction.followup.send('Lyrics for this song could not be found')
+
+
+
+def filterTitle(filteredTitle:str):
+        # https://www.w3schools.com/python/ref_string_strip.asp     Strip method for whitespaces found here
+        filteredTitle1 = filteredTitle.split('[')[0]                 # Filter stylistic things from title
+        filteredTitle2 = filteredTitle1.split('(')[0]
+        filteredTitle3 = filteredTitle2.split('ft')[0]
+        filteredTitle4 = filteredTitle3.split('ft.')[0]
+        filteredTitle5 = filteredTitle4.split('feat.')[0]
+        filteredTitle6 = filteredTitle5.split('feat')[0]
+        filteredTitle7 = filteredTitle6.split('featuring')[0]
+        return filteredTitle7
+
+
+def processMonth(garbledStr:str):
+        calendar = ['January', 'February', 'March', 'April',
+                    'May', 'June', 'July', 'August',
+                    'September', 'October', 'November', 'December']
+        
+        uploadMonth = garbledStr[4:6]
+
+        if uploadMonth == '01':
+            uploadMonth = calendar[0]
+        elif uploadMonth == '02':
+            uploadMonth = calendar[1]
+        elif uploadMonth == '03':
+            uploadMonth = calendar[2]
+        elif uploadMonth == '04':
+            uploadMonth = calendar[3]
+        elif uploadMonth == '05':
+            uploadMonth = calendar[4]
+        elif uploadMonth == '06':
+            uploadMonth = calendar[5]
+        elif uploadMonth == '07':
+            uploadMonth = calendar[6]
+        elif uploadMonth == '08':
+            uploadMonth = calendar[7]
+        elif uploadMonth == '09':
+            uploadMonth = calendar[8]
+        elif uploadMonth == '10':
+            uploadMonth = calendar[9]
+        elif uploadMonth == '11':
+            uploadMonth = calendar[10]
+        elif uploadMonth == '12':
+            uploadMonth = calendar[11]
+
+        return uploadMonth
+
+def processDay(garbledStr:str):
+    uploadDay = garbledStr[6:]
+    return uploadDay
+
+def processYear(garbledStr:str):
+    uploadYear = garbledStr[:4]
+    return uploadYear
 
 
 
