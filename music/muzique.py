@@ -110,34 +110,37 @@ class YouTube_linkobj(discord.PCMVolumeTransformer):
 
 # End Stream | Universal
 async def clear(interaction: discord.Interaction):
+    await interaction.response.defer()
     server = interaction.guild
     voice_channel = server.voice_client
 
     if voice_channel is None:
-        await interaction.response.send_message(f'There is no music to clear!')
+        await interaction.followup.send(f'There is no music to clear!')
     else:
         await voice_channel.disconnect()
         songList.clear()
-        await interaction.response.send_message(f'Music has been stopped & the queue has been cleared')
+        await interaction.followup.send(f'Music has been stopped & the queue has been cleared')
 
 # Pause Stream and Unpause Stream | Universal
 async def pause_yt(interaction: discord.Interaction):
+    await interaction.response.defer()
     vcstatus = interaction.guild.voice_client
     if vcstatus is None:
-        await interaction.response.send_message('Nothing is currently playing')
+        await interaction.followup.send('Nothing is currently playing')
     elif vcstatus.is_playing():
         vcstatus.pause()
-        await interaction.response.send_message('player is now paused')
+        await interaction.followup.send('player is now paused')
     elif vcstatus.is_paused():
         vcstatus.resume()
-        await interaction.response.send_message('player is now un-paused')
+        await interaction.followup.send('player is now un-paused')
     else:
-        await interaction.response.send_message(f'Unknown error in PAUSE occured')
+        await interaction.followup.send(f'Unknown error in PAUSE occured')
 
 # Move / Join command | Universal
 async def move(interaction: discord.Interaction):    
+        await interaction.response.defer()
         try:
-            await interaction.response.send_message(f'Joining...')                  # Sends attempt message to server
+            await interaction.followup.send(f'Joining...')                  # Sends attempt message to server
             local = interaction.guild                                               # Create local instances of guild and check for existence of voice client
             voicechan = local.voice_client      
             if voicechan is not None:                                               # Voice channel exists, move to caller's channel
@@ -154,6 +157,7 @@ async def move(interaction: discord.Interaction):
 
 # Play from a link | YouTube , SoundCloud, and Spotify!
 async def play(interaction: discord.Interaction, url:str, client: discord.Client):
+        await interaction.response.defer() 
         global currentSongUrl
         global currentSongObj
         print("Join being attempted ..")
@@ -197,7 +201,6 @@ async def play(interaction: discord.Interaction, url:str, client: discord.Client
             filename = await YouTube_linkobj.from_search(url, loop=client.loop, stream=True, start=0)
 
         print("Before Playing in channel...")
-        await interaction.response.defer() 
         if voice_channel.is_playing():                                                              # If the bot is playing, add song to a queue
             songList.append(filename)
             await interaction.followup.send(f'Added {filename.title} to queue')             # Send user friendly message
@@ -253,24 +256,26 @@ def nextSong(interaction: discord.Interaction, client: discord.Client):         
 # Skipping songs function
 async def skipSong(interaction: discord.Interaction, client: discord.Client):
     #print("Before Skip")                                                                       # Debug Prints
+    await interaction.response.defer()
     print(songList)
     local = interaction.guild                                                                   # Establish server context
     voicechan = local.voice_client                                                              # Establish related voice channel
 
     if voicechan is None:
-        await interaction.response.send_message(f'No current song playing to skip!')
+        await interaction.followup.send(f'No current song playing to skip!')
     elif voicechan.is_playing():
-        await interaction.response.send_message(f'Skipping song')
+        await interaction.followup.send(f'Skipping song')
         voicechan.stop()
     else:
-        await interaction.response.send_message(f'Unknown error in SKIP occured')
+        await interaction.followup.send(f'Unknown error in SKIP occured')
     #print("After Skip") 
     #print(songList)
 
 # Displays the current queue of songs to be played
 async def displayQueue(interaction: discord.Interaction, client: discord.Client):
+    await interaction.response.defer()
     if len(songList) != 0:                                                           
-        await interaction.response.send_message(f'Current Queue is:')
+        await interaction.followup.send(f'Current Queue is:')
         logId = interaction.channel_id
         logChannel = client.get_channel(logId)
         i = 1
@@ -280,13 +285,13 @@ async def displayQueue(interaction: discord.Interaction, client: discord.Client)
             await logChannel.send(display)
             i = i+1
     else: 
-        await interaction.response.send_message(f'No active Queue to be displayed!')
+        await interaction.followup.send(f'No active Queue to be displayed!')
 
 # Shuffles the Current Queue of Songs and Redisplays it
 async def shuffleQueue(interaction: discord.Interaction, client: discord.Client):
-
+    await interaction.response.defer()
     if len(songList) != 0:
-        await interaction.response.send_message(f'Queue Shuffled. Current Queue is now:')
+        await interaction.followup.send(f'Queue Shuffled. Current Queue is now:')
 
         random.shuffle(songList)
         
@@ -299,11 +304,12 @@ async def shuffleQueue(interaction: discord.Interaction, client: discord.Client)
             await logChannel.send(display)
             i = i+1
     else:
-        await interaction.response.send_message(f'No active Queue to be shuffled!')
+        await interaction.followup.send(f'No active Queue to be shuffled!')
 
 
 # Shifting The Track
 async def fastForwardSong(interaction: discord.Interaction, client: discord.Client, seconds: int):
+    await interaction.response.defer()
     local = interaction.guild                                                                   # Establish server context
     voicechan = local.voice_client   
     #global currentSongTime
@@ -351,15 +357,16 @@ async def fastForwardSong(interaction: discord.Interaction, client: discord.Clie
             print("Music stopped. New fast forward song added")
             #currentSongTime = time.time()
             print("Time reset in Fast forward")
-            await interaction.response.send_message(f'Shifting Track to {seconds} seconds...')
+            await interaction.followup.send(f'Shifting Track to {seconds} seconds...')
         
         else:
-            await interaction.response.send_message(
+            await interaction.followup.send(
                 f'Invalid Number of Seconds Entered (check that the value is not 0, and the seconds does not exceed the duration of the song)') 
 
 
 # Repeating a track
 async def encore(interaction: discord.Interaction, client: discord.Client):
+    await interaction.response.defer()
     global currentSongObj
     if currentSongObj != None and currentSongUrl!= '':
         print("Passed if in encore")
@@ -388,15 +395,16 @@ async def encore(interaction: discord.Interaction, client: discord.Client):
                 filename = await YouTube_linkobj.from_search(currentSongUrl, loop=client.loop, stream=True, start=0)
         
         songList.appendleft(filename)                                                               # Append new YouTube obj to top of the list
-        await interaction.response.send_message(f'{currentSongObj.title} queued for repeat ')
+        await interaction.followup.send(f'{currentSongObj.title} queued for repeat ')
     else:
-        await interaction.response.send_message(' No song is currently playing to repeat! ')
+        await interaction.followup.send(' No song is currently playing to repeat! ')
 
 # Shift Two Song's indexes
 async def swap(interaction: discord.Interaction, client: discord.Client, indexone: int, indextwo: int):
+    await interaction.response.defer()
     if (len(songList) > 1) and indexone !=0 and indextwo !=0:
         songList[indexone-1], songList[indextwo-1] = songList[indextwo-1], songList[indexone-1]
-        await interaction.response.send_message(f'Index {indexone} and Index {indextwo} are now swapped! Current Index is now:')
+        await interaction.followup.send(f'Index {indexone} and Index {indextwo} are now swapped! Current Index is now:')
 
         logId = interaction.channel_id
         logChannel = client.get_channel(logId)
@@ -408,11 +416,12 @@ async def swap(interaction: discord.Interaction, client: discord.Client, indexon
             i = i+1
     
     else:
-        await interaction.response.send_message(' Queue is not large enough to swap anything! Or you have entered 0 for one of the indexes ')
+        await interaction.followup.send(' Queue is not large enough to swap anything! Or you have entered 0 for one of the indexes ')
 
 # Display Song Info
 async def displayInfo(interaction: discord.Interaction, client: discord.Client):
     
+    await interaction.response.defer()
     if currentSongObj != None:
         logId = interaction.channel_id
         logChannel = client.get_channel(logId)
@@ -453,7 +462,7 @@ async def displayInfo(interaction: discord.Interaction, client: discord.Client):
         totalMinutes = int(currentSongObj.songTime/60)
         totalSeconds = currentSongObj.songTime % 60
 
-        await interaction.response.send_message('Current Song Information:')
+        await interaction.followup.send('Current Song Information:')
         await logChannel.send(f'1. Title: {currentSongObj.title}')
         await logChannel.send(f'2. Song Duration: {totalMinutes} minutes, {totalSeconds} seconds')
         await logChannel.send(f'3. Uploader: {currentSongObj.uploaderID}')
@@ -461,7 +470,7 @@ async def displayInfo(interaction: discord.Interaction, client: discord.Client):
         await logChannel.send(f'5. Cover Art: {currentSongObj.coverArt}')
         await logChannel.send(f'6. Description: {currentSongObj.songDescription}')
     else:
-        await interaction.response.send_message('No song is currently playing to display information for!')
+        await interaction.followup.send('No song is currently playing to display information for!')
 
 
 # Display Lyrics for a given song
