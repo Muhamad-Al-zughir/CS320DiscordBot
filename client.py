@@ -173,6 +173,13 @@ async def rp_schedule(interaction: discord.Interaction):
     await botgame.clearDaily_rpg(interaction)
  #  =========================================
  
+ #  update roles
+@tree.command(name = "rp_fight", description = "enter opponents id to fight")
+@app_commands.describe(opp="Please enter opponents ID" )
+async def rp_slash_fight(interaction: discord.Interaction, opp: str):
+    await botgame.rp_fight_wrapper(interaction, client, opp)
+ #  ===========================================
+ 
 #   Shut down Bot safely
 @tree.command(name = "shutdown", description = "shuts down the bot SAFELY")
 async def shutdown(interaction: discord.Interaction):
