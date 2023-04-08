@@ -467,7 +467,23 @@ async def displayInfo(interaction: discord.Interaction, client: discord.Client):
         await logChannel.send(f'3. Uploader: {currentSongObj.uploaderID}')
         await logChannel.send(f'4. Upload Date: {uploadMonth} {uploadDay}, {uploadYear}')
         await logChannel.send(f'5. Cover Art: {currentSongObj.coverArt}')
-        await logChannel.send(f'6. Description: {currentSongObj.songDescription}')
+        #await logChannel.send(f'6. Description: {currentSongObj.songDescription}')
+
+        desc = currentSongObj.songDescription
+        if len(desc) < 2000:                                      # Due to discord limitations, need to print description 2000 at a time
+            await logChannel.send(f'6. Description: {desc}')      # If less than 2000, send immediately
+        else:
+            await logChannel.send(f'6. Description: ')
+            newdesc = ''                                # Else, declare new variable to track 2000 chars at a time
+            while len(desc) > 2000:                     # Iterate 2000 at a time while geniusLyrics is greater than 2000 **
+                    
+                newdesc = desc[:2000]                   # string slicing to grab 2000 and send
+                await logChannel.send(newdesc)
+                desc = desc[2000:]                      # YT description updated here                                     **
+            
+            
+        await logChannel.send(desc)                     # Send remainder of description
+
     else:
         await interaction.followup.send('No song is currently playing to display information for!')
 
