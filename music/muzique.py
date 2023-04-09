@@ -51,11 +51,6 @@ songList = deque()
 currentSongUrl = ''
 currentSongObj = None
 
-"""
-def errorLogs(message):                                                 # Redirect stderr to discord channel
-    channel = client.get_channel(123456789)                             # Error log channel specified here, can be changed
-    channel.send(f"**STDERR Output:**\n```\n{message}\n```")
-"""
 
 # ** NOTE **
 # Class YouTube_linkobj below is borrowed from https://github.com/Rapptz/discord.py/blob/master/examples/basic_voice.py 
