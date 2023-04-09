@@ -2,6 +2,7 @@
 # Started 1/18/2023
 
 import os
+import sys
 import discord
 from discord import app_commands
 from dotenv import load_dotenv
@@ -144,7 +145,7 @@ async def displayQueue(interaction: discord.Interaction):
 async def shuffleQueue(interaction: discord.Interaction):
     await mzb.shuffleQueue(interaction, client)
 
-# Fast Forward a Song
+# Shift song for a certan value in seconds 
 @tree.command(name = 'shiftsong', description = 'Shift a song forward or backward for a valid number of seconds')
 async def fastForwardSong(interaction: discord.Interaction, seconds: int):
     await mzb.fastForwardSong(interaction, client, seconds)
@@ -168,6 +169,11 @@ async def swap(interaction: discord.Interaction):
 @tree.command(name = 'displaylyrics', description = 'Display Lyrics for the current playing song')
 async def displayLyrics(interaction: discord.Interaction):
     await mzb.displayLyrics(interaction,client)
+
+# Shift song for a certain percentage value of total runtime
+@tree.command(name = 'shiftsong_percent', description = 'Shift to a certain percentage of the total runtime of the current track')
+async def percentageShift(interaction: discord.Interaction, percent: int):
+    await mzb.percentageShift(interaction, client, percent)
 
 #   dropdown menu for character selection
 @tree.command(name = "rp_store", description = "store for rp game")
@@ -270,6 +276,36 @@ async def on_message(message):
 async def on_ready():
     await tree.sync()
     print(f'{client.user} has connected to Discord!')
+
+# Send Standard Error to Discord Channel
+async def errorLogs(message):
+    channel = await client.fetch_channel(1094498464710262865)         # Discord Channel Specified Here
+
+    spam = ['rate limited', 'logging in', 'connected to Gateway',     # spam and incorrectly labeled "error messages" in stderr
+            'handshake complete','Starting voice','voice...'
+            'ffmpeg process', 'should have terminated', 'has not terminated']     
+
+    if any(substring in message for substring in spam ):              # Ignore Spam
+        return
+
+
+    if len(str(message)) < 1900:                                                # Due to discord limitations, need to print description 2000 at a time
+        await channel.send(f"**STDERR Output:**\n```\n{str(message)}\n```")     # If less than 1900, send immediately
+    else:
+        await channel.send(f'**STDERR Output:**\n')
+        newerr = ''                                # Else, declare new variable to track 1900 chars at a time
+        while len(message) > 1900:                 # Iterate 2000 at a time while geniusLyrics is greater than 2000 **
+                    
+            newerr = message[:1900]                # string slicing to grab 1900 and send
+            await channel.send(f"```\n{str(newerr)}\n```")
+            message = message[1900:]               # Error Updated Here                                     **    
+
+    await channel.send(f"\n```\n{str(message)}\n```")
+
+def errhandle(message):
+    # Call the async function to send the error message to the Discord channel
+    client.loop.create_task(errorLogs(message))
     
+sys.stderr.write = errhandle                                        # Standard Error redirection initialized here
 
 client.run(TOKEN)

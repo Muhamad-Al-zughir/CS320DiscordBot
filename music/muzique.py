@@ -3,6 +3,7 @@
 
 # Imports
 import os
+import sys
 import asyncio
 import discord
 from discord.ext import commands
@@ -50,6 +51,11 @@ songList = deque()
 currentSongUrl = ''
 currentSongObj = None
 
+"""
+def errorLogs(message):                                                 # Redirect stderr to discord channel
+    channel = client.get_channel(123456789)                             # Error log channel specified here, can be changed
+    channel.send(f"**STDERR Output:**\n```\n{message}\n```")
+"""
 
 # ** NOTE **
 # Class YouTube_linkobj below is borrowed from https://github.com/Rapptz/discord.py/blob/master/examples/basic_voice.py 
@@ -149,7 +155,8 @@ async def move(interaction: discord.Interaction):
             await interaction.user.voice.channel.connect()                          # Establish connection after move
 
         except Exception as err:                                                    # Display general catch-all error for debug purposes
-            print(err)
+            print(f"{err}", file=sys.stderr)                                        # Display to Standard Error for our error log channel
+            await interaction.followup.send(f'User is not in a voice channel!')
 
 # ============================================================================================================
 #
@@ -164,6 +171,16 @@ async def play(interaction: discord.Interaction, url:str, client: discord.Client
         local = interaction.guild                                                                   # Establish server context
         voicechan = local.voice_client                                                              # Establish related voice channel
         
+        caller = interaction.user
+        callerID = interaction.guild.get_member(caller.id)
+
+        voicecheck = getattr(callerID, 'voice', None)
+        channelcheck = getattr(voicecheck, 'channel', None)
+
+
+        if channelcheck is None:
+            await interaction.followup.send(f'User is not in a voice channel!')
+
         if voicechan is None:                                                                       # If Bot is not in any voice channel, connect
             await interaction.user.voice.channel.connect()
     
@@ -589,7 +606,410 @@ def processYear(garbledStr:str):
     return uploadYear
 
 
+# Shift by Percentage
+async def shiftPercent(interaction: discord.Interaction, client: discord.Client):
+    await interaction.response.defer()
+    if len(songList) != 0:                                                           
+        await interaction.followup.send(f'Current Queue is:')
+        logId = interaction.channel_id
+        logChannel = client.get_channel(logId)
+        i = 1
+        for songs in songList:
+            display = songs.title
+            display = str(i) + ": " + display
+            await logChannel.send(display)
+            i = i+1
+    else: 
+        await interaction.followup.send(f'No active Queue to be displayed!')
 
+# Shuffles the Current Queue of Songs and Redisplays it
+async def shuffleQueue(interaction: discord.Interaction, client: discord.Client):
+    await interaction.response.defer()
+    if len(songList) != 0:
+        await interaction.followup.send(f'Queue Shuffled. Current Queue is now:')
+
+        random.shuffle(songList)
+        
+        logId = interaction.channel_id
+        logChannel = client.get_channel(logId)
+        i = 1
+        for songs in songList:
+            display = songs.title
+            display = str(i) + ": " + display
+            await logChannel.send(display)
+            i = i+1
+    else:
+        await interaction.followup.send(f'No active Queue to be shuffled!')
+
+
+# Shifting The Track
+# Convenient for shifting when you don't know the exact time in seconds
+# but you're thinking "Oh hey, that part halfway in the song was pretty good, lets go to that part"
+async def percentageShift(interaction: discord.Interaction, client: discord.Client, percent: int):
+    await interaction.response.defer()
+    local = interaction.guild                                                                   # Establish server context
+    voicechan = local.voice_client   
+    #global currentSongTime
+    print("CURRENT SONG LISTS ARE")
+    print(songList)
+    print("Reached Shift Percentage")                                                          # Establish related voice channel
+
+    if (percent == 0):
+        seconds = 0
+
+    elif (percent == 1):
+        seconds = (0.01 * currentSongObj.songTime)
+    
+    elif (percent == 2):
+        seconds = (0.02 * currentSongObj.songTime)
+
+    elif (percent == 3):
+        seconds = (0.03 * currentSongObj.songTime)
+    
+    elif (percent == 4):
+        seconds = (0.04 * currentSongObj.songTime)
+
+    elif (percent == 5):
+        seconds = (0.05 * currentSongObj.songTime)
+
+    elif (percent == 6):
+        seconds = (0.06 * currentSongObj.songTime)
+
+    elif (percent == 7):
+        seconds = (0.07 * currentSongObj.songTime)
+
+    elif (percent == 8):
+        seconds = (0.08 * currentSongObj.songTime)
+
+    elif (percent == 9):
+        seconds = (0.09 * currentSongObj.songTime)
+
+    elif (percent == 10):
+        seconds = (0.10 * currentSongObj.songTime)
+
+    elif (percent == 11):
+        seconds = (0.11 * currentSongObj.songTime)
+
+    elif (percent == 12):
+        seconds = (0.12 * currentSongObj.songTime)
+
+    elif (percent == 13):
+        seconds = (0.13 * currentSongObj.songTime)
+
+    elif (percent == 14):
+        seconds = (0.14 * currentSongObj.songTime)
+
+    elif (percent == 15):
+        seconds = (0.15 * currentSongObj.songTime)
+
+    elif (percent == 16):
+        seconds = (0.16 * currentSongObj.songTime)
+
+    elif (percent == 17):
+        seconds = (0.17 * currentSongObj.songTime)
+
+    elif (percent == 18):
+        seconds = (0.18 * currentSongObj.songTime)
+
+    elif (percent == 19):
+        seconds = (0.19 * currentSongObj.songTime)
+
+    elif (percent == 20):
+        seconds = (0.20 * currentSongObj.songTime)
+
+    elif (percent == 21):
+        seconds = (0.21 * currentSongObj.songTime)
+
+    elif (percent == 22):
+        seconds = (0.22 * currentSongObj.songTime)
+
+    elif (percent == 23):
+        seconds = (0.23 * currentSongObj.songTime)
+
+    elif (percent == 24):
+        seconds = (0.24 * currentSongObj.songTime)
+
+    elif (percent == 25):
+        seconds = (0.25 * currentSongObj.songTime)
+
+    elif (percent == 26):
+        seconds = (0.26 * currentSongObj.songTime)
+
+    elif (percent == 27):
+        seconds = (0.27 * currentSongObj.songTime)
+
+    elif (percent == 28):
+        seconds = (0.28 * currentSongObj.songTime)
+
+    elif (percent == 29):
+        seconds = (0.29 * currentSongObj.songTime)
+
+    elif (percent == 30):
+        seconds = (0.30 * currentSongObj.songTime)
+
+    elif (percent == 31):
+        seconds = (0.31 * currentSongObj.songTime)
+
+    elif (percent == 32):
+        seconds = (0.32 * currentSongObj.songTime)
+
+    elif (percent == 33):
+        seconds = (0.33 * currentSongObj.songTime)
+
+    elif (percent == 34):
+        seconds = (0.34 * currentSongObj.songTime)
+
+    elif (percent == 35):
+        seconds = (0.35 * currentSongObj.songTime)
+
+    elif (percent == 36):
+        seconds = (0.36 * currentSongObj.songTime)
+
+    elif (percent == 37):
+        seconds = (0.37 * currentSongObj.songTime)
+
+    elif (percent == 38):
+        seconds = (0.38 * currentSongObj.songTime)
+
+    elif (percent == 39):
+        seconds = (0.39 * currentSongObj.songTime)
+
+    elif (percent == 40):
+        seconds = (0.40 * currentSongObj.songTime)
+
+    elif (percent == 41):
+        seconds = (0.41 * currentSongObj.songTime)
+
+    elif (percent == 42):
+        seconds = (0.42 * currentSongObj.songTime)
+
+    elif (percent == 43):
+        seconds = (0.43 * currentSongObj.songTime)
+
+    elif (percent == 44):
+        seconds = (0.44 * currentSongObj.songTime)
+
+    elif (percent == 45):
+        seconds = (0.45 * currentSongObj.songTime)
+
+    elif (percent == 46):
+        seconds = (0.46 * currentSongObj.songTime)
+
+    elif (percent == 47):
+        seconds = (0.47 * currentSongObj.songTime)
+
+    elif (percent == 48):
+        seconds = (0.48 * currentSongObj.songTime)
+
+    elif (percent == 49):
+        seconds = (0.49 * currentSongObj.songTime)
+
+    elif (percent == 50):
+        seconds = (0.50 * currentSongObj.songTime)
+
+    elif (percent == 51):
+        seconds = (0.51 * currentSongObj.songTime)
+
+    elif (percent == 52):
+        seconds = (0.52 * currentSongObj.songTime)
+
+    elif (percent == 53):
+        seconds = (0.53 * currentSongObj.songTime)
+
+    elif (percent == 54):
+        seconds = (0.54 * currentSongObj.songTime)
+
+    elif (percent == 55):
+        seconds = (0.55 * currentSongObj.songTime)
+
+    elif (percent == 56):
+        seconds = (0.56 * currentSongObj.songTime)
+
+    elif (percent == 57):
+        seconds = (0.57 * currentSongObj.songTime)
+
+    elif (percent == 58):
+        seconds = (0.58 * currentSongObj.songTime)
+
+    elif (percent == 59):
+        seconds = (0.59 * currentSongObj.songTime)
+
+    elif (percent == 60):
+        seconds = (0.60 * currentSongObj.songTime)
+
+    elif (percent == 61):
+        seconds = (0.61 * currentSongObj.songTime)
+
+    elif (percent == 62):
+        seconds = (0.62 * currentSongObj.songTime)
+
+    elif (percent == 63):
+        seconds = (0.63 * currentSongObj.songTime)
+
+    elif (percent == 64):
+        seconds = (0.64 * currentSongObj.songTime)
+
+    elif (percent == 65):
+        seconds = (0.65 * currentSongObj.songTime)
+
+    elif (percent == 66):
+        seconds = (0.66 * currentSongObj.songTime)
+
+    elif (percent == 67):
+        seconds = (0.67 * currentSongObj.songTime)
+
+    elif (percent == 68):
+        seconds = (0.68 * currentSongObj.songTime)
+
+    elif (percent == 69):
+        seconds = (0.69 * currentSongObj.songTime)
+
+    elif (percent == 70):
+        seconds = (0.70 * currentSongObj.songTime)
+
+    elif (percent == 71):
+        seconds = (0.71 * currentSongObj.songTime)
+
+    elif (percent == 72):
+        seconds = (0.72 * currentSongObj.songTime)
+
+    elif (percent == 73):
+        seconds = (0.73 * currentSongObj.songTime)
+
+    elif (percent == 74):
+        seconds = (0.74 * currentSongObj.songTime)
+
+    elif (percent == 75):
+        seconds = (0.75 * currentSongObj.songTime)
+
+    elif (percent == 76):
+        seconds = (0.76 * currentSongObj.songTime)
+
+    elif (percent == 77):
+        seconds = (0.77 * currentSongObj.songTime)
+
+    elif (percent == 78):
+        seconds = (0.78 * currentSongObj.songTime)
+
+    elif (percent == 79):
+        seconds = (0.79 * currentSongObj.songTime)
+
+    elif (percent == 80):
+        seconds = (0.80 * currentSongObj.songTime)
+
+    elif (percent == 81):
+        seconds = (0.81 * currentSongObj.songTime)
+
+    elif (percent == 82):
+        seconds = (0.82 * currentSongObj.songTime)
+
+    elif (percent == 83):
+        seconds = (0.83 * currentSongObj.songTime)
+
+    elif (percent == 84):
+        seconds = (0.84 * currentSongObj.songTime)
+
+    elif (percent == 85):
+        seconds = (0.85 * currentSongObj.songTime)
+
+    elif (percent == 86):
+        seconds = (0.86 * currentSongObj.songTime)
+
+    elif (percent == 87):
+        seconds = (0.87 * currentSongObj.songTime)
+
+    elif (percent == 88):
+        seconds = (0.88 * currentSongObj.songTime)
+
+    elif (percent == 89):
+        seconds = (0.89 * currentSongObj.songTime)
+
+    elif (percent == 90):
+        seconds = (0.90 * currentSongObj.songTime)
+
+    elif (percent == 91):
+        seconds = (0.91 * currentSongObj.songTime)
+
+    elif (percent == 92):
+        seconds = (0.92 * currentSongObj.songTime)
+
+    elif (percent == 93):
+        seconds = (0.93 * currentSongObj.songTime)
+
+    elif (percent == 94):
+        seconds = (0.94 * currentSongObj.songTime)
+
+    elif (percent == 95):
+        seconds = (0.95 * currentSongObj.songTime)
+
+    elif (percent == 96):
+        seconds = (0.96 * currentSongObj.songTime)
+
+    elif (percent == 97):
+        seconds = (0.97 * currentSongObj.songTime)
+
+    elif (percent == 98):
+        seconds = (0.98 * currentSongObj.songTime)
+
+    elif (percent == 99):
+        seconds = (0.99 * currentSongObj.songTime)
+    
+    elif (percent == 100):
+        voicechan.stop()
+        await interaction.followup.send(f'100% Entered. Skipping song...')
+
+    else:
+        await interaction.followup.send(f'Invalid Percentage Value entered!')
+
+
+    # =================================================================== # 
+    seconds = int(seconds)
+    if currentSongUrl !='':                               # NOte: ADD condition for Song Obj existing here, else display error                          
+        print("If condition met in Fast forward")
+        if (seconds < currentSongObj.songTime):
+            #currentSongTime = ((time.time()) - currentSongTime) + seconds
+            print("Before retrieving YouTube Object...")    
+            print("Song Urls Before Appending")   
+
+            # current song url update        
+   
+            print(f'Updated var is {currentSongUrl}')          
+            if (currentSongUrl.startswith('https://open.spotify.com/')) :                               # Check if Spotify Link
+                track_id = currentSongUrl.split('/')[-1]                                                # Strip '/' and strings after '?'
+                head, sep, tail = track_id.partition('?')                                               # So we only have Spotify Song ID
+                track_id = head                                                                         # contained in "head" variable
+                
+                track_info = spotifyObj.track(track_id)                                                 # acquire track info given ID
+                track_name = track_info['name']                                                         # Acquire track name, parse for artist names
+                track_artists = [artist['name'] for artist in track_info['artists']]                    # In the event of multiple artists
+                artistsList = ' '.join(track_artists)
+                final = track_name + " by " + artistsList                                               # Join Title and Artists and perform YT search query
+                filename = await YouTube_linkobj.from_search(final, loop=client.loop, stream=True, start=seconds)
+
+                                                                                                        # Check if YouTube or Soundcloud Link
+                                                                                                        # Note: YouTube_linkobj shares functionality
+                                                                                                        #       with both YouTube and SoundCloud links
+                                                                                                        #       So we can share logic here 
+            elif ((currentSongUrl.startswith('https://www.youtube.com/')) or currentSongUrl.startswith('https://soundcloud.com/') ):   
+                print("Link...")
+                filename = await YouTube_linkobj.from_url(currentSongUrl, loop=client.loop, stream=True, start=seconds)
+            
+            else:                                                                                       # Else, perform General Search Query (YouTube)
+                print("Search...")
+                filename = await YouTube_linkobj.from_search(currentSongUrl, loop=client.loop, stream=True, start=seconds)
+
+            songList.appendleft(filename)
+            print("SONGLISTS after are")
+            print(songList)
+            voicechan.stop()
+            print("Music stopped. New fast forward song added")
+            #currentSongTime = time.time()
+            print("Time reset in Shift")
+            await interaction.followup.send(f'Shifting Track to {percent}% of total runtime ({seconds} seconds)')
+        
+        else:
+            await interaction.followup.send(
+                f'Unknown Error in PERCENTAGE SHIFT occurred (this should not happen)') 
 
 
 # ============================================================================================================
