@@ -1,3 +1,5 @@
+from asyncio import selector_events
+from curses.ascii import isdigit
 from discord.ui import Button
 from discord.ui import View
 from discord.ui import Select
@@ -650,6 +652,7 @@ def rp_store_select(interaction: discord.Interaction):
 #  ===========
 #    challenge
 async def rp_challenge(interaction: discord.Interaction):
+
 #   create embed
     await rp_challenge_message(interaction); 
     
@@ -763,15 +766,19 @@ def tryInsertADPList(serverPlayersList, a_userName, a_userID):
             player= Player(a_userName, a_userID)
             serverPlayersList.addplayertoList(player)
             return 0
+    
+#   *****************************************************************************************
+#   START OF MAIN FIGHT FUNCTIONS
+#   *****************************************************************************************    
         
 #   return 1 if valid
 #   return 0 if invalid
 #   return 2 if same person for specail message
 #   might put stricter conditions later so that roles cant farm lower roles
-def fight_valid(serverPlayersList, userID1, userID2):
+def fight_valid(userID1, userID2):
     if userID1 == userID2:
         return 2
-    return (serverPlayersList.searchforPlayer(userID1) == 1 and 1 == serverPlayersList.searchforPlayer(userID2))
+    return (serverPlayers.searchforPlayer(userID1) and serverPlayers.searchforPlayer(userID1))
 
 #   favors challengee (challenger moves second)
 #   return 0 when challenger wins 
@@ -823,25 +830,93 @@ def get_totalAttack_char(player1):
         # carryPenalty = 1-((1-weaponsCarried)(.25))
         # floatingAttack = totalAttack*carryPenalty
         return player1.getStrength() + (totalAttack - weaponsCarried*5)
+
+# interacts with oppenent agree, disagree, etc and decides winner 
+async def fight_rpg(player1_ID, player2_ID, interaction: discord.Interaction, client: discord.Client):
     
-def fight_rpg(serverPlayers, player1, player2):
 #   check if val;id fight if so then send msg
-    returnFightCheck = fight_valid(serverPlayers,player1, player2)
-    if returnFightCheck > 0:
-        print("can fight")
-#       will send discord messages to user 
-#       favors challengee (challenger moves second)
-#       return 0 when challenger wins 
-#       returns 1 when challenger loses
-        challengerHP = player1.getVitality()
-        challengerAttk = get_totalAttack_char(player1)
-        challengeeHP = player2.getVitality()
-        challengeeAttk = get_totalAttack_char(player2)
-        returnWinner = fight_rpg_sim(challengerHP, challengerAttk, challengeeHP, challengeeAttk)
-        print(returnWinner)
+    returnFightCheck = fight_valid(player1_ID, player2_ID)
+    if returnFightCheck == 0:
+        await interaction.response.send_message("Unable to fight: characters not made yet")
+    # if returnFightCheck == 2:
+    #     await interaction.response.send_message("Unable to fight: cannot fight self")
     else:
-        print("cannot fight")
-        return -1
+#       send challenge to opponent and will proceed to simulate fight if accepted
+#       as well as send msg to losers and winners
+        await interaction.response.send_message("fight challenge sent")
+        
+        nameChallenger = "opsec"
+        user = await client.fetch_user(player2_ID)
+    #   create a view and some buttons to accept or reject challenge
+        view = discord.ui.View(timeout=None)
+        buttonYes =  discord.ui.Button(label="Yes")
+        buttonNo =  discord.ui.Button(label="No")
+    
+#       callback to respective functions basically run fight sim if yes else dont run
+        async def no_callback(interaction: discord.Interaction):
+            await interaction.response.send_message("rejection sent")
+            user = await client.fetch_user(player1_ID)
+            await user.send("rejected")
+            
+        async def yes_callback(interaction: discord.Interaction):
+#           user id's amd msgs
+            userID = interaction.user.id
+            await interaction.response.send_message("accept sent")
+            user = await client.fetch_user(player1_ID)
+            await user.send("accepted")
+            
+            
+            player1_object = serverPlayers.returnPlayer(player1_ID)
+            player2_object = serverPlayers.returnPlayer(player2_ID)
+                
+            challengerHP = player1_object.getVitality()
+            challengerAttk = get_totalAttack_char(player1_object)
+            challengeeHP = player2_object.getVitality()
+            challengeeAttk = get_totalAttack_char(player2_object)
+            returnWinner = fight_rpg_sim(challengerHP, challengerAttk, challengeeHP, challengeeAttk)
+            
+#           user id's amd msgs
+            if returnWinner == 1:
+                user = await client.fetch_user(player1_ID)
+                await user.send("lost")
+                user = await client.fetch_user(player1_ID)
+                await user.send("won")
+                
+            else:
+                user = await client.fetch_user(player1_ID)
+                await user.send("won")
+                user = await client.fetch_user(player1_ID)
+                await user.send("lost")
+            
+        buttonNo.callback =  no_callback
+        buttonYes.callback = yes_callback
+        
+        view.add_item(buttonYes)
+        view.add_item(buttonNo)
+        
+        embed=discord.Embed(title="Challenged by " + nameChallenger)
+        embed.set_image(url="https://cdn.shopify.com/s/files/1/1565/1123/products/3314_1_ny_537x537.jpg?v=1639682148")
+
+        #make button to time out burnout daammit 
+        await user.send(view=view, embed=embed)
+    
+async def rp_fight_wrapper(interaction: discord.Interaction, client: discord.Client, opp:str):
+    print("in fight werapper")
+#   invalid input 
+    if not opp.isdigit():
+        await interaction.response.send_message("not a valid discord ID")
+        return 
+    
+#   else run fight_rpg
+    userID = interaction.user.id
+    userName = interaction.user.name
+    
+    # await fight_rpg(userID, int(opp), interaction, client)
+    await fight_rpg(userID, int(opp), interaction, client)
+
+#   *****************************************************************************************
+#   END OF MAIN FIGHT FUNCTIONS
+#   *****************************************************************************************
 
 def playersColor_rpg(playerName):
     letterQuan = 0#283
@@ -872,6 +947,11 @@ def playersColor_rpg(playerName):
     if  trueColor == 6:
         return 15158332
         
+        
+#   *****************************************************************************************
+#   START OF MAIN ACTIVITY FUNCTIONS
+#   *****************************************************************************************
+
 #  returns 0 on succsss
 #  returns 1 on failure no messages
 def clearMsgActivity(player_obj):
@@ -978,43 +1058,9 @@ async def clearDaily_rpg(interaction: discord.Interaction):
     await interaction.response.send_message(f'Started The Scheduler will start looping every 24 hours from now')
 #   ============================================================================================================
 
-# so dock it use / command menu fight to give option of picking to fight
-#   enter opps userid
-#   fight valid changed to take opponents reaction 
-#   then do other fight stuff afterwards if yes 
-#   have to learn how to dm a user tho pepehands
-#   then maybe send message to loser idk but i jsut need to connect evertything 6 hours pls be enough
-#   then it should check all the good stuff i wont do more checks dont have time 
-# maybe like 200 lines or less 
-
-# #have to fix roles in python demotiion and promotion
-# #so how to get enemies id ok we just cheat grab  thier id and send it to that
-def sendChallengetoOpponent(interaction: discord.Interaction, rpg_userID, nameChallenger):
-    user = interaction.guild.get_member(rpg_userID)
-#   create a view and some buttons to accept or reject  maybe time period or something and dusaper or diable afterwards
-    view = discord.ui.View(timeout=None)
-    buttonYes =  discord.ui.Button(label="Yes")
-    buttonNo =  discord.ui.Button(label="No")
-    buttonNo.callback = no_callback
-    buttonYes.callback = yes_callback
-    
-    view.add_item(buttonYes)
-    view.add_item(buttonNo)
-    
-    embed=discord.Embed(title="Challenged by " + nameChallenger)
-    embed.set_image()#swords
-    
-    
-    #make button to time out burnout daammit 
-    user.send(view=view, embed=embed)
-#   return response 
-
-#use callback to sim battle i spose 
-def yes_callback(interaction):
-    print("yes")
-#send nothing ithink
-def no_callback(interaction):
-    print("no")
+#   *****************************************************************************************
+#   END OF MAIN ACTIVITY FUNCTIONS
+#   *****************************************************************************************
 
 # Johnsons
 # Construction Safety Gear
