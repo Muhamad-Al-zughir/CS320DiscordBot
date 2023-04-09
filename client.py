@@ -170,7 +170,7 @@ async def rp_update_roles(interaction: discord.Interaction):
  #  update roles
 @tree.command(name = "rp_schedule", description = "checks up on everyone")
 async def rp_schedule(interaction: discord.Interaction):
-    await botgame.clearDaily_rpg(interaction)
+    await botgame.clearDaily_rpg(interaction, client)
  #  =========================================
  
  #  update roles
