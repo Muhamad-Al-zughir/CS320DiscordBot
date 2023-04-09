@@ -1,8 +1,10 @@
+from asyncio import selector_events
+from curses.ascii import isdigit
 from discord.ui import Button
 from discord.ui import View
 from discord.ui import Select
 from discord.utils import get
-from discord import Member
+from discord import Guild, Member
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 import discord
 import random
@@ -650,6 +652,7 @@ def rp_store_select(interaction: discord.Interaction):
 #  ===========
 #    challenge
 async def rp_challenge(interaction: discord.Interaction):
+
 #   create embed
     await rp_challenge_message(interaction); 
     
@@ -708,7 +711,7 @@ async def rp_message_goldf(message):
 
 #   ============
 #   update roles 
-async def rp_update_roles_function(interaction: discord.Interaction):
+async def rp_update_roles_function(interaction: discord.Interaction, client):
     guild = interaction.guild
 
 #   create roles and wont do anything if it already exists
@@ -763,15 +766,19 @@ def tryInsertADPList(serverPlayersList, a_userName, a_userID):
             player= Player(a_userName, a_userID)
             serverPlayersList.addplayertoList(player)
             return 0
+    
+#   *****************************************************************************************
+#   START OF MAIN FIGHT FUNCTIONS
+#   *****************************************************************************************    
         
 #   return 1 if valid
 #   return 0 if invalid
 #   return 2 if same person for specail message
 #   might put stricter conditions later so that roles cant farm lower roles
-def fight_valid(serverPlayersList, userID1, userID2):
+def fight_valid(userID1, userID2):
     if userID1 == userID2:
         return 2
-    return (serverPlayersList.searchforPlayer(userID1) == 1 and 1 == serverPlayersList.searchforPlayer(userID2))
+    return (serverPlayers.searchforPlayer(userID1) and serverPlayers.searchforPlayer(userID1))
 
 #   favors challengee (challenger moves second)
 #   return 0 when challenger wins 
@@ -823,25 +830,93 @@ def get_totalAttack_char(player1):
         # carryPenalty = 1-((1-weaponsCarried)(.25))
         # floatingAttack = totalAttack*carryPenalty
         return player1.getStrength() + (totalAttack - weaponsCarried*5)
+
+# interacts with oppenent agree, disagree, etc and decides winner 
+async def fight_rpg(player1_ID, player2_ID, interaction: discord.Interaction, client: discord.Client):
     
-def fight_rpg(serverPlayers, player1, player2):
 #   check if val;id fight if so then send msg
-    returnFightCheck = fight_valid(serverPlayers,player1, player2)
-    if returnFightCheck > 0:
-        print("can fight")
-#       will send discord messages to user 
-#       favors challengee (challenger moves second)
-#       return 0 when challenger wins 
-#       returns 1 when challenger loses
-        challengerHP = player1.getVitality()
-        challengerAttk = get_totalAttack_char(player1)
-        challengeeHP = player2.getVitality()
-        challengeeAttk = get_totalAttack_char(player2)
-        returnWinner = fight_rpg_sim(challengerHP, challengerAttk, challengeeHP, challengeeAttk)
-        print(returnWinner)
+    returnFightCheck = fight_valid(player1_ID, player2_ID)
+    if returnFightCheck == 0:
+        await interaction.response.send_message("Unable to fight: characters not made yet")
+    # if returnFightCheck == 2:
+    #     await interaction.response.send_message("Unable to fight: cannot fight self")
     else:
-        print("cannot fight")
-        return -1
+#       send challenge to opponent and will proceed to simulate fight if accepted
+#       as well as send msg to losers and winners
+        await interaction.response.send_message("fight challenge sent")
+        
+        nameChallenger = "opsec"
+        user = await client.fetch_user(player2_ID)
+    #   create a view and some buttons to accept or reject challenge
+        view = discord.ui.View(timeout=None)
+        buttonYes =  discord.ui.Button(label="Yes")
+        buttonNo =  discord.ui.Button(label="No")
+    
+#       callback to respective functions basically run fight sim if yes else dont run
+        async def no_callback(interaction: discord.Interaction):
+            await interaction.response.send_message("rejection sent")
+            user = await client.fetch_user(player1_ID)
+            await user.send("rejected")
+            
+        async def yes_callback(interaction: discord.Interaction):
+#           user id's amd msgs
+            userID = interaction.user.id
+            await interaction.response.send_message("accept sent")
+            user = await client.fetch_user(player1_ID)
+            await user.send("accepted")
+            
+            
+            player1_object = serverPlayers.returnPlayer(player1_ID)
+            player2_object = serverPlayers.returnPlayer(player2_ID)
+                
+            challengerHP = player1_object.getVitality()
+            challengerAttk = get_totalAttack_char(player1_object)
+            challengeeHP = player2_object.getVitality()
+            challengeeAttk = get_totalAttack_char(player2_object)
+            returnWinner = fight_rpg_sim(challengerHP, challengerAttk, challengeeHP, challengeeAttk)
+            
+#           user id's amd msgs
+            if returnWinner == 1:
+                user = await client.fetch_user(player2_ID)
+                await user.send("lost")
+                user = await client.fetch_user(player1_ID)
+                await user.send("won")
+                
+            else:
+                user = await client.fetch_user(player2_ID)
+                await user.send("won")
+                user = await client.fetch_user(player1_ID)
+                await user.send("lost")
+            
+        buttonNo.callback =  no_callback
+        buttonYes.callback = yes_callback
+        
+        view.add_item(buttonYes)
+        view.add_item(buttonNo)
+        
+        embed=discord.Embed(title="Challenged by " + nameChallenger)
+        embed.set_image(url="https://cdn.shopify.com/s/files/1/1565/1123/products/3314_1_ny_537x537.jpg?v=1639682148")
+
+        #make button to time out burnout daammit 
+        await user.send(view=view, embed=embed)
+    
+async def rp_fight_wrapper(interaction: discord.Interaction, client: discord.Client, opp:str):
+    print("in fight werapper")
+#   invalid input 
+    if not opp.isdigit():
+        await interaction.response.send_message("not a valid discord ID")
+        return 
+    
+#   else run fight_rpg
+    userID = interaction.user.id
+    userName = interaction.user.name
+    
+    # await fight_rpg(userID, int(opp), interaction, client)
+    await fight_rpg(userID, int(opp), interaction, client)
+
+#   *****************************************************************************************
+#   END OF MAIN FIGHT FUNCTIONS
+#   *****************************************************************************************
 
 def playersColor_rpg(playerName):
     letterQuan = 0#283
@@ -872,6 +947,11 @@ def playersColor_rpg(playerName):
     if  trueColor == 6:
         return 15158332
         
+        
+#   *****************************************************************************************
+#   START OF MAIN ACTIVITY FUNCTIONS
+#   *****************************************************************************************
+
 #  returns 0 on succsss
 #  returns 1 on failure no messages
 def clearMsgActivity(player_obj):
@@ -893,128 +973,87 @@ def manageInactivePlayers(player_obj):
         serverPlayers.deletePlayer(player_obj.getUserID())
         return 1 
     
-# # interaction: discord.Interaction, 
-# def deletekickmsg_rpg(serverPlayers , rpg_userID):
-# #   calls delete char: remove from list 
-#     if serverPlayers.manageInactivePlayers(rpg_userID) == 0:
-#         print()
-# #            user = interaction.guild.get_member(rpg_userID)
-#             #send mesage to discord aka the one who called the interaction
-# #            interaction.send(embed=getDeathEmbed())
-            
-#             #send message to kicked person
-#             # user.send(embed=getDeathEmbed(112233))
-#             # user.kick(reason=None)
-# #   send message to killed bot
-#     # interaction.send("failed to delete: " + rpg_userID)
+# just does messaging to guild as well as user who got booted 
+async def deletekickmsg_rpg(client: discord.Client , rpg_userID, rpg_name):
+#   send to channel user died 
+    channel = client.get_channel(1063239429969424446) 
+    await channel.send(embed=death_message_rpg(rpg_name))
+#   send to user they died 
+    user = await client.fetch_user(rpg_userID)
+    # death_Flag = playersColor_rpg("Robert Paulsen")
+    death_Flag = playersColor_rpg(rpg_name)
+    await user.send(embed=getDeathEmbed(death_Flag))
+    # user.kick(reason=None)
  
 #  return -1 list empty 
 #  return number of people deleted 
 #  return 0 success
-def cleanup_msgActivity_AllUsers(serverPlayers):
+async def cleanup_msgActivity_AllUsers(client: discord.Client):
     # if empty return 0 
     i = serverPlayers.getAllPlayersDataSize() 
     if i == 0:
-        return -1
+        channel = client.get_channel(1063239429969424446) # replace with channel_id
+        await channel.send("No players")
     
     noInactivePlayers  = 0 
     
     for i in  range(serverPlayers.getAllPlayersDataSize()):
         tempPlayer = serverPlayers.getPlayerat_loc(i)
         userID = tempPlayer.getUserID()
+        userName = tempPlayer.getName()
 #       if 1 ie empty
         if clearMsgActivity(tempPlayer): 
 #           add to total deleted players if plater deleted/kicked and send msg to player 
             if manageInactivePlayers(tempPlayer):
 #               fix interaction
-                # deletekickmsg_rpg(serverPlayers , userID)
+                await deletekickmsg_rpg(client , userID, userName)
                 noInactivePlayers = noInactivePlayers + 1
-    
-    return noInactivePlayers
+                
+#   orinigally meant to return players but because of async now changed to awaits and msgs no return of ints
+    channel = client.get_channel(1063239429969424446) # replace with channel_id
+    await channel.send("Players deleted: " + str(noInactivePlayers) )
 
 # could later mod to send stats of char at time of death 
 def getDeathEmbed(color_num):
     embed=discord.Embed(title="Due to inactivity you have been killed off and kicked from server", color=color_num)
-    embed.set_image()#sqaure
+    embed.set_image(url="https://w0.peakpx.com/wallpaper/1000/984/HD-wallpaper-skull-in-black-cute-black-simple-reflection-white-abstract-skull.jpg")#sqaure
     return embed
 
 #send message
-def death_message_rpg():
-    embed=discord.Embed(title="left to a worse place...",description="comraded blah")
-    embed.set_image()#skull
+def death_message_rpg(userName):
+    embed=discord.Embed(title=userName + " left to a worse place...",description="goodbye")
+    embed.set_image(url="https://w0.peakpx.com/wallpaper/1000/984/HD-wallpaper-skull-in-black-cute-black-simple-reflection-white-abstract-skull.jpg")#skull
+    embed.set_footer(text="     - Helena")
     return embed
 
 # mainly a wrapper for functions that clearDaily_rpg needs to call 
-def wrapperForDaily():
+async def wrapperForDaily(client: discord.Client):
 #   return -1 list empty 
 #   return number of people deleted 
 #   return 0 success no inactive players
-    dieded = cleanup_msgActivity_AllUsers(serverPlayers)
-
-    if dieded == 0: 
-        print("not 0 dieded complete")
-    elif dieded > 0: 
-        print("dieded complete " + str(dieded))
-    else:
-        print("-1 dieded complete")
+    await cleanup_msgActivity_AllUsers(client)
 
 #   =============================================================
 #  clears message on time 00::00::00 call it to act on this time 
 #  calls clearMsgActivity_AllUsers()
-async def clearDaily_rpg(interaction: discord.Interaction):
+async def clearDaily_rpg(interaction: discord.Interaction, client: discord.Client):
 #  The cron trigger works w/ wall clock 'cron'
 #  schedule jobs to be executed in the future
 
 #   initializing scheduler
     scheduler =  AsyncIOScheduler()# comes from apscheduler 
 
-    # scheduler.add_job(print("hello"), 'cron', hour=0, minute=00) 
 #   schedular add job(function, args, trigger setting, minute, hour)
-    # scheduler.add_job(nom,args=[var1],trigger='cron', minute='*/1', hour='*') 
-    scheduler.add_job(wrapperForDaily,trigger='cron', minute='*/1', hour='*') 
+    scheduler.add_job(wrapperForDaily,args=[client],trigger='cron', minute='*/1', hour='*') 
     
 #   run scheduler
     scheduler.start()
     await interaction.response.send_message(f'Started The Scheduler will start looping every 24 hours from now')
 #   ============================================================================================================
 
-# so dock it use / command menu fight to give option of picking to fight
-#   enter opps userid
-#   fight valid changed to take opponents reaction 
-#   then do other fight stuff afterwards if yes 
-#   have to learn how to dm a user tho pepehands
-#   then maybe send message to loser idk but i jsut need to connect evertything 6 hours pls be enough
-#   then it should check all the good stuff i wont do more checks dont have time 
-# maybe like 200 lines or less 
-
-# #have to fix roles in python demotiion and promotion
-# #so how to get enemies id ok we just cheat grab  thier id and send it to that
-def sendChallengetoOpponent(interaction: discord.Interaction, rpg_userID, nameChallenger):
-    user = interaction.guild.get_member(rpg_userID)
-#   create a view and some buttons to accept or reject  maybe time period or something and dusaper or diable afterwards
-    view = discord.ui.View(timeout=None)
-    buttonYes =  discord.ui.Button(label="Yes")
-    buttonNo =  discord.ui.Button(label="No")
-    buttonNo.callback = no_callback
-    buttonYes.callback = yes_callback
-    
-    view.add_item(buttonYes)
-    view.add_item(buttonNo)
-    
-    embed=discord.Embed(title="Challenged by " + nameChallenger)
-    embed.set_image()#swords
-    
-    
-    #make button to time out burnout daammit 
-    user.send(view=view, embed=embed)
-#   return response 
-
-#use callback to sim battle i spose 
-def yes_callback(interaction):
-    print("yes")
-#send nothing ithink
-def no_callback(interaction):
-    print("no")
+#   *****************************************************************************************
+#   END OF MAIN ACTIVITY FUNCTIONS
+#   *****************************************************************************************
 
 # Johnsons
 # Construction Safety Gear
