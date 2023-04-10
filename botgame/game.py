@@ -1,8 +1,10 @@
+from asyncio import selector_events
+from curses.ascii import isdigit
 from discord.ui import Button
 from discord.ui import View
 from discord.ui import Select
 from discord.utils import get
-from discord import Member
+from discord import Guild, Member
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 import discord
 import random
@@ -42,6 +44,14 @@ class Player:
         
     def showInventory(self):
         if len(self.inventory) == 0:
+            print("Nothing to show")
+        else:
+            for i in range(0, len(self.inventory)):
+                print(self.inventory[i].showItem())
+                print(self.inventory[i].showItemAttributes())
+                
+    def showEquipped(self):
+        if len(self.equipped) == 0:
             print("Nothing to show")
         else:
             for i in range(0, len(self.inventory)):
@@ -92,6 +102,9 @@ class Player:
         return self.inventory[location]
     def getEquippedItem(self, location):
         return self.equipped[location]
+    def UnequipItem(self, location):
+        return self.equipped.pop(location)
+    
     def getmsgAct(self):
         return self.msgActivity
     
@@ -257,8 +270,16 @@ class DropdownMenu(Select):
                     description="shows inventory"
                 ),
                 discord.SelectOption(
-                    label="Challenge",
-                    description="you are not allowed to that yet"
+                    label="Show Equipped",
+                    description="shows equipped"
+                ),
+                discord.SelectOption(
+                    label="Equip",
+                    description="equip items"
+                ),
+                discord.SelectOption(
+                    label="Unequip",
+                    description="unequip items"
                 ),
             ]
         )
@@ -271,19 +292,18 @@ class DropdownMenu(Select):
         if self.values == ['Show Character']:
             await rp_show_self(interaction)
             
-#       if Char
         if self.values == ['Inventory']:
             await rp_inventory(interaction)
         
-#       if Char
-        if self.values == ['Challenge']:
-            name = interaction.user.name# to get user name have to do discord:interaction
+        if self.values == ['Show Equipped']:
+            await rp_equippedInventory(interaction)
         
-        #   create embed
-            embed=discord.Embed(title="Challenge",  description="fighting thing")
-            embed.set_image(url="https://e7.pngegg.com/pngimages/10/113/png-clipart-bob-hoskins-super-mario-bros-mario-luigi-superstar-saga-embroidered-tshirt-super-mario-bros-thumbnail.png")
-            await interaction.response.send_message(embed=embed)# send back embed as well as view
-#   =============================================================
+        if self.values == ['Equip']:
+            await rp_equip(interaction)
+            
+        if self.values == ['Unequip']:
+            await rp_Unequip(interaction)
+#   ===================================
 
 #   ================
 #   Class ItemButton
@@ -304,9 +324,9 @@ class ItemButton(Button):
 #   should create a function witch sifts throuhg items such as stick and card and outputs corresponding embed
         if self.label == "stick":
         #   create embed
-            embed=discord.Embed(title="Paul_Allens_card")
+            embed=discord.Embed(title="stick")
         #   add parts
-            embed.set_image(url="https://i.seadn.io/gae/LIoXlDW3hzLtQeB6tfOqVC8yvlCsXk6YCMNHu2ixJhl74-bldzJDxJXpCM6p9Vk6MF3g9eeDDZE0zTJvjD9wTYO0xAoQsmLFQvmLffs?auto=format&w=1000")
+            embed.set_image(url="https://imgs.search.brave.com/r1B7pBo4puzm0uDcd6bXg75OXF7SgxRf2Cx0GovlA44/rs:fit:474:949:1/g:ce/aHR0cHM6Ly9pLnBp/bmltZy5jb20vNDc0/eC83Yi8yMi9iYS83/YjIyYmEyZDFmYjIy/YTA4MGYyZjYzNzEy/NTY5OWYwMC5qcGc")
             
         elif self.label == "card":
         #   create embed
@@ -318,26 +338,25 @@ class ItemButton(Button):
         #   create embed
             embed=discord.Embed(title=self.label)
         #   add parts
-            embed.set_image(url="https://i.seadn.io/gae/LIoXlDW3hzLtQeB6tfOqVC8yvlCsXk6YCMNHu2ixJhl74-bldzJDxJXpCM6p9Vk6MF3g9eeDDZE0zTJvjD9wTYO0xAoQsmLFQvmLffs?auto=format&w=1000")
+            embed.set_image(url="https://imgs.search.brave.com/7FONKgucRTduwUpfMthy5Lv8koH7lr_X9yDqaeBeBkQ/rs:fit:1200:1200:1/g:ce/aHR0cHM6Ly9qb29p/bm4uY29tL2ltYWdl/cy93aGl0ZS1hbmdl/bC13aW5ncy5qcGc")
     
         elif self.label == "steetware":
         #   create embed
             embed=discord.Embed(title=self.label)
         #   add parts
-            embed.set_image(url="https://i.seadn.io/gae/LIoXlDW3hzLtQeB6tfOqVC8yvlCsXk6YCMNHu2ixJhl74-bldzJDxJXpCM6p9Vk6MF3g9eeDDZE0zTJvjD9wTYO0xAoQsmLFQvmLffs?auto=format&w=1000")
+            embed.set_image(url="https://imgs.search.brave.com/RPe1b1D_7sDZDR6GUDfJQ9gxH-8kx2zCEs115kJ5JCo/rs:fit:1125:1200:1/g:ce/aHR0cHM6Ly9pLnJl/ZGQuaXQvMmw4bGd5/ZW10NDk0MS5qcGc")
     
         elif self.label == "pickaxe":
         #   create embed
             embed=discord.Embed(title=self.label)
         #   add parts
-            embed.set_image(url="https://i.seadn.io/gae/LIoXlDW3hzLtQeB6tfOqVC8yvlCsXk6YCMNHu2ixJhl74-bldzJDxJXpCM6p9Vk6MF3g9eeDDZE0zTJvjD9wTYO0xAoQsmLFQvmLffs?auto=format&w=1000")
+            embed.set_image(url="https://imgs.search.brave.com/h89h9P7fVIIOoJvzahZpaRVO3ip2tKbaSCKs1hYBAak/rs:fit:928:760:1/g:ce/aHR0cHM6Ly9pLnJl/ZGQuaXQvNGtoaHY4/cjUwdXY0MS5qcGc")
         
         else:
         #   create embed
             embed=discord.Embed(title="broken_command_callback_itembutton")
         #   add parts
             embed.set_image(url="https://i0.wp.com/isaratech.com/wp-content/uploads/2018/03/2018-03-04.png")
-        
         
     #   send to discord embed 
         await interaction.response.send_message(embed=embed)
@@ -419,70 +438,66 @@ class StoreItem_Button(Button):
         await interaction.response.send_message(response_to_Buyer + " " + interaction.user.name)
 #   ============================================================================================
 
-#   just to help organize
-def storeItemsresponses(nameofThing, buyersWalletSize):
-#       else check all item options as well as if user has enough gold 
-    if nameofThing == "stick" and (buyersWalletSize  >= 1):
-            response_to_Buyer = "You have successfully bought " + nameofThing
-            
-    elif nameofThing == "card" and (buyersWalletSize >= 5):
-            response_to_Buyer = "You have successfully bought " + nameofThing
-    
-    elif nameofThing == "streetware" and (buyersWalletSize >= 30):
-            response_to_Buyer = "You have successfully bought " + nameofThing
-               
-    elif nameofThing == "pickaxe"  and (buyersWalletSize>= 15):
-            response_to_Buyer = "You have successfully bought " + nameofThing
-                
-    elif nameofThing == "angel wings"  and (buyersWalletSize >= 50):
-            response_to_Buyer = "You have successfully bought " + nameofThing
-            
-    else:
-        response_to_Buyer = "You are a broke and failed to buy a " + nameofThing
-            
-    return response_to_Buyer
+#   ==================
+#   Class Equip_Button
+class Equip_Button(Button):
 
-def storeItemsInteractionWithBuyer(player, nameofThing):
-#   do stuff to buyer 
-    if nameofThing == "stick" and (player.getPg()  >= 1):
-        item = Item("stick", 1, 0, 1)
-        player.buy(1)
-        player.addItem(item)
-            
-    elif nameofThing == "card" and (player.getPg() >= 5):
-        item = Item("card", 1, 2, 5)
-        player.buy(5)
-        player.addItem(item)
-    
-    elif nameofThing== "streetware" and (player.getPg() >= 30):
-        item = Item("streetware", 10, 30 , 30)
-        player.buy(30)
-        player.addItem(item)
-               
-    elif nameofThing == "pickaxe"  and (player.getPg() >= 15):
-        item = Item("pickaxe", 10,0 ,15)
-        player.buy(15)
-        player.addItem(item)
-                
-    elif nameofThing == "angel wings"  and (player.getPg() >= 50):
-        item = Item("angel wings", 25, 25, 50)
-        player.buy(50)
-        player.addItem(item)
+#   ===========
+#   constructor
+    def __init__(self, buttonName, id):
+        super().__init__(
+            label=buttonName, 
+            style=discord.ButtonStyle.gray,
+            custom_id=id
+        )
+#       =
 
-# ok searches for item for a specific person
-def lookForItemId_rpg(serverPlayers, userID, itemName):
-    if(serverPlayers.searchforPlayer(userID) == 0):
-        return 0
-    else:
-        player = serverPlayers.returnPlayer(userID)
-        return player.searchPlayerInventory(itemName) 
-         
-    
-# ok searches for item for a specific person
-def retrieveItemfromId_rpg(serverPlayers, userID, itemName):
-    player = serverPlayers.returnPlayer(userID)
-    if(player.searchPlayerInventory(itemName) == 1):
-        return player.returnPlayerInventory(itemName)
+#   callback function
+    async def callback(self, interaction):
+
+#       get players userID that called interaction
+        userID = interaction.user.id
+        player_object = serverPlayers.returnPlayer(userID)
+        
+#       equip if possible
+        if player_object.getInventorySize() > 0:       
+#           grab button number and equip that item because it should be at the same location as was created
+            tempy = player_object.getItem(int(self.custom_id))
+            player_object.equipItem(tempy)
+            await interaction.response.send_message(interaction.user.name + " equipped from slot " + str(self.custom_id) + " item name: " + self.label)
+        else:
+            await interaction.response.send_message("unable to equip sorry " + interaction.user.name)
+#   =================================================================================================
+
+#   ==================
+#   Class Equip_Button
+class Unequip_Button(Button):
+
+#   ===========
+#   constructor
+    def __init__(self, buttonName, id):
+        super().__init__(
+            label=buttonName, 
+            style=discord.ButtonStyle.gray,
+            custom_id=id
+        )
+#       =
+
+#   callback function
+    async def callback(self, interaction):
+
+#       get players userID that called interaction
+        userID = interaction.user.id
+        player_object = serverPlayers.returnPlayer(userID)
+        
+#       equip if possible
+        if player_object.getEquippedSize() > 0:       
+#           grab button number and equip that item because it should be at the same location as was created
+            player_object.UnequipItem(int(self.custom_id))
+            await interaction.response.send_message(interaction.user.name + "Unequipped from slot " + str(self.custom_id) + " item name: " + self.label)
+        else:
+            await interaction.response.send_message("you are holding nothing" + interaction.user.name)
+#   =================================================================================================
 
 #  =====================
 #  show create character 
@@ -537,7 +552,63 @@ async def rp_dropdown_menu(interaction: discord.Interaction):
     view.add_item(select)
     
     await interaction.response.send_message(embed=embed, view=view)# send back embed as well as view
-#   ================================================================================================ 
+#   ================================================================================================
+
+#  ==============
+ #  show inventory
+async def rp_Unequip(interaction: discord.Interaction):
+    
+#   amount of items user has for max size is 5 and gets it from user character "player"
+    name = interaction.user.name# to get user name have to do discord:interaction
+    userID = interaction.user.id
+    
+    rp_character = serverPlayers.returnPlayer(userID)
+    inventorySize = len(rp_character.equipped)
+
+#   create embed
+    embed=discord.Embed(title="Unequip fom equipped")
+#   add parts
+    embed.set_image(url="https://ssb.wiki.gallery/images/3/31/MasterHandMelee.jpg")
+    
+#   create view
+    view = View()
+        
+#   output all invbentory items make it into a function
+    for i in range(0, inventorySize): # denots row in 
+#       name of the item 
+        button = Unequip_Button(rp_character.equipped[i].name, str(i))
+        view.add_item(button)
+        
+    await interaction.response.send_message(embed=embed, view=view)
+#   ================================================================ 
+
+#  ==============
+ #  show inventory
+async def rp_equip(interaction: discord.Interaction):
+    
+#   amount of items user has for max size is 5 and gets it from user character "player"
+    name = interaction.user.name# to get user name have to do discord:interaction
+    userID = interaction.user.id
+    
+    rp_character = serverPlayers.returnPlayer(userID)
+    inventorySize = len(rp_character.inventory)
+
+#   create embed
+    embed=discord.Embed(title="Equip fom inventory")
+#   add parts
+    embed.set_image(url="https://ssb.wiki.gallery/images/3/31/MasterHandMelee.jpg")
+    
+#   create view
+    view = View()
+        
+#   output all invbentory items make it into a function
+    for i in range(0, inventorySize): # denots row in 
+#       name of the item 
+        button = Equip_Button(rp_character.inventory[i].name, str(i))
+        view.add_item(button)
+        
+    await interaction.response.send_message(embed=embed, view=view)
+#   ================================================================ 
  
  #  ===========
  #  show player
@@ -574,7 +645,7 @@ async def rp_show_self(interaction: discord.Interaction):
 async def rp_inventory(interaction: discord.Interaction):
     
 #   amount of items user has for max size is 5 and gets it from user character "player"
-    name = interaction.user.name# to get user name have to do discord:interaction
+    name = interaction.user.name# need discord:interaction
     userID = interaction.user.id
     
     rp_character = serverPlayers.returnPlayer(userID)
@@ -594,8 +665,37 @@ async def rp_inventory(interaction: discord.Interaction):
         button = ItemButton(rp_character.inventory[i].name, i)
         view.add_item(button)
         
-    await interaction.response.send_message(embed=embed, view=view)# send back embed as well as view
-#   ======================================================================================
+    await interaction.response.send_message(embed=embed, view=view)# send back all
+#   ==============================================================================
+
+ #  ==============
+ #  show inventory
+async def rp_equippedInventory(interaction: discord.Interaction):
+    
+#   amount of items user has for max size is 5 and gets it from user character "player"
+    name = interaction.user.name# need discord:interaction
+    userID = interaction.user.id
+    
+    rp_character = serverPlayers.returnPlayer(userID)
+    inventorySize = len(rp_character.equipped)
+
+#   create embed
+    embed=discord.Embed(title="Equipped")
+#   add parts
+    embed.set_image(url="https://icons.veryicon.com/png/o/system/gesture-series/grab-hand.png")
+    
+#   create view
+    view = View()
+    
+#   output all invbentory items make it into a function
+    for i in range(0, inventorySize): # denots row in 
+#       name of the item 
+        button = ItemButton(rp_character.equipped[i].name, i)
+        view.add_item(button)
+        
+    await interaction.response.send_message(embed=embed, view=view)# send back all
+#   ==============================================================================
+
 
 #  =========
 #  store gen
@@ -647,35 +747,6 @@ def rp_store_select(interaction: discord.Interaction):
     return view 
 #   ===========
 
-#  ===========
-#    challenge
-async def rp_challenge(interaction: discord.Interaction):
-#   create embed
-    await rp_challenge_message(interaction); 
-    
-    #   do u accept or do u not function 
-#   after if yes sim batle 
-#   else send message declined
-#   ===============================================
-
-#  ===========
-#    challenge
-async def rp_challenge_message(interaction: discord.Interaction):
-#   create embed
-    embed=discord.Embed(title="Challenged by " + interaction.user.name)
-    embed.set_image(url="https://cdn3.iconfinder.com/data/icons/fantasy-1/500/fantasy-01-512.png")
-
-    await interaction.response.send_message(embed=embed); 
-#   ===============================================
-
-#  ===========
-#    challenge
-async def rp_challenge_buttons(interaction: discord.Interaction):
-#   do u accept or do u not function 
-    view = View()
-    await rp_challenge_message(view=view); 
-#   ========================================
-
 #   ============
 #   message gold
 async def rp_message_goldf(message):
@@ -687,28 +758,20 @@ async def rp_message_goldf(message):
 #       if found try to give user Gold 
         userChar = serverPlayers.returnPlayer(userID)
         
-#       ******************************
-#       Notes:
-#       to get messages for like a 10 i need to make an array for activyt and add to activity 
-#               so i cant just discrod i need to make my own database of user acitivtyt 
-#               so will try to implement in the future for now just add gold
-#               so features such as delete if user not active 
-#               reward for active days in a row etc nneed to be implemented later * maybe just add to user array 
-#               but person needs to create char for that to be used so its not default might change features
-#       *******************************************************************************************************
+#       ********************************************************************************
+#       Notes: decided to not care for limiting cap of pg earned for messages so spam ig
+#       ********************************************************************************
         userChar.gainPg(1)
         return
-        # await message.channel.send('give gold' + message.author.name)
-#       ===============================================================
+#       ======
 
 # fix later already spend an ungodly amount of time
 # need to learn how to go thorugh list
 # learn how to remove roles from list
 # have main logicx down just need to see if syntax exist to let me do what i want 
-
 #   ============
 #   update roles 
-async def rp_update_roles_function(interaction: discord.Interaction):
+async def rp_update_roles_function(interaction: discord.Interaction, client):
     guild = interaction.guild
 
 #   create roles and wont do anything if it already exists
@@ -763,15 +826,19 @@ def tryInsertADPList(serverPlayersList, a_userName, a_userID):
             player= Player(a_userName, a_userID)
             serverPlayersList.addplayertoList(player)
             return 0
+    
+#   *****************************************************************************************
+#   START OF MAIN FIGHT FUNCTIONS
+#   *****************************************************************************************    
         
 #   return 1 if valid
 #   return 0 if invalid
 #   return 2 if same person for specail message
 #   might put stricter conditions later so that roles cant farm lower roles
-def fight_valid(serverPlayersList, userID1, userID2):
+def fight_valid(userID1, userID2):
     if userID1 == userID2:
         return 2
-    return (serverPlayersList.searchforPlayer(userID1) == 1 and 1 == serverPlayersList.searchforPlayer(userID2))
+    return (serverPlayers.searchforPlayer(userID1) and serverPlayers.searchforPlayer(userID1))
 
 #   favors challengee (challenger moves second)
 #   return 0 when challenger wins 
@@ -823,25 +890,93 @@ def get_totalAttack_char(player1):
         # carryPenalty = 1-((1-weaponsCarried)(.25))
         # floatingAttack = totalAttack*carryPenalty
         return player1.getStrength() + (totalAttack - weaponsCarried*5)
+
+# interacts with oppenent agree, disagree, etc and decides winner 
+async def fight_rpg(player1_ID, player2_ID, interaction: discord.Interaction, client: discord.Client):
     
-def fight_rpg(serverPlayers, player1, player2):
 #   check if val;id fight if so then send msg
-    returnFightCheck = fight_valid(serverPlayers,player1, player2)
-    if returnFightCheck > 0:
-        print("can fight")
-#       will send discord messages to user 
-#       favors challengee (challenger moves second)
-#       return 0 when challenger wins 
-#       returns 1 when challenger loses
-        challengerHP = player1.getVitality()
-        challengerAttk = get_totalAttack_char(player1)
-        challengeeHP = player2.getVitality()
-        challengeeAttk = get_totalAttack_char(player2)
-        returnWinner = fight_rpg_sim(challengerHP, challengerAttk, challengeeHP, challengeeAttk)
-        print(returnWinner)
+    returnFightCheck = fight_valid(player1_ID, player2_ID)
+    if returnFightCheck == 0:
+        await interaction.response.send_message("Unable to fight: characters not made yet")
+    # if returnFightCheck == 2:
+    #     await interaction.response.send_message("Unable to fight: cannot fight self")
     else:
-        print("cannot fight")
-        return -1
+#       send challenge to opponent and will proceed to simulate fight if accepted
+#       as well as send msg to losers and winners
+        await interaction.response.send_message("fight challenge sent")
+        
+        nameChallenger = "opsec"
+        user = await client.fetch_user(player2_ID)
+    #   create a view and some buttons to accept or reject challenge
+        view = discord.ui.View(timeout=None)
+        buttonYes =  discord.ui.Button(label="Yes")
+        buttonNo =  discord.ui.Button(label="No")
+    
+#       callback to respective functions basically run fight sim if yes else dont run
+        async def no_callback(interaction: discord.Interaction):
+            await interaction.response.send_message("rejection sent")
+            user = await client.fetch_user(player1_ID)
+            await user.send("rejected")
+            
+        async def yes_callback(interaction: discord.Interaction):
+#           user id's amd msgs
+            userID = interaction.user.id
+            await interaction.response.send_message("accept sent")
+            user = await client.fetch_user(player1_ID)
+            await user.send("accepted")
+            
+            
+            player1_object = serverPlayers.returnPlayer(player1_ID)
+            player2_object = serverPlayers.returnPlayer(player2_ID)
+                
+            challengerHP = player1_object.getVitality()
+            challengerAttk = get_totalAttack_char(player1_object)
+            challengeeHP = player2_object.getVitality()
+            challengeeAttk = get_totalAttack_char(player2_object)
+            returnWinner = fight_rpg_sim(challengerHP, challengerAttk, challengeeHP, challengeeAttk)
+            
+#           user id's amd msgs
+            if returnWinner == 1:
+                user = await client.fetch_user(player2_ID)
+                await user.send("lost")
+                user = await client.fetch_user(player1_ID)
+                await user.send("won")
+                
+            else:
+                user = await client.fetch_user(player2_ID)
+                await user.send("won")
+                user = await client.fetch_user(player1_ID)
+                await user.send("lost")
+            
+        buttonNo.callback =  no_callback
+        buttonYes.callback = yes_callback
+        
+        view.add_item(buttonYes)
+        view.add_item(buttonNo)
+        
+        embed=discord.Embed(title="Challenged by " + nameChallenger)
+        embed.set_image(url="https://cdn.shopify.com/s/files/1/1565/1123/products/3314_1_ny_537x537.jpg?v=1639682148")
+
+        #make button to time out burnout daammit 
+        await user.send(view=view, embed=embed)
+    
+async def rp_fight_wrapper(interaction: discord.Interaction, client: discord.Client, opp:str):
+    print("in fight werapper")
+#   invalid input 
+    if not opp.isdigit():
+        await interaction.response.send_message("not a valid discord ID")
+        return 
+    
+#   else run fight_rpg
+    userID = interaction.user.id
+    userName = interaction.user.name
+    
+    # await fight_rpg(userID, int(opp), interaction, client)
+    await fight_rpg(userID, int(opp), interaction, client)
+
+#   *****************************************************************************************
+#   END OF MAIN FIGHT FUNCTIONS
+#   *****************************************************************************************
 
 def playersColor_rpg(playerName):
     letterQuan = 0#283
@@ -872,6 +1007,10 @@ def playersColor_rpg(playerName):
     if  trueColor == 6:
         return 15158332
         
+#   *****************************************************************************************
+#   START OF MAIN ACTIVITY FUNCTIONS
+#   *****************************************************************************************
+
 #  returns 0 on succsss
 #  returns 1 on failure no messages
 def clearMsgActivity(player_obj):
@@ -893,128 +1032,84 @@ def manageInactivePlayers(player_obj):
         serverPlayers.deletePlayer(player_obj.getUserID())
         return 1 
     
-# # interaction: discord.Interaction, 
-# def deletekickmsg_rpg(serverPlayers , rpg_userID):
-# #   calls delete char: remove from list 
-#     if serverPlayers.manageInactivePlayers(rpg_userID) == 0:
-#         print()
-# #            user = interaction.guild.get_member(rpg_userID)
-#             #send mesage to discord aka the one who called the interaction
-# #            interaction.send(embed=getDeathEmbed())
-            
-#             #send message to kicked person
-#             # user.send(embed=getDeathEmbed(112233))
-#             # user.kick(reason=None)
-# #   send message to killed bot
-#     # interaction.send("failed to delete: " + rpg_userID)
+# just does messaging to guild as well as user who got booted 
+async def deletekickmsg_rpg(client: discord.Client , rpg_userID, rpg_name):
+#   send to channel user died 
+    channel = client.get_channel(1063239429969424446) 
+    await channel.send(embed=death_message_rpg(rpg_name))
+#   send to user they died 
+    user = await client.fetch_user(rpg_userID)
+    # death_Flag = playersColor_rpg("Robert Paulsen")
+    death_Flag = playersColor_rpg(rpg_name)
+    await user.send(embed=getDeathEmbed(death_Flag))
+    # user.kick(reason=None)
  
 #  return -1 list empty 
 #  return number of people deleted 
 #  return 0 success
-def cleanup_msgActivity_AllUsers(serverPlayers):
+async def cleanup_msgActivity_AllUsers(client: discord.Client):
     # if empty return 0 
     i = serverPlayers.getAllPlayersDataSize() 
     if i == 0:
-        return -1
+        channel = client.get_channel(1063239429969424446) # replace with channel_id
+        await channel.send("No players")
     
     noInactivePlayers  = 0 
     
     for i in  range(serverPlayers.getAllPlayersDataSize()):
         tempPlayer = serverPlayers.getPlayerat_loc(i)
         userID = tempPlayer.getUserID()
+        userName = tempPlayer.getName()
 #       if 1 ie empty
         if clearMsgActivity(tempPlayer): 
 #           add to total deleted players if plater deleted/kicked and send msg to player 
             if manageInactivePlayers(tempPlayer):
 #               fix interaction
-                # deletekickmsg_rpg(serverPlayers , userID)
+                await deletekickmsg_rpg(client , userID, userName)
                 noInactivePlayers = noInactivePlayers + 1
-    
-    return noInactivePlayers
+                
+#   orinigally meant to return players but because of async now changed to awaits and msgs no return of ints
+    channel = client.get_channel(1063239429969424446) # replace with channel_id
+    await channel.send("Players deleted: " + str(noInactivePlayers) )
 
 # could later mod to send stats of char at time of death 
 def getDeathEmbed(color_num):
     embed=discord.Embed(title="Due to inactivity you have been killed off and kicked from server", color=color_num)
-    embed.set_image()#sqaure
+    embed.set_image(url="https://w0.peakpx.com/wallpaper/1000/984/HD-wallpaper-skull-in-black-cute-black-simple-reflection-white-abstract-skull.jpg")#sqaure
     return embed
 
 #send message
-def death_message_rpg():
-    embed=discord.Embed(title="left to a worse place...",description="comraded blah")
-    embed.set_image()#skull
+def death_message_rpg(userName):
+    embed=discord.Embed(title=userName + " left to a worse place...",description="goodbye")
+    embed.set_image(url="https://w0.peakpx.com/wallpaper/1000/984/HD-wallpaper-skull-in-black-cute-black-simple-reflection-white-abstract-skull.jpg")#skull
+    embed.set_footer(text="     - Helena")
     return embed
 
 # mainly a wrapper for functions that clearDaily_rpg needs to call 
-def wrapperForDaily():
-#   return -1 list empty 
-#   return number of people deleted 
-#   return 0 success no inactive players
-    dieded = cleanup_msgActivity_AllUsers(serverPlayers)
-
-    if dieded == 0: 
-        print("not 0 dieded complete")
-    elif dieded > 0: 
-        print("dieded complete " + str(dieded))
-    else:
-        print("-1 dieded complete")
+async def wrapperForDaily(client: discord.Client):
+    await cleanup_msgActivity_AllUsers(client)
 
 #   =============================================================
 #  clears message on time 00::00::00 call it to act on this time 
 #  calls clearMsgActivity_AllUsers()
-async def clearDaily_rpg(interaction: discord.Interaction):
-#  The cron trigger works w/ wall clock 'cron'
-#  schedule jobs to be executed in the future
+async def clearDaily_rpg(interaction: discord.Interaction, client: discord.Client):
+#   The cron trigger works w/ wall clock 'cron'
+#   schedule jobs to be executed in the future
 
 #   initializing scheduler
     scheduler =  AsyncIOScheduler()# comes from apscheduler 
 
-    # scheduler.add_job(print("hello"), 'cron', hour=0, minute=00) 
 #   schedular add job(function, args, trigger setting, minute, hour)
-    # scheduler.add_job(nom,args=[var1],trigger='cron', minute='*/1', hour='*') 
-    scheduler.add_job(wrapperForDaily,trigger='cron', minute='*/1', hour='*') 
+    scheduler.add_job(wrapperForDaily,args=[client],trigger='cron', minute='*/1', hour='*') 
     
 #   run scheduler
     scheduler.start()
     await interaction.response.send_message(f'Started The Scheduler will start looping every 24 hours from now')
 #   ============================================================================================================
 
-# so dock it use / command menu fight to give option of picking to fight
-#   enter opps userid
-#   fight valid changed to take opponents reaction 
-#   then do other fight stuff afterwards if yes 
-#   have to learn how to dm a user tho pepehands
-#   then maybe send message to loser idk but i jsut need to connect evertything 6 hours pls be enough
-#   then it should check all the good stuff i wont do more checks dont have time 
-# maybe like 200 lines or less 
-
-# #have to fix roles in python demotiion and promotion
-# #so how to get enemies id ok we just cheat grab  thier id and send it to that
-def sendChallengetoOpponent(interaction: discord.Interaction, rpg_userID, nameChallenger):
-    user = interaction.guild.get_member(rpg_userID)
-#   create a view and some buttons to accept or reject  maybe time period or something and dusaper or diable afterwards
-    view = discord.ui.View(timeout=None)
-    buttonYes =  discord.ui.Button(label="Yes")
-    buttonNo =  discord.ui.Button(label="No")
-    buttonNo.callback = no_callback
-    buttonYes.callback = yes_callback
-    
-    view.add_item(buttonYes)
-    view.add_item(buttonNo)
-    
-    embed=discord.Embed(title="Challenged by " + nameChallenger)
-    embed.set_image()#swords
-    
-    
-    #make button to time out burnout daammit 
-    user.send(view=view, embed=embed)
-#   return response 
-
-#use callback to sim battle i spose 
-def yes_callback(interaction):
-    print("yes")
-#send nothing ithink
-def no_callback(interaction):
-    print("no")
+#   *****************************************************************************************
+#   END OF MAIN ACTIVITY FUNCTIONS
+#   *****************************************************************************************
 
 # Johnsons
 # Construction Safety Gear
@@ -1033,84 +1128,7 @@ def no_callback(interaction):
 # Stick// Atk */
 # Boost Attack// D1
 
-# testing and creationo of chracter, store, data list, item
-# # player creation
-# player = Player("bob")
-# print(player.showSelf())
-# player.showInventory()
-
-# # item creation
-# stickItem = Item("stick", 1, 0)
-# player.addItem(stickItem)
-# player.showInventory()
-
-# # Serverdata creation
-# serverPlayers = AllPlayersData()
-# if(serverPlayers.searchforPlayer("bob") == 0):
-#     print("not found player ")
-    
-# serverPlayers.addplayertoList(player)
-
-# if(serverPlayers.searchforPlayer("bob") == 1):
-#     print("found player")
-    
-# # store function
-# store()
-# print("\nmade it to end\n")
-
-#   just to help organize
-def storeItemsresponses(nameofThing, buyersWalletSize):
-#       else check all item options as well as if user has enough gold 
-    if nameofThing == "stick" and (buyersWalletSize  >= 1):
-            response_to_Buyer = "You have successfully bought " + nameofThing
-            
-    elif nameofThing == "card" and (buyersWalletSize >= 5):
-            response_to_Buyer = "You have successfully bought " + nameofThing
-    
-    elif nameofThing == "streetware" and (buyersWalletSize >= 30):
-            response_to_Buyer = "You have successfully bought " + nameofThing
-               
-    elif nameofThing == "pickaxe"  and (buyersWalletSize>= 15):
-            response_to_Buyer = "You have successfully bought " + nameofThing
-                
-    elif nameofThing == "angel wings"  and (buyersWalletSize >= 50):
-            response_to_Buyer = "You have successfully bought " + nameofThing
-            
-    else:
-        response_to_Buyer = "You are a broke and failed to buy a " + nameofThing
-            
-    return response_to_Buyer
-
-def storeItemsInteractionWithBuyer(player, nameofThing):
-#   do stuff to buyer 
-    if nameofThing == "stick" and (player.getPg()  >= 1):
-        item = Item("stick", 1, 0, 1)
-        player.buy(1)
-        player.addItem(item)
-            
-    elif nameofThing == "card" and (player.getPg() >= 5):
-        item = Item("card", 1, 2, 5)
-        player.buy(5)
-        player.addItem(item)
-    
-    elif nameofThing== "streetware" and (player.getPg() >= 30):
-        item = Item("streetware", 10, 30 , 30)
-        player.buy(30)
-        player.addItem(item)
-               
-    elif nameofThing == "pickaxe"  and (player.getPg() >= 15):
-        item = Item("pickaxe", 10,0 ,15)
-        player.buy(15)
-        player.addItem(item)
-                
-    elif nameofThing == "angel wings"  and (player.getPg() >= 50):
-        item = Item("angel wings", 25, 25, 50)
-        player.buy(50)
-        player.addItem(item)
-    else:
-        raise ValueError("Invalid Item")
-
-# ok searches for item for a specific person
+# ok searches for item for a specific person for debugging
 def lookForItemId_rpg(serverPlayers, userID, itemName):
     if(serverPlayers.searchforPlayer(userID) == 0):
         return 0
@@ -1119,9 +1137,8 @@ def lookForItemId_rpg(serverPlayers, userID, itemName):
         return player.searchPlayerInventory(itemName) 
          
     
-# ok searches for item for a specific person
+# ok searches for item for a specific person for debugging
 def retrieveItemfromId_rpg(serverPlayers, userID, itemName):
     player = serverPlayers.returnPlayer(userID)
     if(player.searchPlayerInventory(itemName) == 1):
         return player.returnPlayerInventory(itemName)
-
