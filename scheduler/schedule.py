@@ -593,7 +593,7 @@ async def google_calendar(interaction: discord.Interaction, profile_name: str):
     return
 
 async def get_screenshot(url):
-    driver = webdriver.Chrome()
+    driver = webdriver.Firefox()
     # driver.maximize_window()
     driver.set_window_size(1920, 1100)
     size = driver.get_window_size()
@@ -607,7 +607,7 @@ async def get_screenshot(url):
     #Set the focus to the browser rather than the web content
     driver.set_context("chrome")
     #Create a var of the window
-    win = driver.find_element_by_tag_name("window")
+    win = driver.find_element(By.TAG_NAME, "html")
     #Send the key combination to the window itself rather than the web content to zoom out
     #(change the "-" to "+" if you want to zoom in)
     win.send_keys(Keys.CONTROL + "-")
