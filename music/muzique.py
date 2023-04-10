@@ -32,6 +32,9 @@ streaming_members = {}
 yt_params = {'format' :  'bestaudio/best'}
 yt_streamObj = youtube_dl.YoutubeDL(yt_params)
 
+yt_playlistParams = {'extract_flat': 'in_playlist', 'format': 'bestaudio/best'}
+yt_playlistObj = youtube_dl.YoutubeDL(yt_playlistParams)
+
 # YouTube API Key for gathering metadata
 yt_API = os.getenv('YOUTUBE_API')
 
@@ -105,6 +108,26 @@ class YouTube_linkobj(discord.PCMVolumeTransformer):
             data = data['entries'][0]
         filename = data['url'] if stream else yt_streamObj.prepare_filename(data)
         return cls(discord.FFmpegPCMAudio(filename, **ff_params), data=data)
+    
+    @classmethod
+    async def yt_playlist(cls, url, *, loop=None, stream=False, start=0):
+        loop = loop or asyncio.get_event_loop()
+        
+    
+        data = await loop.run_in_executor(None, lambda: yt_playlistObj.extract_info(url, download=not stream))
+        
+        entries = data.get('entries')
+
+        newTime = start
+        ff_params = {'options': '-vn', 
+                     'before_options': f'-ss {newTime} -reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5'}
+        
+        classlist = []
+        for entry in entries:
+            filename = entry['url'] if stream else youtube_dl.prepare_filename(entry)
+            classlist.append(cls(discord.FFmpegPCMAudio(filename, **ff_params), data=entry))
+
+        return classlist
 
 
 # ================================================================================== Universal / Sys functions
@@ -1007,5 +1030,23 @@ async def percentageShift(interaction: discord.Interaction, client: discord.Clie
                 f'Unknown Error in PERCENTAGE SHIFT occurred (this should not happen)') 
 
 
-# ============================================================================================================
+async def addPlaylist(interaction: discord.Interaction, client: discord.Client, url: str):
 
+    # Note: Bot NEEDS to be playing at least one song already before adding playlist or it will turn into a buggy mess
+    # Add check on next commit, need thorough testing
+    await interaction.response.defer()
+    if ((url.startswith('https://www.youtube.com/playlist'))):
+        locallist = await YouTube_linkobj.yt_playlist(url, loop=client.loop, stream=True, start=0)
+
+        print(locallist)
+        print("Local list received. Iterating now")
+        for items in locallist:
+            playlistsong = await YouTube_linkobj.from_url(items.url, loop=client.loop, stream=True, start=0)
+            songList.append(playlistsong)
+
+        await interaction.followup.send("Playlist added to queue")
+    else:
+        await interaction.followup.send("Invalid Playlist link")
+
+
+# ============================================================================================================

@@ -175,6 +175,10 @@ async def displayLyrics(interaction: discord.Interaction):
 async def percentageShift(interaction: discord.Interaction, percent: int):
     await mzb.percentageShift(interaction, client, percent)
 
+@tree.command(name = 'addplaylist', description = 'add a youtube playlist to queue')
+async def addPlaylist(interaction: discord.Interaction, url: str):
+    await mzb.addPlaylist(interaction, client, url)
+
 #   dropdown menu for character selection
 @tree.command(name = "rp_store", description = "store for rp game")
 async def rp_store(interaction: discord.Interaction):
