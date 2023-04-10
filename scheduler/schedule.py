@@ -2,8 +2,25 @@ import json
 import discord
 import math
 import basic.methods as bm
-from discord.ui import Button, View    
+from discord.ui import Button, View  
+from time import sleep 
 from datetime import time
+import os
+import datetime
+
+from google.auth.transport.requests import Request
+from google.oauth2.credentials import Credentials
+from google_auth_oauthlib.flow import InstalledAppFlow
+from googleapiclient.discovery import build
+from googleapiclient.errors import HttpError
+
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.common.action_chains import ActionChains
+
+# If modifying these scopes, delete the file token.json.
+SCOPES = ['https://www.googleapis.com/auth/calendar']
 
 # constants to represent the max number of profiles and events allowed (this is done to mimic a real product where too much data being used per server may be too expensive to have hosted if thousands of servers are using the bot)
 MAX_NUM_PROFILES = 100
@@ -493,6 +510,116 @@ async def delete_event(interaction: discord.Interaction, client, profile_name: s
 
     await bm.follow_up(interaction, "Event successfully deleted!")
 
+async def google_calendar(interaction: discord.Interaction, profile_name: str):
+    # Making sure the profile exists, and also grabbing the selected profile
+    path = "scheduler/" + str(interaction.guild.id) + ".json"   # name of the file will be <guildID>.json and it will be located in the scheduler directory
+    list_of_profiles = ret_list_of_profiles(path)
+
+    # Checking if the profile exists
+    if(profile_exists(profile_name, list_of_profiles) == 0):
+        await bm.follow_up(interaction, "The profile you want to access does not exist!")
+        return
+    
+    # Grabbing the selected profile
+    selectedProfile = {}
+    for profile in list_of_profiles:
+        if(profile["name"] == profile_name):
+            selectedProfile = profile
+    
+    public_url = ""
+    calendar_id = ""
+
+    # Shows basic usage of the Google Calendar API.
+    # The next 20 lines are from the Google Quickstart page on the google calendar api
+
+    creds = None
+    # The file token.json stores the user's access and refresh tokens, and is
+    # created automatically when the authorization flow completes for the first
+    # time.
+    if os.path.exists('token.json'):
+        creds = Credentials.from_authorized_user_file('token.json', SCOPES)
+    # If there are no (valid) credentials available, let the user log in.
+    if not creds or not creds.valid:
+        if creds and creds.expired and creds.refresh_token:
+            creds.refresh(Request())
+        else:
+            flow = InstalledAppFlow.from_client_secrets_file(
+                'credentials.json', SCOPES)
+            creds = flow.run_local_server(port=0)
+        # Save the credentials for the next run
+        with open('token.json', 'w') as token:
+            token.write(creds.to_json())
+
+    try:
+        service = build('calendar', 'v3', credentials=creds)
+
+        request_body = {
+            'summary': f"{profile_name}/{interaction.user.guild.name}",
+            'timeZone': "America/Los_Angeles",
+            'visibility': 'public'
+        }
+
+        # This will allow us to make the calendar public in order to allow us to take a screenshot of it with the selenium webdriver.
+        rules = {
+            "role": "reader",
+            "scope": {
+                "type": "default",
+            }
+        }
+        
+        response = service.calendars().insert(body=request_body).execute()
+        calendar_id = response["id"]
+        # Making the calendar public
+        created_rule = service.acl().insert(calendarId=calendar_id, body=rules).execute()
+        # Adding all the events to the calendar
+
+
+        
+        # this is the public url that will be returned by the function. 
+        # Note that the ctz will always be the same as my account as it is by default set to America/Los_Angeles
+        public_url = "https://calendar.google.com/calendar/embed?src=" + calendar_id + "&ctz=America%2FLos_Angeles"
+        print(public_url)
+        
+        service.calendarList().delete(calendarId=calendar_id).execute()
+    except HttpError as error:
+        print('An error occurred: %s' % error)
+    
+    await get_screenshot(public_url)
+    
+    with open("myscreenshot.png", "rb") as f:
+        screenshot = discord.File(f)
+        await interaction.followup.send(f"{public_url}", file=screenshot)
+    
+    return
+
+async def get_screenshot(url):
+    driver = webdriver.Chrome()
+    # driver.maximize_window()
+    driver.set_window_size(1920, 1100)
+    size = driver.get_window_size()
+    driver.get(url)
+    
+
+    # Clicking on the week tab to get the weekly schedule
+    l=driver.find_element(By.ID, "tab-controller-container-week")
+    driver.execute_script("arguments[0].click();", l)
+    
+    #Set the focus to the browser rather than the web content
+    driver.set_context("chrome")
+    #Create a var of the window
+    win = driver.find_element_by_tag_name("window")
+    #Send the key combination to the window itself rather than the web content to zoom out
+    #(change the "-" to "+" if you want to zoom in)
+    win.send_keys(Keys.CONTROL + "-")
+    #Set the focus back to content to re-engage with page elements
+    driver.set_context("content")
+    
+    sleep(1)
+    
+
+    driver.get_screenshot_as_file("myscreenshot.png")
+    driver.quit()
+    return
 
 def disable_button(day_of_week, sunday_btn, monday_btn, tuesday_btn, wednesday_btn, thursday_btn, friday_btn, saturday_btn):
     # using day of week to know which button to disable

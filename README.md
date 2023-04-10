@@ -44,6 +44,11 @@ pip install youtube-dl
 pip install PyNaCl
 pip install ffmpeg
 pip install spotipy
+pip install apscheduler
+pip install lyricsgenius
+pip install pydub
+pip install selenium
+pip install --upgrade google-api-python-client google-auth-httplib2 google-auth-oauthlib
 ```
 
 ## FFMPEG Installation Notes

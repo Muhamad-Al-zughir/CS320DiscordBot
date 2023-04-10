@@ -109,6 +109,14 @@ async def add_event_cmd(interaction: discord.Interaction, profile_name: str, eve
 async def delete_event_cmd(interaction: discord.Interaction, profile_name: str, event_name: str):
     await schedule.delete_event(interaction, client, profile_name, event_name)
 
+# googlecalendar
+@tree.command(name = 'googlecalendar', description = 'Takes the given profile name and creates a visual weekly schedule using google calendar')
+@app_commands.describe(profile_name="Name of the profile to be used")
+async def google_calendar_cmd(interaction: discord.Interaction, profile_name: str):
+    await interaction.response.defer()
+    await schedule.google_calendar(interaction, profile_name)
+    os.remove("myscreenshot.png")
+
 # Bot will join Discord Voice channel
 @tree.command(name = 'move', description = 'Bot will join your voice channel')
 async def move(interaction: discord.Interaction):     
