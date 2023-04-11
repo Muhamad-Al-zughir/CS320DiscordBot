@@ -1057,11 +1057,67 @@ async def addPlaylist(interaction: discord.Interaction, client: discord.Client, 
         await interaction.followup.send("Need to have at least one song playing before adding queue!")
 
 
-# About the Artist
-#async def aboutTheArtist(interaction: discord.Interaction, client: discord.Client):
 
 # About the Song
-#async def aboutTheSong(interaction: discord.Interaction, client: discord.Client):
+async def aboutTheSong(interaction: discord.Interaction, client: discord.Client):
+    await interaction.response.defer()
+    if currentSongObj is None:
+        await interaction.followup.send("Can't gather information from current song. No song is playing!")
+
+    else:
+        logId = interaction.channel_id
+        logChannel = client.get_channel(logId)
+        titleToSearch = currentSongObj.title
+
+        searchResults = spotifyObj.search(q=titleToSearch, type="track")
+        songTrack = searchResults["tracks"]["items"][0]["name"]
+        songTrackArtist = searchResults["tracks"]["items"][0]["artists"][0]["name"]
+        songAlbum = searchResults["tracks"]["items"][0]["album"]["name"]
+
+        wikiInit = wikipediaapi.Wikipedia('en')
+        albumPage = wikiInit.page(songTrack)
+        #displayPage = albumPage.summary
+        
+        found_link = False
+        if albumPage.exists():
+            for cats in albumPage.categories:
+                if "disambiguation pages" in cats or "Disambiguation pages" in cats:
+                    print("IN DISAMBIG PAGE\n")
+                    links = albumPage.links
+                    for link in links:
+                        if ("song" and songTrack.lower() and songTrackArtist.lower()) in link.lower():
+                            print(link.lower())
+                            print("HIT SONG")
+                            albumPage = wikiInit.page(link)
+                            print("HIT LINK")
+                            found_link = True
+                            break
+                if found_link:
+                    break
+            displayPage = albumPage.summary
+        else:
+            displayPage = "No Song Information found"
+        
+        await interaction.followup.send("Information Found!")
+        await logChannel.send(f"1. Track Name is {songTrack}")
+        await logChannel.send(f"2. Artist Name is {songTrackArtist}")
+        await logChannel.send(f"3. Album Name is {songAlbum}")
+
+        if len(displayPage) < 2000:                                     # Due to discord limitations, need to print description 2000 at a time
+            await logChannel.send(f'4. Description: {displayPage}')     # If less than 2000, send immediately
+        else:
+            await logChannel.send(f'4. Description: ')
+            newdisplay = ''                                             # Else, declare new variable to track 2000 chars at a time
+            while len(displayPage) > 2000:                              # Iterate 2000 at a time 
+                    
+                newdisplay = displayPage[:2000]                         # string slicing to grab 2000 and send
+                await logChannel.send(newdisplay)
+                displayPage = displayPage[2000:]                        # YT description updated here          
+            
+            
+            await logChannel.send(displayPage)                              # Send remainder of description
+
+
 
 # About the Album
 async def aboutTheAlbum(interaction: discord.Interaction, client: discord.Client):
@@ -1073,7 +1129,12 @@ async def aboutTheAlbum(interaction: discord.Interaction, client: discord.Client
     else:
         logId = interaction.channel_id
         logChannel = client.get_channel(logId)
-        titleToSearch = currentSongObj.title
+        #titleToSearch = currentSongObj.title
+        
+        songSearchFirst = spotifyObj.search(q=currentSongObj.title, type="track")
+        songTrack = songSearchFirst["tracks"]["items"][0]
+
+        titleToSearch = songTrack["album"]["name"]
 
         searchResults = spotifyObj.search(q=titleToSearch, type="album")
 
@@ -1093,9 +1154,30 @@ async def aboutTheAlbum(interaction: discord.Interaction, client: discord.Client
 
         wikiInit = wikipediaapi.Wikipedia('en')
         albumPage = wikiInit.page(albumName)
+        #displayPage = albumPage.summary
+        
+        found_link = False
+        if albumPage.exists():
+            for cats in albumPage.categories:
+                if "disambiguation pages" in cats or "Disambiguation pages" in cats:
+                    print("IN DISAMBIG PAGE\n")
+                    links = albumPage.links
+                    for link in links:
+                        if "album" and albumDetails["artists"][0]["name"].lower() in link.lower():
+                            print(link.lower())
+                            print("HIT ALBUM")
+                            albumPage = wikiInit.page(link)
+                            print("HIT LINK")
+                            found_link = True
+                            break
+                if found_link:
+                    break
+            displayPage = albumPage.summary
+        else:
+            displayPage = "No Album Information found"
 
-        displayPage = albumPage.summary
 
+        await interaction.followup.send("Information Found!")
         await logChannel.send(f'1. Album Name: {albumDetails["name"]}')
         await logChannel.send(f'2. Album Type: {albumDetails["album_type"]}')
 
@@ -1138,6 +1220,63 @@ async def aboutTheAlbum(interaction: discord.Interaction, client: discord.Client
 
 
 
-        print(displayPage)
+        #print(displayPage)
+
+async def aboutTheArtist(interaction: discord.Interaction, client: discord.Client):
+    #spotifyobj
+    await interaction.response.defer()
+    if currentSongObj is None:
+        await interaction.followup.send("Can't gather information from current song. No song is playing!")
+
+    else:
+        logId = interaction.channel_id
+        logChannel = client.get_channel(logId)
+        initTitle = currentSongObj.title
+        Title2 = initTitle.split(" - ")[0]
+
+        if '"' in Title2:
+            Title2 = Title2.replace('"', '')
+
+        titleToSearch = Title2
+        searchResults = spotifyObj.search(q=titleToSearch, type="artist")
+
+        if searchResults == {}:
+            await interaction.followup.send("Error with Spotify Link Search: No Artists could be found")
+            return
+
+        artistSearch = searchResults["artists"]["items"][0]["external_urls"]["spotify"]
+        artistDetails = spotifyObj.artist(artistSearch)
+
+        if "error" in artistDetails:
+            await interaction.followup.send("Error with Spotify Artist Search: Artist ID nonexistent")
+            return
+
+        artistName = artistDetails["name"]
+        print(artistDetails)                     # Debug
+
+        wikiInit = wikipediaapi.Wikipedia('en')
+        artistPage = wikiInit.page(artistName)
+
+        displayPage = artistPage.summary
+
+        await interaction.followup.send("Information Found!")
+        await logChannel.send(f'1. Artist Name: {artistDetails["name"]}')
+        await logChannel.send(f'2. Artist Popularity: {artistDetails["popularity"]}')
+        await logChannel.send(f'3. Artist Followers: {artistDetails["followers"]["total"]}')
+
+        if len(displayPage) < 2000:                                            # Due to discord limitations, need to print description 2000 at a time
+            await logChannel.send(f'4. Artist Description: {displayPage}')     # If less than 2000, send immediately
+        else:
+            await logChannel.send(f'4. Artist Description: ')
+            newdisplay = ''                                                    # Else, declare new variable to track 2000 chars at a time
+            while len(displayPage) > 2000:                                     # Iterate 2000 at a time 
+                    
+                newdisplay = displayPage[:2000]                                # string slicing to grab 2000 and send
+                await logChannel.send(newdisplay)
+                displayPage = displayPage[2000:]                               # YT description updated here          
+            
+            
+            await logChannel.send(displayPage)                                 # Send remainder of description
+
 
 # ============================================================================================================
