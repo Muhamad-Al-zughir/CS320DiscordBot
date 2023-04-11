@@ -17,6 +17,7 @@ import spotipy
 import random
 import time
 import lyricsgenius
+import wikipediaapi
 from spotipy.oauth2 import SpotifyClientCredentials
 
 # Loads all the content in the .env folder
@@ -517,7 +518,7 @@ async def displayInfo(interaction: discord.Interaction, client: discord.Client):
                 desc = desc[2000:]                      # YT description updated here                                     **
             
             
-        await logChannel.send(desc)                     # Send remainder of description
+            await logChannel.send(desc)                     # Send remainder of description
 
     else:
         await interaction.followup.send('No song is currently playing to display information for!')
@@ -561,7 +562,7 @@ async def displayLyrics(interaction: discord.Interaction, client: discord.Client
                     geniusLyrics = geniusLyrics[2000:]              # genius lyrics updated here                                     **
             
             
-            await logChannel.send(geniusLyrics)                     # Send remainder of lyrics
+                await logChannel.send(geniusLyrics)                     # Send remainder of lyrics
             
         
         else:
@@ -1035,18 +1036,108 @@ async def addPlaylist(interaction: discord.Interaction, client: discord.Client, 
     # Note: Bot NEEDS to be playing at least one song already before adding playlist or it will turn into a buggy mess
     # Add check on next commit, need thorough testing
     await interaction.response.defer()
-    if ((url.startswith('https://www.youtube.com/playlist'))):
-        locallist = await YouTube_linkobj.yt_playlist(url, loop=client.loop, stream=True, start=0)
 
-        print(locallist)
-        print("Local list received. Iterating now")
-        for items in locallist:
-            playlistsong = await YouTube_linkobj.from_url(items.url, loop=client.loop, stream=True, start=0)
-            songList.append(playlistsong)
+    if (currentSongObj is not None):
 
-        await interaction.followup.send("Playlist added to queue")
+
+        if ((url.startswith('https://www.youtube.com/playlist'))):
+            locallist = await YouTube_linkobj.yt_playlist(url, loop=client.loop, stream=True, start=0)
+
+            print(locallist)
+            print("Local list received. Iterating now")
+            for items in locallist:
+                playlistsong = await YouTube_linkobj.from_url(items.url, loop=client.loop, stream=True, start=0)
+                songList.append(playlistsong)
+
+            await interaction.followup.send("Playlist added to queue")
+        else:
+            await interaction.followup.send("Invalid Playlist link")
+    
     else:
-        await interaction.followup.send("Invalid Playlist link")
+        await interaction.followup.send("Need to have at least one song playing before adding queue!")
 
+
+# About the Artist
+#async def aboutTheArtist(interaction: discord.Interaction, client: discord.Client):
+
+# About the Song
+#async def aboutTheSong(interaction: discord.Interaction, client: discord.Client):
+
+# About the Album
+async def aboutTheAlbum(interaction: discord.Interaction, client: discord.Client):
+    #spotifyobj
+    await interaction.response.defer()
+    if currentSongObj is None:
+        await interaction.followup.send("Can't gather information from current song. No song is playing!")
+
+    else:
+        logId = interaction.channel_id
+        logChannel = client.get_channel(logId)
+        titleToSearch = currentSongObj.title
+
+        searchResults = spotifyObj.search(q=titleToSearch, type="album")
+
+        if searchResults == {}:
+            await interaction.followup.send("Error with Spotify Link Search: No Albums could be found")
+            return
+
+        albumSearch = searchResults["albums"]["items"][0]["external_urls"]["spotify"]
+        albumDetails = spotifyObj.album(albumSearch)
+
+        if "error" in albumDetails:
+            await interaction.followup.send("Error with Spotify Album Search: Album ID nonexistent")
+            return
+
+        albumName = albumDetails["name"]
+        print(albumDetails)                     # Debug
+
+        wikiInit = wikipediaapi.Wikipedia('en')
+        albumPage = wikiInit.page(albumName)
+
+        displayPage = albumPage.summary
+
+        await logChannel.send(f'1. Album Name: {albumDetails["name"]}')
+        await logChannel.send(f'2. Album Type: {albumDetails["album_type"]}')
+
+        
+        if len(albumDetails["artists"]) > 1:
+            await logChannel.send(f'3. Album Artists:')
+            for artists in albumDetails["artists"]:
+                await logChannel.send(f'\t{artists["name"]}')
+        else:
+            await logChannel.send(f'3. Album Artist: {albumDetails["artists"][0]["name"]}')
+        
+
+        if len(albumDetails["genres"]) > 1:
+            await logChannel.send(f'4. Album Genres:')
+            for genres in albumDetails["genres"]:
+                await logChannel.send(f'\t{genres}')
+        elif len(albumDetails["genres"]) == 1:
+            await logChannel.send(f'4. Album Genre: {albumDetails["genres"]}')
+        else:
+            await logChannel.send(f'4. No Album Genre found')
+
+        await logChannel.send(f'5. Release Date: {albumDetails["release_date"]}')
+        await logChannel.send(f'6. Number of Tracks: {albumDetails["total_tracks"]}')
+        await logChannel.send(f'7. Album Label: {albumDetails["label"]}')
+        await logChannel.send(f'8. Album Popularity: {albumDetails["popularity"]}')
+
+        if len(displayPage) < 2000:                                     # Due to discord limitations, need to print description 2000 at a time
+            await logChannel.send(f'9. Description: {displayPage}')     # If less than 2000, send immediately
+        else:
+            await logChannel.send(f'9. Description: ')
+            newdisplay = ''                                             # Else, declare new variable to track 2000 chars at a time
+            while len(displayPage) > 2000:                              # Iterate 2000 at a time 
+                    
+                newdisplay = displayPage[:2000]                         # string slicing to grab 2000 and send
+                await logChannel.send(newdisplay)
+                displayPage = displayPage[2000:]                        # YT description updated here          
+            
+            
+            await logChannel.send(displayPage)                              # Send remainder of description
+
+
+
+        print(displayPage)
 
 # ============================================================================================================

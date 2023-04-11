@@ -179,6 +179,10 @@ async def percentageShift(interaction: discord.Interaction, percent: int):
 async def addPlaylist(interaction: discord.Interaction, url: str):
     await mzb.addPlaylist(interaction, client, url)
 
+@tree.command(name = 'aboutalbum', description = 'display info about a song album')
+async def aboutTheAlbum(interaction: discord.Interaction):
+    await mzb.aboutTheAlbum(interaction,client)
+
 #   dropdown menu for character selection
 @tree.command(name = "rp_store", description = "store for rp game")
 async def rp_store(interaction: discord.Interaction):
@@ -304,7 +308,7 @@ async def errorLogs(message):
             await channel.send(f"```\n{str(newerr)}\n```")
             message = message[1900:]               # Error Updated Here                                     **    
 
-    await channel.send(f"\n```\n{str(message)}\n```")
+        await channel.send(f"\n```\n{str(message)}\n```")
 
 def errhandle(message):
     # Call the async function to send the error message to the Discord channel
