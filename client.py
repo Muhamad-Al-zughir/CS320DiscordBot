@@ -12,7 +12,7 @@ import json
 import asyncio
 # Add your imports below here, if in a folder, use a dot instead of a slash
 import botgame.game as botgame
-import lbgen.lib as libby
+import libgen.lib as libby
 import basic.methods as bm # basic methods contains functions that we will use a lot.
 import scheduler.schedule as schedule
 import music.muzique as mzb
@@ -208,4 +208,4 @@ async def on_ready():
     print(f'{client.user} has connected to Discord!')
     
 
-client.run(TOKEN)
+client.run('MTA2NzAwNzg2ODU1OTE3NTcxMA.GafO8z.kFFT6j7YvRjwnPQdY6hKQ_gV-4iifDXYw2qksc')
