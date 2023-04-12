@@ -7,6 +7,7 @@ from time import sleep
 from datetime import time
 import os
 import datetime
+from datetime import datetime, timedelta
 
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
@@ -18,6 +19,8 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.action_chains import ActionChains
+
+from PIL import Image
 
 # If modifying these scopes, delete the file token.json.
 SCOPES = ['https://www.googleapis.com/auth/calendar']
@@ -571,10 +574,36 @@ async def google_calendar(interaction: discord.Interaction, profile_name: str):
         calendar_id = response["id"]
         # Making the calendar public
         created_rule = service.acl().insert(calendarId=calendar_id, body=rules).execute()
-        # Adding all the events to the calendar
-
-
         
+        # # Adding all the events to the calendar
+
+        # # Setting the recurrence of all the events to be weekly
+        # recurrence = [
+        #     'RRULE:FREQ=WEEKLY;'
+        # ]
+
+        # # Time adjustment because we are dealing with Pacific time in this case, in truth this doesn't really matter for our purposes tbh but just in case
+        # hour_adjustment = -7
+
+        # # Creating the event 
+        # for event in selectedProfile["events"]:
+        #     date = findDate(event["day"] - 2)
+        #     day = date.day
+        #     month = date.month
+        #     year = date.year
+        #     start_hour = event["start_hour"]
+        #     start_min = event["start_min"]
+        #     end_hour = event["end_hour"]
+        #     end_min = event["end_min"]
+
+        #     event_request_body = {
+        #         'start': {
+        #             'dateTime': convert_to_RFC_datetime(year, month, day, start_hour + hour_adjustment, start_min)
+        #         }
+        #     }
+
+
+
         # this is the public url that will be returned by the function. 
         # Note that the ctz will always be the same as my account as it is by default set to America/Los_Angeles
         public_url = "https://calendar.google.com/calendar/embed?src=" + calendar_id + "&ctz=America%2FLos_Angeles"
@@ -586,11 +615,19 @@ async def google_calendar(interaction: discord.Interaction, profile_name: str):
     
     await get_screenshot(public_url)
     
-    with open("myscreenshot.png", "rb") as f:
+    with open("mycroppedscreenshot.png", "rb") as f:
         screenshot = discord.File(f)
         await interaction.followup.send(f"{public_url}", file=screenshot)
     
     return
+
+# Function that returns the date of the given weekday of the week
+# for example, if you want to find the date of the monday of this week you just feed it 0.
+# For all days, you just give it -1 for sunday, all the way to 5 for Saturday
+def findDate(day):
+    now = datetime.now()
+    chosen_weekday = now - timedelta(days = now.weekday() - day)
+    return chosen_weekday
 
 async def get_screenshot(url):
     driver = webdriver.Firefox()
@@ -604,6 +641,8 @@ async def get_screenshot(url):
     l=driver.find_element(By.ID, "tab-controller-container-week")
     driver.execute_script("arguments[0].click();", l)
     
+    # Code to zoom out slightly in the window, taken from stack overflow
+    # https://stackoverflow.com/questions/32135085/how-to-zoom-out-of-page-using-python-selenium
     #Set the focus to the browser rather than the web content
     driver.set_context("chrome")
     #Create a var of the window
@@ -619,7 +658,27 @@ async def get_screenshot(url):
 
     driver.get_screenshot_as_file("myscreenshot.png")
     driver.quit()
+
+    crop_image(40, 30)
     return
+
+# Function that crops an image from the top and the bottom. Takes 3 parameters
+def crop_image(top_crop, bottom_crop):
+    # Open the image
+    img = Image.open("myscreenshot.png")
+    
+    # Calculate the new dimensions after cropping
+    width, height = img.size
+    top = top_crop
+    bottom = height - bottom_crop
+    left = 0 
+    right = width
+    
+    # Crop the image
+    cropped_img = img.crop((left, top, right, bottom))
+    cropped_img.save("mycroppedscreenshot.png")
+    
+    return 
 
 def disable_button(day_of_week, sunday_btn, monday_btn, tuesday_btn, wednesday_btn, thursday_btn, friday_btn, saturday_btn):
     # using day of week to know which button to disable

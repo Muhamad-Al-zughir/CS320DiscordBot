@@ -48,6 +48,7 @@ pip install apscheduler
 pip install lyricsgenius
 pip install pydub
 pip install selenium
+pip install Pillow
 pip install --upgrade google-api-python-client google-auth-httplib2 google-auth-oauthlib
 ```
 

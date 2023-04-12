@@ -116,6 +116,7 @@ async def google_calendar_cmd(interaction: discord.Interaction, profile_name: st
     await interaction.response.defer()
     await schedule.google_calendar(interaction, profile_name)
     os.remove("myscreenshot.png")
+    os.remove("mycroppedscreenshot.png")
 
 # Bot will join Discord Voice channel
 @tree.command(name = 'move', description = 'Bot will join your voice channel')
