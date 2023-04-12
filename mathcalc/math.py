@@ -124,86 +124,40 @@ def algebraSimplify(equation):
                     #print("Inside")
                     print(equation[count], equation[secondCount])
                     equation = simplifyTuples(equation, count, secondCount)
-                    print("Final equation : ", equation)
+                    print("Final equation : ", equation, turnBackToString(equation))
                     count = 0
                     #continue
                     #do the comparrision
                 secondCount += 1
         count += 1
 
-
-"""def algebraSimplify(equation):
+def turnBackToString(equation):
     print(equation)
+    stringEquation = ""
     count = 0
-    status = []
+    flag = 1
     while count < len(equation):
+        print(stringEquation)
         if type(equation[count]) is tuple:
-            variable = equation[count][1]
-            print(variable)
-            statuscount = 0
-            flag = 0
-            while statuscount < len(status):
-                if variable in status[statuscount]:
-                    flag = 1
-                    status[statuscount][1] += 1
-                    break
-                statuscount += 1
-            if flag == 0:
-                status.append(list([equation[count][1], 1]))
-            print(status)
-        count += 1
-    count = 0
-    while count < len(status):
-        if status[count][1] == 1:
-            status.pop(count)
-            count = 0
+            #if equation[count][3] == 'r' and flag == 1:
+            #    stringEquation += '='
+            #    flag = 0
+            if equation[count][0] != '1':
+                stringEquation += equation[count][0] 
+            if equation[count][1] != None:
+                stringEquation += equation[count][1]
+            if equation[count][2] != None:
+                stringEquation += '^'
+                stringEquation += equation[count][3]
         else:
-            count += 1
-    print(status)           #status is a 2D list that gives us the varibles that we have to simplify in the overall equation and the amount of occurences
-    # move to a new funciton
-    if len(status) > 0:
-        length = 0
-        toSimplify = []
-        while length < len(status):
-            count = 0
-            variable = status[length][0]
-            repeats = status[length][1]
-            print("Repeats : ", repeats)
-            #print("Inside")
-            while len(status) < (repeats):
-                #print("Inside Inside")
-                if type(equation[count]) is tuple:
-                    print("Inside")
-                    if equation[count][1] == variable:
-                        if count == 0:
-                            toSimplify.append(equation[count])      #DOUBLE CHECK IF YOU CAN COMBINE THE TWO CONDITIONS
-                            equation.pop(count)
-                        elif type(equation[count-1]) is str:
-                            toSimplify.append(equation[count-1])
-                            equation.pop(count-1)
-                            toSimplify.append(equation[count-1])
-                            equation.pop(count-1)
-                        else:
-                            toSimplify.append(equation[count])
-                            equation.pop(count)
-                        print("Equation : " + str(equation))
-                        print("ToSimplify : " + str(toSimplify))
-                        count = 0
-                        print("COUNT : " + str(count))
-                count += 1
-                print("Count : ", count)
-            length += 1
-    else:
-        return equation
-"""            
-            
-            
-    
-    #while count < len(equation):
-    #    if type(equation[count]) is tuple:
-    #        if count != 0 and (equation[count-1] == '+' )
-            
-        
+            if equation[count + 1][3] == 'r' and flag == 1:
+                stringEquation += '='
+                flag = 0
+                stringEquation += ' '
+            stringEquation += equation[count]
+        stringEquation += ' '
+        count += 1
+    return(stringEquation)
     
 
 #makes a list of tuples with (digit, varaible, degree, side) if operator then just an operator sign
