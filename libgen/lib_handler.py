@@ -3,7 +3,7 @@ import basic.methods as bm
 from discord.ui import View, Button
 import discord
 
-async def handleLibSearch(client, interaction, type, search):
+async def handleLibSearch(interaction, type, search):
     res = libby.handleValidation(type, search)
     # We want to always send something, so discord doesn't time us out.
     if (res != True):
@@ -60,6 +60,7 @@ class resultSelectBtn(Button):
     # Gets the links for the selected book, and creates a message with the links as buttons.
     # It also states how many links it is returning in its message.
     async def callback(self, interaction):
+        await bm.send_msg(interaction, 'Searching for links...')
         id = self.custom_id
         # Get the chosen result from the list of resultks
         chosen = int(id)
@@ -75,5 +76,5 @@ class resultSelectBtn(Button):
             btn = Button(label=key, url=links[key])
             view.add_item(btn)
         # Little message telling the users how many links there are for the book.
-        msg = f"Found ({len(links)}) links for the selected book."
-        await interaction.response.send_message(content=msg, view=view)
+        msg = f"Found ({len(links)}) links for the selected title: {obj['title']}"
+        await interaction.followup.send(content=msg, view=view)

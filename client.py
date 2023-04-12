@@ -54,7 +54,7 @@ musicString = musicString1 + musicString2 + musicString3 + musicString4 + musicS
 @tree.command(name = "libgen", description = "Search for books")
 @app_commands.describe(type="Please enter either \"author\" or \"title\"", search="Search, must be at least 3 characters")
 async def basic_libgen(interaction, type: str, search: str): # Set the arguments here to get options on the slash commands.
-    await lb.handleLibSearch(client, interaction, type, search)
+    await lb.handleLibSearch(interaction, type, search)
 
 
 # Add new slash commands beneath this
