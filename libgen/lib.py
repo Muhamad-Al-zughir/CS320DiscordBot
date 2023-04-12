@@ -41,8 +41,9 @@ def clearUneeded(tuple):
 # Returns a list of strings
 def formatResults(arr: list):
     sarr = []
-    for t in arr:
-        sarr.append('Author: ' + t['author'] + ', Title: ' + t['title'] + ', Ext.: ' + t['ext'])
+    for i, t in enumerate(arr):
+        msg = f"{str(i + 1)}. Author: {t['author']}, Title: {t['title']}, Ext: {t['ext']}"
+        sarr.append(msg)
     return sarr
 
 def formatLinks(obj: dict):
