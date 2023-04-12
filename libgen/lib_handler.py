@@ -8,12 +8,18 @@ async def handleLibSearch(interaction, type, search):
     # We want to always send something, so discord doesn't time us out.
     if (res != True):
             await bm.send_msg(interaction, res)
+            return
     else:
         await bm.send_msg(interaction, 'Beginning Search...')
     # All messages after this point should be sent as followups
 
     # Make a basic search to libgen
     results = libby.basicSearch(type, search)
+    # Check the length of the results, if no results, alert the users, and return
+    if (len(results) == 0):
+        await bm.follow_up(interaction, "Search returned no results, try another combination")
+        return
+
     # Format the results into an array of results
     strings = libby.formatResults(results)
     msg = '\n'.join(strings) # Turn into one string
