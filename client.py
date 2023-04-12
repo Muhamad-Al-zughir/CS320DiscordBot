@@ -2,20 +2,15 @@
 # Started 1/18/2023
 
 import os
+import sys
 import discord
 from discord import app_commands
 from dotenv import load_dotenv
-from discord.ui import Button, View
-import youtube_dl
-import ffmpeg
 import json
-import asyncio
-import spotipy
-from spotipy.oauth2 import SpotifyClientCredentials
 
 # Add your imports below here, if in a folder, use a dot instead of a slash
 import botgame.game as botgame
-import libgen.lib as libby
+import libgen.lib_handler as lb
 import basic.methods as bm # basic methods contains functions that we will use a lot.
 import scheduler.schedule as schedule
 import music.muzique as mzb
@@ -32,30 +27,34 @@ tree = app_commands.CommandTree(client)
 load_dotenv() # loads all the content in the .env folder
 TOKEN = os.getenv('DISCORD_API')
 
+# HELP COMMAND STRINGS
+# MUSIC
+
+musicString1 = "```**Music**\nmove: Moves a bot to a voice channel if you are already located in one"
+musicString2 = "\nplay: Plays from a YouTube, Soundcloud, Or Spotify Link, or a general search query"
+musicString3 = "\nclear: clears all songs from queue and leaves voice channel"
+musicString4 = "\npause-unpause: pauses song if currently playing, unpauses if paused already"
+musicString5 = "\nskip: skips currently playing song"
+musicString6 = "\nqueue: Displays currently queued songs in order"
+musicString7 = "\nshuffle: Shuffles current queue of music into random order"
+musicString8 = "\nshiftsong: Shifts song to set time in track"
+musicString9 = "\nencore: Repeats currently playing song"
+musicString10 ="\nswap: swaps two indexes of a queue"
+musicString11 ="\ndisplayInfo: displays YouTube Info of currently playing song"
+musicString12 ="\ndisplayLyrics: displays Lyrics of currently playing song if available"
+musicString13 ="\nshiftsong_percent: Shifts song to a set percentage in track"
+musicString14 ="\naddplaylist: adds YouTube playlist to queue ONLY if there is a currently playing song"
+musicString15 ="\naboutthealbum: displays information about the album if the track belongs to one"
+musicString16 ="\nabouttheartist: displays information about the artist if it can be found (Wikipedia)"
+musicString17 ="\naboutthesong: displays information about the song if there is information on it (Wikipedia)```"
+musicString = musicString1 + musicString2 + musicString3 + musicString4 + musicString5 + musicString6 + musicString7 + musicString8 + musicString9 + musicString10 + musicString11 + musicString12 + musicString13 + musicString14 + musicString15 + musicString16 + musicString17
+
+
 # Implement all the slash commands here, write down whos is which.
 @tree.command(name = "libgen", description = "Search for books")
 @app_commands.describe(type="Please enter either \"author\" or \"title\"", search="Search, must be at least 3 characters")
 async def basic_libgen(interaction, type: str, search: str): # Set the arguments here to get options on the slash commands.
-    res = libby.handleValidation(type, search)
-    if (res != True):
-        await bm.send_msg(interaction, res)
-    else:
-        results = libby.basicSearch(type, search)
-        strings = libby.formatResults(results)
-        msg = '\n'.join(strings)
-        await bm.send_msg(interaction, msg)
-    reply = await client.wait_for('message')
-    try:
-        num = int(reply.content)
-        if (num > len(strings) or num < 1): raise ValueError("outside bounds")
-    except ValueError:
-        await bm.follow_up(interaction, "Not a number between 1-" + str(len(strings))) # Need to use a follow up after initial sending
-        return
-    obj = results[num - 1]
-    links = libby.getLinksFor(obj)
-    strings2 = libby.formatLinks(links)
-    msg = '\n'.join(strings2)
-    await bm.follow_up(interaction, msg)
+    await lb.handleLibSearch(interaction, type, search)
 
 
 # Add new slash commands beneath this
@@ -153,7 +152,7 @@ async def displayQueue(interaction: discord.Interaction):
 async def shuffleQueue(interaction: discord.Interaction):
     await mzb.shuffleQueue(interaction, client)
 
-# Fast Forward a Song
+# Shift song for a certan value in seconds 
 @tree.command(name = 'shiftsong', description = 'Shift a song forward or backward for a valid number of seconds')
 async def fastForwardSong(interaction: discord.Interaction, seconds: int):
     await mzb.fastForwardSong(interaction, client, seconds)
@@ -177,6 +176,27 @@ async def swap(interaction: discord.Interaction):
 @tree.command(name = 'displaylyrics', description = 'Display Lyrics for the current playing song')
 async def displayLyrics(interaction: discord.Interaction):
     await mzb.displayLyrics(interaction,client)
+
+# Shift song for a certain percentage value of total runtime
+@tree.command(name = 'shiftsong_percent', description = 'Shift to a certain percentage of the total runtime of the current track')
+async def percentageShift(interaction: discord.Interaction, percent: int):
+    await mzb.percentageShift(interaction, client, percent)
+
+@tree.command(name = 'addplaylist', description = 'add a youtube playlist to queue')
+async def addPlaylist(interaction: discord.Interaction, url: str):
+    await mzb.addPlaylist(interaction, client, url)
+
+@tree.command(name = 'aboutthealbum', description = 'display info about a song album')
+async def aboutTheAlbum(interaction: discord.Interaction):
+    await mzb.aboutTheAlbum(interaction,client)
+
+@tree.command(name = 'abouttheartist', description = 'display info about a song artist')
+async def aboutTheAlbum(interaction: discord.Interaction):
+    await mzb.aboutTheArtist(interaction,client)
+
+@tree.command(name = 'aboutthesong', description = 'display info about a song')
+async def aboutTheSong(interaction: discord.Interaction):
+    await mzb.aboutTheSong(interaction,client)
 
 #   dropdown menu for character selection
 @tree.command(name = "rp_store", description = "store for rp game")
@@ -247,6 +267,16 @@ async def algebra(interaction: discord.Interaction, equation: str, answer: str):
     slope = result[0]
     intercept = result[1]
     await interaction.response.send_message("The slope of the equation is " + str(slope) + ".\nThe y-intercept of the equation is " + str(intercept))
+
+
+# HELP COMMAND MASTER FUNCTION , PUT ALL COMMAND SPECS HERE
+@tree.command(name = 'help', description = 'display information on commands')
+async def help(interaction: discord.Interaction):
+    await interaction.response.defer()
+
+    await interaction.followup.send("**Discord Bot 320 Master Command Sheet**\n")
+
+    await interaction.followup.send(musicString)
  
 
 # client event to take place whenever the client joins a server.
@@ -279,6 +309,36 @@ async def on_message(message):
 async def on_ready():
     await tree.sync()
     print(f'{client.user} has connected to Discord!')
+
+# Send Standard Error to Discord Channel
+async def errorLogs(message):
+    channel = await client.fetch_channel(1094498464710262865)         # Discord Channel Specified Here
+
+    spam = ['rate limited', 'logging in', 'connected to Gateway',     # spam and incorrectly labeled "error messages" in stderr
+            'handshake complete','Starting voice','voice...'
+            'ffmpeg process', 'should have terminated', 'has not terminated']     
+
+    if any(substring in message for substring in spam ):              # Ignore Spam
+        return
+
+
+    if len(str(message)) < 1900:                                                # Due to discord limitations, need to print description 2000 at a time
+        await channel.send(f"**STDERR Output:**\n```\n{str(message)}\n```")     # If less than 1900, send immediately
+    else:
+        await channel.send(f'**STDERR Output:**\n')
+        newerr = ''                                # Else, declare new variable to track 1900 chars at a time
+        while len(message) > 1900:                 # Iterate 2000 at a time while geniusLyrics is greater than 2000 **
+                    
+            newerr = message[:1900]                # string slicing to grab 1900 and send
+            await channel.send(f"```\n{str(newerr)}\n```")
+            message = message[1900:]               # Error Updated Here                                     **    
+
+        await channel.send(f"\n```\n{str(message)}\n```")
+
+def errhandle(message):
+    # Call the async function to send the error message to the Discord channel
+    client.loop.create_task(errorLogs(message))
     
+sys.stderr.write = errhandle                                        # Standard Error redirection initialized here
 
 client.run(TOKEN)
