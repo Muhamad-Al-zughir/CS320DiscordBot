@@ -2,11 +2,157 @@ import os
 import math
 import random
 
+def pythagoreanCheck(a, b, c):
+    c = float(c)
+    result = pythagoreanHypotenuse(a, b)
+    if c == result:
+        return "The triangle entered is a valid right triangle"
+    else: 
+        return "The triangle entered is an invalid right triangle"
+
+def pythagoreanSide(a, b):
+    c = ( (float(b) * float(b)) - (float(a) * float(a)) ) ** 0.5
+    return c
+
+def pythagoreanHypotenuse(a, b):
+    c = ( (float(a) * float(a)) + (float(b) * float(b)) ) ** 0.5
+    return c
+
+#the parseFraction funciton breaks the passed fraction into denominator and denomitor and then return the result in a tuple
+def parseFraction(fraction):
+    num = ""
+    denom = ""
+    count = 0
+    flag = 0
+    while count < len(fraction):
+        if fraction[count] == '/':
+            flag = 1
+            count += 1
+        if flag == 0:
+            num += fraction[count]
+        else:
+            denom += fraction[count]
+        count += 1
+    return(int(num), int(denom))
+       
+def simplifyFraction(fraction):
+    (a, b) = parseFraction(fraction)
+    num = a
+    denom = b
+    while b != 0:
+        a, b = b, a % b
+    if a == 1:
+        return fraction
+    num = num / a
+    denom = denom / a
+    simplified = ""
+    simplified += str(int(num))
+    simplified += "/"
+    simplified += str(int(denom)) 
+    return simplified  
+
+def gcd(fraction1, fraction2):
+    (a, b) = parseFraction(fraction1)
+    (c, d) = parseFraction(fraction2)
+    while d != 0:
+        b, d = d, b % d
+    return int(b)   
+     
+# The LCD funciton works with fractions in order to find the least common denominator of the two given fractions
+def lcd(fraction1, fraction2):
+    (a, b) = parseFraction(fraction1)
+    (c, d) = parseFraction(fraction2)
+    greatest = gcd(fraction1, fraction2)
+    least = (b * d) / greatest
+    return int(least)
+
+
+# This function takes two fractions and then checks is they are the same denominator
+# if they are not the same denominator, then the common denomintor is found by calling the LCD funciton
+def addFraction(fraction1, fraction2):
+    (num1, denom1) = parseFraction(fraction1)
+    (num2, denom2) = parseFraction(fraction2)
+    addedFunction = ""
+    if denom1 == denom2:
+        addedNums = num1 + num2
+        addedFunction += str(addedNums)
+        addedFunction += "/"
+        addedFunction += str(denom1)
+    else:
+        commonDenom = lcd(fraction1, fraction2)
+        
+        f1 = commonDenom / denom1
+        num1 *= f1
+        
+        f2 = commonDenom / denom2
+        num2 *= f2
+        
+        addedNums = num1 + num2
+        addedFunction += str(int(addedNums))
+        addedFunction += "/"
+        addedFunction += str(commonDenom)
+        
+    return addedFunction
+    
+    
+    
+def subtractFraction(fraction1, fraction2):
+    (num1, denom1) = parseFraction(fraction1)
+    (num2, denom2) = parseFraction(fraction2)
+    subtractedFunc = ""
+    if denom1 == denom2:
+        addedNums = num1 - num2
+        subtractedFunc += str(addedNums)
+        subtractedFunc += "/"
+        subtractedFunc += str(denom1)
+    else:
+        commonDenom = lcd(fraction1, fraction2)
+        
+        f1 = commonDenom / denom1
+        num1 *= f1
+        
+        f2 = commonDenom / denom2
+        num2 *= f2
+        
+        subtractedNums = num1 - num2
+        subtractedFunc += str(int(subtractedNums))
+        subtractedFunc += "/"
+        subtractedFunc += str(commonDenom)
+        
+    return subtractedFunc
+
+def multiplyFraction(fraction1, fraction2):
+    (num1, denom1) = parseFraction(fraction1)
+    (num2, denom2) = parseFraction(fraction2)
+    multiplied = ""
+    nums = num1 * num2
+    denoms = denom1 * denom2
+    multiplied += str(nums)
+    multiplied += "/"
+    multiplied += str(denoms)
+    multiplied = simplifyFraction(multiplied)
+    return multiplied
+    
+def divideFraction(fraction1, fraction2):
+    (num1, denom1) = parseFraction(fraction1)
+    (num2, denom2) = parseFraction(fraction2)
+    divided = ""
+    newNum = num1 * denom2
+    newDenom = denom1 * num2
+    divided += str(newNum)
+    divided += "/"
+    divided += str(newDenom)
+    divided = simplifyFraction(divided)
+    return divided
+
+    
+
 #functions for the calculator
 #(digit, varaible, degree, side)
 # Simplifies the list of tuples algebra equation as much as it can
 
 def simplifyTuples(equation, first, second):
+    print("First :", first, "Second :", second)
     copy = equation
     variable = equation[first][1]
     degree = equation[first][2]
@@ -86,7 +232,7 @@ def simplifyTuples(equation, first, second):
                 equation.pop(second - 1)
                 equation.pop(second - 1)
     if digit == 0:
-        if (equation[first] == '-') or (equation[first] == '+'):
+        if (equation[first - 1] == '-') or (equation[first - 1] == '+'):
             equation.pop(first - 1)
             equation.pop(first - 1)
         else:
@@ -102,9 +248,14 @@ def simplifyTuples(equation, first, second):
                  
 
 def algebraSimplify(equation):
-    print(equation)
+    print("AlgrebraSimplify: ", equation)
     count = 0
+    modifyflag = 0
     while count < len(equation):
+        if modifyflag == 1:
+            count = 0
+            print("Inside of flag reset: ", equation)
+        modifyflag = 0
         if type(equation[count]) is tuple:
             #print(equation[count])
             digit = equation[count][0]
@@ -118,30 +269,36 @@ def algebraSimplify(equation):
             
             while secondCount < len(equation):
                 
-                #print(count, secondCount)
+                print(equation[count], equation[secondCount])
                 #print(equation[count], equation[secondCount])
                 if (type(equation[secondCount]) is tuple) and (variable == equation[secondCount][1]) and (degree == equation[secondCount][2]):
                     #print("Inside")
-                    print(equation[count], equation[secondCount])
+                    #print(equation[count], equation[secondCount])
+                    print("Before modification:", equation)
                     equation = simplifyTuples(equation, count, secondCount)
-                    print("Final equation : ", equation, turnBackToString(equation))
-                    count = 0
+                    print("Modified: ", equation)
+                    #print("Final equation : ", equation, turnBackToString(equation))
+                    modifyflag = 1
+                    break
                     #continue
                     #do the comparrision
                 secondCount += 1
         count += 1
+    return turnBackToString(equation)
 
 def turnBackToString(equation):
-    print(equation)
+    print("This is the turnBackToString function", equation)
     stringEquation = ""
     count = 0
     flag = 1
     while count < len(equation):
-        print(stringEquation)
+        #print(stringEquation)
+        print(equation[count])
         if type(equation[count]) is tuple:
-            #if equation[count][3] == 'r' and flag == 1:
-            #    stringEquation += '='
-            #    flag = 0
+            if equation[count][3] == 'r' and flag == 1:
+                stringEquation += '='
+                stringEquation += ' '
+                flag = 0
             if equation[count][0] != '1':
                 stringEquation += equation[count][0] 
             if equation[count][1] != None:
@@ -186,12 +343,14 @@ def isOperator(operator):
         return True  
 
 def tupleList(equation):
+    print("tupleList :", equation)
     count = 0
     side = 'l'
     newList = []
     while count < len(equation):
         #print(count)
         if equation[count] == '=':
+            #result
             side = 'r'
             count += 1
             continue
@@ -257,7 +416,7 @@ def slope(equation, answer):
 
 def checker(equation):
     while '(' in equation:
-        print(equation)
+        #print(equation)
         first_node = -1
         second_node = 0
         part_equation = []
@@ -360,3 +519,5 @@ def subtract(equation):
             #print(equation)
         count+=1
     return equation
+
+#helpuse function
