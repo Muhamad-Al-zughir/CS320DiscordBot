@@ -75,9 +75,10 @@ class Player:
         return itemObj
         
 #   yeah fix it later sell but buy works idk m8                
-    # def sellToStore(self):
-    #     self.inventory[i].name = someFunction()
-    #     self.sell(item)
+    def sellToStore(self, location):
+        tempItem = self.dropItem(location)
+        self.sell(tempItem)
+        
     def getName(self):
         return self.name
     def getUserID(self):
@@ -96,10 +97,14 @@ class Player:
         return len(self.inventory)
     def getEquippedSize(self):
         return len(self.equipped)
+    
     def getinActive_warningS(self):
         return self.inActive_warningS
     def getItem(self, location):
         return self.inventory[location]
+    def dropItem(self, location):
+        return self.inventory.pop(location)
+    
     def getEquippedItem(self, location):
         return self.equipped[location]
     def UnequipItem(self, location):
@@ -118,9 +123,10 @@ class Player:
         self.inActive_warningS = self.inActive_warningS + 1
     def buy(self, cost):
         self.pg = self.pg - cost
+    
     def sell(self, item):
         self.pg = self.pg + item.pg
-        self.inventory.remove(item)
+        
     def gainPg(self, gain):
         
         self.pg = self.pg + gain
@@ -392,8 +398,24 @@ class StoreItem_Button(Button):
     
 #       check if enough space to purchase more
         if self.label == "sell" and (user_rp_char.getInventorySize()  >= 1):
-            user_rp_char.sell()
-            await interaction.response.send_message("you sold" + interaction.user.name)
+#           now to sell items 
+#           choose name
+            name_rp = "storeName"
+            
+#           show store
+            embed = rp_store_show(name_rp)
+            view= View()
+            
+#           #sell
+            
+            inventorySize = user_rp_char.getInventorySize() 
+            for i in range(0, inventorySize): # denots row in 
+#               name of the item 
+                button = Sell_Button(user_rp_char.inventory[i].name, str(i))
+                view.add_item(button)
+
+            await interaction.response.edit_message(embed=embed, view=view)
+            return
     
 #       check if enough space to purchase more
         if user_rp_char.getInventorySize() > 3:
@@ -498,6 +520,51 @@ class Unequip_Button(Button):
         else:
             await interaction.response.send_message("you are holding nothing" + interaction.user.name)
 #   =================================================================================================
+
+#   ==================
+#   Class Equip_Button
+class Sell_Button(Button):
+
+#   ===========
+#   constructor
+    def __init__(self, buttonName, id):
+        super().__init__(
+            label=buttonName, 
+            style=discord.ButtonStyle.gray,
+            custom_id=id,
+        )
+#       =
+
+#   callback function
+    async def callback(self, interaction):
+#       GET PLAYER and sell
+ 
+        user_rp_char = serverPlayers.returnPlayer(interaction.user.id)
+        user_rp_char.sellToStore(int(self.custom_id))
+        
+        inventorySize = user_rp_char.getInventorySize() 
+        
+#       larger than zero create store and show remaining options
+        if (inventorySize>0):
+            
+            name_rp = "storeName"
+            embed = rp_store_show(name_rp)
+            view= View()
+            
+            for i in range(0, inventorySize): # denots row in 
+#               name of the item 
+                button = Sell_Button(user_rp_char.inventory[i].name, str(i))
+                view.add_item(button)
+                    
+            await interaction.response.edit_message(view=view,embed=embed)
+        else:
+            name_rp = "storeName"
+            embed=discord.Embed(title="Welcome to  " + name_rp + " store")
+            embed.set_image(url="https://m.media-amazon.com/images/I/416CkZQfMFL._AC_.jpg")
+            embed.set_footer(text="No more items in inventory")
+            view= View()# might add a go back button for later buut for now ignore just here 
+            await interaction.response.edit_message(embed=embed, view=view)
+#   ==================================================================================================
 
 #  =====================
 #  show create character 
@@ -898,14 +965,15 @@ async def fight_rpg(player1_ID, player2_ID, interaction: discord.Interaction, cl
     returnFightCheck = fight_valid(player1_ID, player2_ID)
     if returnFightCheck == 0:
         await interaction.response.send_message("Unable to fight: characters not made yet")
-    # if returnFightCheck == 2:
-    #     await interaction.response.send_message("Unable to fight: cannot fight self")
+    if returnFightCheck == 2:
+        await interaction.response.send_message("Unable to fight: cannot fight self")
     else:
 #       send challenge to opponent and will proceed to simulate fight if accepted
 #       as well as send msg to losers and winners
         await interaction.response.send_message("fight challenge sent")
         
-        nameChallenger = "opsec"
+        tempyVal = serverPlayers.returnPlayer(player1_ID)
+        nameChallenger = tempyVal.getName()
         user = await client.fetch_user(player2_ID)
     #   create a view and some buttons to accept or reject challenge
         view = discord.ui.View(timeout=None)
@@ -935,18 +1003,20 @@ async def fight_rpg(player1_ID, player2_ID, interaction: discord.Interaction, cl
             challengeeAttk = get_totalAttack_char(player2_object)
             returnWinner = fight_rpg_sim(challengerHP, challengerAttk, challengeeHP, challengeeAttk)
             
+            embed_won = embed_wonfight()
+            embed_lost = embed_lostfight()
 #           user id's amd msgs
             if returnWinner == 1:
                 user = await client.fetch_user(player2_ID)
-                await user.send("lost")
+                await user.send(embed=embed_lost)
                 user = await client.fetch_user(player1_ID)
-                await user.send("won")
+                await user.send(embed=embed_won)
                 
             else:
                 user = await client.fetch_user(player2_ID)
-                await user.send("won")
+                await user.send(embed=embed_won)
                 user = await client.fetch_user(player1_ID)
-                await user.send("lost")
+                await user.send(embed=embed_lost)
             
         buttonNo.callback =  no_callback
         buttonYes.callback = yes_callback
@@ -961,7 +1031,6 @@ async def fight_rpg(player1_ID, player2_ID, interaction: discord.Interaction, cl
         await user.send(view=view, embed=embed)
     
 async def rp_fight_wrapper(interaction: discord.Interaction, client: discord.Client, opp:str):
-    print("in fight werapper")
 #   invalid input 
     if not opp.isdigit():
         await interaction.response.send_message("not a valid discord ID")
@@ -973,6 +1042,18 @@ async def rp_fight_wrapper(interaction: discord.Interaction, client: discord.Cli
     
     # await fight_rpg(userID, int(opp), interaction, client)
     await fight_rpg(userID, int(opp), interaction, client)
+    
+# could later mod to send stats of char at time of death 
+def embed_wonfight():
+    embed=discord.Embed(title="You have won", color=2067276)# color green
+    embed.set_image(url="https://img.freepik.com/premium-vector/vintage-laurel-wreath-black-silhouette-circular-sign-depicting-award-achievement-heraldry-nobility-emblem-laurel-wreath-award-winning-prize-victory_87946-4187.jpg?w=2000")#sqaure
+    return embed
+
+# could later mod to send stats of char at time of death 
+def embed_lostfight():
+    embed=discord.Embed(title="You have lost", color=15158332)# color red
+    embed.set_image(url="https://media.istockphoto.com/id/472277479/vector/blank-tombstone.jpg?s=612x612&w=0&k=20&c=fZ8JuhfoqYSHfFB814uTnLaQU4bdOYN04mtJzVJIXhM=")#sqaure
+    return embed
 
 #   *****************************************************************************************
 #   END OF MAIN FIGHT FUNCTIONS
@@ -1051,7 +1132,7 @@ async def cleanup_msgActivity_AllUsers(client: discord.Client):
     # if empty return 0 
     i = serverPlayers.getAllPlayersDataSize() 
     if i == 0:
-        channel = client.get_channel(1063239429969424446) # replace with channel_id
+        channel = client.get_channel(1095778141777170522) # replace with channel_id
         await channel.send("No players")
     
     noInactivePlayers  = 0 
@@ -1099,8 +1180,8 @@ async def clearDaily_rpg(interaction: discord.Interaction, client: discord.Clien
 #   initializing scheduler
     scheduler =  AsyncIOScheduler()# comes from apscheduler 
 
-#   schedular add job(function, args, trigger setting, minute, hour)
-    scheduler.add_job(wrapperForDaily,args=[client],trigger='cron', minute='*/1', hour='*') 
+#   schedular add job(function, args, trigger setting, minute, hour) example for (minute '*/1' and hours '*')
+    scheduler.add_job(wrapperForDaily,args=[client],trigger='cron', minute=00, hour=00) 
     
 #   run scheduler
     scheduler.start()
