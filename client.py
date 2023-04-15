@@ -2,20 +2,15 @@
 # Started 1/18/2023
 
 import os
+import sys
 import discord
 from discord import app_commands
 from dotenv import load_dotenv
-from discord.ui import Button, View
-import youtube_dl
-import ffmpeg
 import json
-import asyncio
-import spotipy
-from spotipy.oauth2 import SpotifyClientCredentials
 
 # Add your imports below here, if in a folder, use a dot instead of a slash
 import botgame.game as botgame
-import libgen.lib as libby
+import libgen.lib_handler as lb
 import basic.methods as bm # basic methods contains functions that we will use a lot.
 import scheduler.schedule as schedule
 import music.muzique as mzb
@@ -32,30 +27,34 @@ tree = app_commands.CommandTree(client)
 load_dotenv() # loads all the content in the .env folder
 TOKEN = os.getenv('DISCORD_API')
 
+# HELP COMMAND STRINGS
+# MUSIC
+
+musicString1 = "```**Music**\nmove: Moves a bot to a voice channel if you are already located in one"
+musicString2 = "\nplay: Plays from a YouTube, Soundcloud, Or Spotify Link, or a general search query"
+musicString3 = "\nclear: clears all songs from queue and leaves voice channel"
+musicString4 = "\npause-unpause: pauses song if currently playing, unpauses if paused already"
+musicString5 = "\nskip: skips currently playing song"
+musicString6 = "\nqueue: Displays currently queued songs in order"
+musicString7 = "\nshuffle: Shuffles current queue of music into random order"
+musicString8 = "\nshiftsong: Shifts song to set time in track"
+musicString9 = "\nencore: Repeats currently playing song"
+musicString10 ="\nswap: swaps two indexes of a queue"
+musicString11 ="\ndisplayInfo: displays YouTube Info of currently playing song"
+musicString12 ="\ndisplayLyrics: displays Lyrics of currently playing song if available"
+musicString13 ="\nshiftsong_percent: Shifts song to a set percentage in track"
+musicString14 ="\naddplaylist: adds YouTube playlist to queue ONLY if there is a currently playing song"
+musicString15 ="\naboutthealbum: displays information about the album if the track belongs to one"
+musicString16 ="\nabouttheartist: displays information about the artist if it can be found (Wikipedia)"
+musicString17 ="\naboutthesong: displays information about the song if there is information on it (Wikipedia)```"
+musicString = musicString1 + musicString2 + musicString3 + musicString4 + musicString5 + musicString6 + musicString7 + musicString8 + musicString9 + musicString10 + musicString11 + musicString12 + musicString13 + musicString14 + musicString15 + musicString16 + musicString17
+
+
 # Implement all the slash commands here, write down whos is which.
 @tree.command(name = "libgen", description = "Search for books")
 @app_commands.describe(type="Please enter either \"author\" or \"title\"", search="Search, must be at least 3 characters")
 async def basic_libgen(interaction, type: str, search: str): # Set the arguments here to get options on the slash commands.
-    res = libby.handleValidation(type, search)
-    if (res != True):
-        await bm.send_msg(interaction, res)
-    else:
-        results = libby.basicSearch(type, search)
-        strings = libby.formatResults(results)
-        msg = '\n'.join(strings)
-        await bm.send_msg(interaction, msg)
-    reply = await client.wait_for('message')
-    try:
-        num = int(reply.content)
-        if (num > len(strings) or num < 1): raise ValueError("outside bounds")
-    except ValueError:
-        await bm.follow_up(interaction, "Not a number between 1-" + str(len(strings))) # Need to use a follow up after initial sending
-        return
-    obj = results[num - 1]
-    links = libby.getLinksFor(obj)
-    strings2 = libby.formatLinks(links)
-    msg = '\n'.join(strings2)
-    await bm.follow_up(interaction, msg)
+    await lb.handleLibSearch(interaction, type, search)
 
 
 # Add new slash commands beneath this
@@ -71,6 +70,13 @@ async def list_profiles_cmd(interaction: discord.Interaction):
     # responding by printing out the profiles using discord embed features
     await schedule.list_profiles(interaction)
 
+# viewprofile command: After the running of the command the bot will list out all of the events of a given profile with the list of events for each given day of the week. 
+@tree.command(name = 'viewprofile', description = 'Bot will list out all the profiles created on this server')
+@app_commands.describe(name="Name of the profile to be viewed (PROFILE MUST EXIST)")
+async def view_profile_cmd(interaction: discord.Interaction, name: str): 
+    # responding by printing out the profiles using discord embed features
+    await schedule.view_profile(interaction, name)
+
 # addprofile command: Takes in profile name and profile notes after running the command the bot will create a profile with the given attributes. 
 # Name of the profile must not already be in use though. 
 @tree.command(name = 'addprofile', description = 'Bot will add a profile with the given name and notes')
@@ -78,8 +84,8 @@ async def list_profiles_cmd(interaction: discord.Interaction):
 async def add_profile_cmd(interaction: discord.Interaction, name: str, notes: str):
     await schedule.add_profile(interaction, name, notes)
 
-# addprofile command: Takes in profile name and profile notes after running the command the bot will create a profile with the given attributes. 
-# Name of the profile must not already be in use though. 
+# deleteprofile command: Takes in profile name. After running the command the bot will delete the profile with the given name
+# Name of the profile must be of an existing profile
 @tree.command(name = 'deleteprofile', description = 'Bot will delete a profile with the given name')
 @app_commands.describe(name="Name of the profile to be deleted(PROFILE MUST ALREADY EXIST)")
 async def delete_profile_cmd(interaction: discord.Interaction, name: str):
@@ -90,9 +96,9 @@ async def delete_profile_cmd(interaction: discord.Interaction, name: str):
 @app_commands.describe(profile_name="Name of the profile for which the event should be added to", event_name="Name of the event to be added",
                         event_notes="Notes regarding the event", start_hour="The hour the event starts (must be integer between 0 and 23 inclusive)",
                         start_min="minute the event starts", end_hour="The hour the event ends at (must be integer between 0 and 23 inclusive)",
-                        end_min="The minute which the event ends at", day="Enter a number 1-7 to represent the day of the week (1=Sunday, 7=saturday)")
+                        end_min="The minute which the event ends at", day="Enter a number 1-7 to represent the day of the week (1=Sun, 2=Mon, 3=Tue, 4=Wed, 5=Thu, 6=Fri, 7=saturday)")
 async def add_event_cmd(interaction: discord.Interaction, profile_name: str, event_name: str, event_notes: str, start_hour: int, start_min: int, end_hour: int, end_min: int, day: int):
-    await schedule.add_event(interaction, profile_name, event_name, event_notes, start_hour, start_min, end_hour, end_min, day)
+    await schedule.add_event(interaction, client, profile_name, event_name, event_notes, start_hour, start_min, end_hour, end_min, day)
 
 # addprofile command: Takes in profile name and profile notes after running the command the bot will create a profile with the given attributes. 
 # Name of the profile must not already be in use though. 
@@ -111,7 +117,7 @@ async def move(interaction: discord.Interaction):
 @tree.command(name = 'play', description = 'Enter a valid YouTube, SoundCloud, or Spotify Link')
 async def play(interaction: discord.Interaction, url:str):
     await mzb.play(interaction,url,client)
-
+    
 # End Stream
 @tree.command(name = 'clear', description = 'Bot will clear all playing music')
 async def clear(interaction: discord.Interaction):
@@ -136,6 +142,52 @@ async def displayQueue(interaction: discord.Interaction):
 @tree.command(name = 'shuffle', description = 'Shuffle and display current active music queue')
 async def shuffleQueue(interaction: discord.Interaction):
     await mzb.shuffleQueue(interaction, client)
+
+# Shift song for a certan value in seconds 
+@tree.command(name = 'shiftsong', description = 'Shift a song forward or backward for a valid number of seconds')
+async def fastForwardSong(interaction: discord.Interaction, seconds: int):
+    await mzb.fastForwardSong(interaction, client, seconds)
+
+# Repeat a song
+@tree.command(name = 'encore', description = 'Repeat the currently playing song')
+async def encore(interaction: discord.Interaction):
+    await mzb.encore(interaction,client)
+
+# Swap Two Indexes for a Song queue
+@tree.command(name = 'swap', description = 'Swap two indexes of a queue')
+async def swap(interaction: discord.Interaction, indexone: int, indextwo: int):
+    await mzb.swap(interaction,client,indexone,indextwo)
+
+# Display Song Informatiom
+@tree.command(name = 'displayinfo', description = 'Display information about the current song / video')
+async def swap(interaction: discord.Interaction):
+    await mzb.displayInfo(interaction,client)
+
+# Display Song Lyrics
+@tree.command(name = 'displaylyrics', description = 'Display Lyrics for the current playing song')
+async def displayLyrics(interaction: discord.Interaction):
+    await mzb.displayLyrics(interaction,client)
+
+# Shift song for a certain percentage value of total runtime
+@tree.command(name = 'shiftsong_percent', description = 'Shift to a certain percentage of the total runtime of the current track')
+async def percentageShift(interaction: discord.Interaction, percent: int):
+    await mzb.percentageShift(interaction, client, percent)
+
+@tree.command(name = 'addplaylist', description = 'add a youtube playlist to queue')
+async def addPlaylist(interaction: discord.Interaction, url: str):
+    await mzb.addPlaylist(interaction, client, url)
+
+@tree.command(name = 'aboutthealbum', description = 'display info about a song album')
+async def aboutTheAlbum(interaction: discord.Interaction):
+    await mzb.aboutTheAlbum(interaction,client)
+
+@tree.command(name = 'abouttheartist', description = 'display info about a song artist')
+async def aboutTheAlbum(interaction: discord.Interaction):
+    await mzb.aboutTheArtist(interaction,client)
+
+@tree.command(name = 'aboutthesong', description = 'display info about a song')
+async def aboutTheSong(interaction: discord.Interaction):
+    await mzb.aboutTheSong(interaction,client)
 
 #   dropdown menu for character selection
 @tree.command(name = "rp_store", description = "store for rp game")
@@ -187,25 +239,83 @@ async def shutdown(interaction: discord.Interaction):
     await client.close()
 #   ===================================================
 
+# This command is for the pythagorean theorem operations
+@tree.command(name = "pythagorean", description = "This function performs the Pythagorean Theorem. Mark 'x' for the side that is not known.")
+@app_commands.describe(a = "One of the side lengths", b = "Another side length", c = "Hypotenuse")
+async def pythagorean(interaction: discord.Interaction, a: str, b: str, c: str):
+    if a == "x":
+        await interaction.response.send_message("The 'a' side is " + str(calc.pythagoreanSide(b, c)))
+    elif b == "x":
+        await interaction.response.send_message("The 'b' side is " + str(calc.pythagoreanSide(a, c)))
+    elif c == "x":
+        await interaction.response.send_message("The 'c' side (hypotenuse) is " + str(calc.pythagoreanHypotenuse(a, b)))
+    else:
+        await interaction.response.send_message(calc.pythagoreanCheck(a, b, c))
+
+
+# This command give the options for the user to work with two fractions,
+# They can get the GCD, LCD from the fractions, as well as multiply, divide, subtract and add
+# and return the result in simplified form
+@tree.command(name = "fraction", description = "Fraction operations")
+@app_commands.describe(fraction1 = "Please enter the two fractions that you want to work with. Ex: 1/2", operation = "Enter one of the following : LCD, GCD, Add, Subtract, Multiply, Divide")
+async def fraction(interaction: discord.Interaction, fraction1: str, fraction2: str, operation: str):
+    if operation == "LCD":
+        await interaction.response.send_message("LCD : " + str(calc.lcd(fraction1, fraction2)))
+    elif operation == "GCD":
+        await interaction.response.send_message("GCD : " + str(calc.gcd(fraction1, fraction2)))
+    elif operation == "Add":
+        await interaction.response.send_message("Final fraction : " + calc.addFraction(fraction1, fraction2))
+    elif operation == "Subtract":
+        await interaction.response.send_message("Final fraction : " + calc.subtractFraction(fraction1, fraction2))
+    elif operation == "Multiply":
+        await interaction.response.send_message("Final fraction : " + calc.multiplyFraction(fraction1, fraction2))
+    elif operation == "Divide":
+        await interaction.response.send_message("Final fraction : " + calc.divideFraction(fraction1, fraction2))
+    else:
+        await interaction.response.send_message("Operation that was entered is not recognized. Try again.")
+
  # calculate simple equation
-@tree.command(name = "equation", description= "Simple equation")
+@tree.command(name = "equation", description = "Simple equation")
 @app_commands.describe(simple = "Please enter a simple equation with each spaces in between")
 async def equation(interaction: discord.Interaction, simple: str):
     equation = list(simple.split(" "))
-    if(reason := calc.simpleCheack(equation)) != True:
+    print(equation)
+    if (reason := calc.simpleCheck(equation)) != True:
+        print(reason)
         await interaction.response.send_message("The equation sent in not a valid simple equation. Try again.\nReason: " + reason)
+    #result = checker(equation)
     else:
         await interaction.response.send_message(calc.checker(equation))
         
  # calculate algebra equation, needs specification of what to do
 @tree.command(name = "algebra", description = "Algebra calculator with several options")
-@app_commands.describe(equation = "Please enter an algebra equation with spaces in between", answer = "Enter the following: (slope) - slope intercept form, ")
+@app_commands.describe(equation = "Please enter an algebra equation with spaces in between", answer = "Enter the following: (slope) - slope intercept form, (simplify) - simplify the equation")
 async def algebra(interaction: discord.Interaction, equation: str, answer: str):
     equation = list(equation.split(" "))
-    result = (calc.algebra(equation, answer))
-    slope = result[0]
-    intercept = result[1]
-    await interaction.response.send_message("The slope of the equation is " + str(slope) + ".\nThe y-intercept of the equation is " + str(intercept))
+    if answer == "slope":
+        result = (calc.slope(equation, answer))
+        slope = result[0]
+        intercept = result[1]
+        await interaction.response.send_message("The slope of the equation is " + str(slope) + ".\nThe y-intercept of the equation is " + str(intercept))
+    elif answer == "simplify":
+        result = calc.tupleList(equation)
+        print(result)
+        result = calc.algebraSimplify(result)
+        print(result)
+        await interaction.response.send_message("The simplify equation is " + result)
+    #result = (calc.algebra(equation, answer))
+    #slope = result[0]
+    #intercept = result[1]
+
+
+# HELP COMMAND MASTER FUNCTION , PUT ALL COMMAND SPECS HERE
+@tree.command(name = 'help', description = 'display information on commands')
+async def help(interaction: discord.Interaction):
+    await interaction.response.defer()
+
+    await interaction.followup.send("**Discord Bot 320 Master Command Sheet**\n")
+
+    await interaction.followup.send(musicString)
  
 
 # client event to take place whenever the client joins a server.
@@ -238,6 +348,36 @@ async def on_message(message):
 async def on_ready():
     await tree.sync()
     print(f'{client.user} has connected to Discord!')
+
+# Send Standard Error to Discord Channel
+async def errorLogs(message):
+    channel = await client.fetch_channel(1094498464710262865)         # Discord Channel Specified Here
+
+    spam = ['rate limited', 'logging in', 'connected to Gateway',     # spam and incorrectly labeled "error messages" in stderr
+            'handshake complete','Starting voice','voice...'
+            'ffmpeg process', 'should have terminated', 'has not terminated']     
+
+    if any(substring in message for substring in spam ):              # Ignore Spam
+        return
+
+
+    if len(str(message)) < 1900:                                                # Due to discord limitations, need to print description 2000 at a time
+        await channel.send(f"**STDERR Output:**\n```\n{str(message)}\n```")     # If less than 1900, send immediately
+    else:
+        await channel.send(f'**STDERR Output:**\n')
+        newerr = ''                                # Else, declare new variable to track 1900 chars at a time
+        while len(message) > 1900:                 # Iterate 2000 at a time while geniusLyrics is greater than 2000 **
+                    
+            newerr = message[:1900]                # string slicing to grab 1900 and send
+            await channel.send(f"```\n{str(newerr)}\n```")
+            message = message[1900:]               # Error Updated Here                                     **    
+
+        await channel.send(f"\n```\n{str(message)}\n```")
+
+def errhandle(message):
+    # Call the async function to send the error message to the Discord channel
+    client.loop.create_task(errorLogs(message))
     
+sys.stderr.write = errhandle                                        # Standard Error redirection initialized here
 
 client.run(TOKEN)

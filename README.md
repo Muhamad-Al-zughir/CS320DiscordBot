@@ -43,6 +43,10 @@ pip install libgen-api
 pip install youtube-dl
 pip install PyNaCl
 pip install ffmpeg
+pip install spotipy
+pip install discord.py
+pip install lyricsgenius
+pip install pydub
 ```
 
 ## FFMPEG Installation Notes
