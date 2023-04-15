@@ -1192,6 +1192,11 @@ def death_message_rpg(userName):
 # mainly a wrapper for functions that clearDaily_rpg needs to call 
 async def wrapperForDaily(client: discord.Client):
     await cleanup_msgActivity_AllUsers(client)
+    
+#   would have to make a list of guilds to do this too
+#   interaction.guld and collect guilds that use them as global and send to function
+#   also remove interaction response and send over a msg with client to a channel specifed idont knowmaybbe daily announcements
+    # await rp_update_roles_function(interaction, client) 
 
 #   =============================================================
 #  clears message on time 00::00::00 call it to act on this time 
@@ -1204,6 +1209,7 @@ async def clearDaily_rpg(interaction: discord.Interaction, client: discord.Clien
     scheduler =  AsyncIOScheduler()# comes from apscheduler 
 
 #   schedular add job(function, args, trigger setting, minute, hour) example for (minute '*/1' and hours '*')
+    # scheduler.add_job(wrapperForDaily,args=[client, interaction],trigger='cron', minute=00, hour=00) # So add interaction arg and see changes to wrapper
     scheduler.add_job(wrapperForDaily,args=[client],trigger='cron', minute=00, hour=00) 
     
 #   run scheduler
