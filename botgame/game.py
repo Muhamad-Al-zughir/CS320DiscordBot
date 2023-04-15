@@ -839,6 +839,8 @@ async def rp_message_goldf(message):
 #   ============
 #   update roles 
 async def rp_update_roles_function(interaction: discord.Interaction, client):
+    
+#   get guild  
     guild = interaction.guild
 
 #   create roles and wont do anything if it already exists
@@ -849,50 +851,64 @@ async def rp_update_roles_function(interaction: discord.Interaction, client):
         await guild.create_role(name="gold")
         await guild.create_role(name="plat")
         
-#   roles 
+#   roles in guild
     role = discord.utils.get(guild.roles, name='stone')
     role1 = discord.utils.get(guild.roles, name='bronze')
     role2 = discord.utils.get(guild.roles, name='silver')
     role3 = discord.utils.get(guild.roles, name='gold')
     role4 = discord.utils.get(guild.roles, name='plat')
     
-    tempID = serverPlayers.playerList[0].userID
-    # user = await client.fetch_user(tempID)
-    guild = interaction.guild
-    # await guild.add_roles(role)
-    tempMember = await guild.fetch_member(tempID)
-    await tempMember.add_roles(role)
-    await tempMember.remove_roles(role)
-    await tempMember.add_roles(role1)
-    await interaction.response.send_message("Updated roles")
-
-    
-# #   traverse whole list 
-#     for i in range(0, serverPlayers.getAllPlayersDataSize()):
-# #   put into proper role
-#         if (serverPlayers.playerList[i].getPg() > 0) and (serverPlayers.playerList[i].getPg() <= 100):
-#             await interaction.user.edit(roles=[])
-#             await interaction.guild._add_role(role,serverPlayers.playerList[i].name )
-#             continue
-#         elif (serverPlayers.playerList[i].getPg() > 100) and (serverPlayers.playerList[i].getPg() <= 101):
-#             await interaction.user.edit(roles=[])
-#             await interaction.guild._add_role(role,serverPlayers.playerList[i].name )
-#             continue
-#         elif (serverPlayers.playerList[i].getPg() > 102) and (serverPlayers.playerList[i].getPg() <= 103):
-#             await interaction.user.edit(roles=[])
-#             await interaction.guild._add_role(role,serverPlayers.playerList[i].name )
-#             continue
-#         elif (serverPlayers.playerList[i].getPg() > 104) and (serverPlayers.playerList[i].getPg() <= 105):
-#             await interaction.user.edit(roles=[])
-#             await interaction.guild._add_role(role,serverPlayers.playerList[i].name )
-#             continue
-#         elif (serverPlayers.playerList[i].getPg()) > 106:
-#             await interaction.guild._remove_role(roles=[])
-#             await interaction.guild._add_role(role,serverPlayers.playerList[i].name )
-#             continue
+#   traverse whole list of players
+    for i in range(0, serverPlayers.getAllPlayersDataSize()):
+#       getID then find member in guild then add/remove roles to get proper placement
+        if (serverPlayers.playerList[i].getPg() > 0) and (serverPlayers.playerList[i].getPg() <= 100):# stone
+                tempID = serverPlayers.playerList[i].userID
+                tempMember = await guild.fetch_member(tempID)
+                await tempMember.add_roles(role)
+                await tempMember.remove_roles(role1)
+                await tempMember.remove_roles(role2)
+                await tempMember.remove_roles(role3)
+                await tempMember.remove_roles(role4)
+                
+        elif (serverPlayers.playerList[i].getPg() > 100) and (serverPlayers.playerList[i].getPg() <= 101):# bronze
+                tempID = serverPlayers.playerList[i].userID
+                tempMember = await guild.fetch_member(tempID)
+                await tempMember.add_roles(role1)
+                await tempMember.remove_roles(role)
+                await tempMember.remove_roles(role2)
+                await tempMember.remove_roles(role3)
+                await tempMember.remove_roles(role4)
+                
+                
+        elif (serverPlayers.playerList[i].getPg() > 102) and (serverPlayers.playerList[i].getPg() <= 103):# silver
+                tempID = serverPlayers.playerList[i].userID
+                tempMember = await guild.fetch_member(tempID)
+                await tempMember.add_roles(role2)
+                await tempMember.remove_roles(role)
+                await tempMember.remove_roles(role1)
+                await tempMember.remove_roles(role3)
+                await tempMember.remove_roles(role4)
+                
+        elif (serverPlayers.playerList[i].getPg() > 104) and (serverPlayers.playerList[i].getPg() <= 105):# gold
+                tempID = serverPlayers.playerList[i].userID
+                tempMember = await guild.fetch_member(tempID)
+                await tempMember.add_roles(role3)
+                await tempMember.remove_roles(role)
+                await tempMember.remove_roles(role1)
+                await tempMember.remove_roles(role2)
+                await tempMember.remove_roles(role4)
+                
+        elif (serverPlayers.playerList[i].getPg()) > 106:# plat
+                tempID = serverPlayers.playerList[i].userID
+                tempMember = await guild.fetch_member(tempID)
+                await tempMember.add_roles(role4)
+                await tempMember.remove_roles(role)
+                await tempMember.remove_roles(role1)
+                await tempMember.remove_roles(role2)
+                await tempMember.remove_roles(role3)
         
-#     await interaction.response.send_message("updated")
-#   ==================================================
+    await interaction.response.send_message("UPDATED ROLES")
+#   ========================================================
 
 #   try to add to allplayerslist 
 def tryInsertADPList(serverPlayersList, a_userName, a_userID):
