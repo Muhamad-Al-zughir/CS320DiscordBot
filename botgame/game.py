@@ -848,7 +848,7 @@ async def rp_update_roles_function(interaction: discord.Interaction, client):
         await guild.create_role(name="silver")
         await guild.create_role(name="gold")
         await guild.create_role(name="plat")
-    
+        
 #   roles 
     role = discord.utils.get(guild.roles, name='stone')
     role1 = discord.utils.get(guild.roles, name='bronze')
@@ -856,32 +856,43 @@ async def rp_update_roles_function(interaction: discord.Interaction, client):
     role3 = discord.utils.get(guild.roles, name='gold')
     role4 = discord.utils.get(guild.roles, name='plat')
     
-#   traverse whole list 
-    for i in range(0, serverPlayers.getAllPlayersDataSize()):
-#   put into proper role
-        if (serverPlayers.playerList[i].getPg() > 0) and (serverPlayers.playerList[i].getPg() <= 100):
-            await interaction.user.edit(roles=[])
-            await interaction.guild._add_role(role,serverPlayers.playerList[i].name )
-            continue
-        elif (serverPlayers.playerList[i].getPg() > 100) and (serverPlayers.playerList[i].getPg() <= 101):
-            await interaction.user.edit(roles=[])
-            await interaction.guild._add_role(role,serverPlayers.playerList[i].name )
-            continue
-        elif (serverPlayers.playerList[i].getPg() > 102) and (serverPlayers.playerList[i].getPg() <= 103):
-            await interaction.user.edit(roles=[])
-            await interaction.guild._add_role(role,serverPlayers.playerList[i].name )
-            continue
-        elif (serverPlayers.playerList[i].getPg() > 104) and (serverPlayers.playerList[i].getPg() <= 105):
-            await interaction.user.edit(roles=[])
-            await interaction.guild._add_role(role,serverPlayers.playerList[i].name )
-            continue
-        elif (serverPlayers.playerList[i].getPg()) > 106:
-            await interaction.guild._remove_role(roles=[])
-            await interaction.guild._add_role(role,serverPlayers.playerList[i].name )
-            continue
+    tempID = serverPlayers.playerList[0].userID
+    # user = await client.fetch_user(tempID)
+    guild = interaction.guild
+    # await guild.add_roles(role)
+    tempMember = await guild.fetch_member(tempID)
+    await tempMember.add_roles(role)
+    await tempMember.remove_roles(role)
+    await tempMember.add_roles(role1)
+    await interaction.response.send_message("Updated roles")
+
+    
+# #   traverse whole list 
+#     for i in range(0, serverPlayers.getAllPlayersDataSize()):
+# #   put into proper role
+#         if (serverPlayers.playerList[i].getPg() > 0) and (serverPlayers.playerList[i].getPg() <= 100):
+#             await interaction.user.edit(roles=[])
+#             await interaction.guild._add_role(role,serverPlayers.playerList[i].name )
+#             continue
+#         elif (serverPlayers.playerList[i].getPg() > 100) and (serverPlayers.playerList[i].getPg() <= 101):
+#             await interaction.user.edit(roles=[])
+#             await interaction.guild._add_role(role,serverPlayers.playerList[i].name )
+#             continue
+#         elif (serverPlayers.playerList[i].getPg() > 102) and (serverPlayers.playerList[i].getPg() <= 103):
+#             await interaction.user.edit(roles=[])
+#             await interaction.guild._add_role(role,serverPlayers.playerList[i].name )
+#             continue
+#         elif (serverPlayers.playerList[i].getPg() > 104) and (serverPlayers.playerList[i].getPg() <= 105):
+#             await interaction.user.edit(roles=[])
+#             await interaction.guild._add_role(role,serverPlayers.playerList[i].name )
+#             continue
+#         elif (serverPlayers.playerList[i].getPg()) > 106:
+#             await interaction.guild._remove_role(roles=[])
+#             await interaction.guild._add_role(role,serverPlayers.playerList[i].name )
+#             continue
         
-    await interaction.response.send_message("kill me soon update ended")
-#   ===========================================================
+#     await interaction.response.send_message("updated")
+#   ==================================================
 
 #   try to add to allplayerslist 
 def tryInsertADPList(serverPlayersList, a_userName, a_userID):

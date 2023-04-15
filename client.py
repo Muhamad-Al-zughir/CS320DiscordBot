@@ -164,8 +164,8 @@ async def rp_challenge_calling(interaction: discord.Interaction):
  #  update roles
 @tree.command(name = "rp_update_roles", description = "updates everyones roles in server")
 async def rp_update_roles(interaction: discord.Interaction):
-    await botgame.rp_update_roles_function(interaction)
- #  ===================================================
+    await botgame.rp_update_roles_function(interaction, client)
+ #  ==============================================================
 
  #  update roles
 @tree.command(name = "rp_schedule", description = "checks up on everyone")
