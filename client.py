@@ -248,25 +248,73 @@ async def shutdown(interaction: discord.Interaction):
     await client.close()
 #   ===================================================
 
+# This command is for the pythagorean theorem operations
+@tree.command(name = "pythagorean", description = "This function performs the Pythagorean Theorem. Mark 'x' for the side that is not known.")
+@app_commands.describe(a = "One of the side lengths", b = "Another side length", c = "Hypotenuse")
+async def pythagorean(interaction: discord.Interaction, a: str, b: str, c: str):
+    if a == "x":
+        await interaction.response.send_message("The 'a' side is " + str(calc.pythagoreanSide(b, c)))
+    elif b == "x":
+        await interaction.response.send_message("The 'b' side is " + str(calc.pythagoreanSide(a, c)))
+    elif c == "x":
+        await interaction.response.send_message("The 'c' side (hypotenuse) is " + str(calc.pythagoreanHypotenuse(a, b)))
+    else:
+        await interaction.response.send_message(calc.pythagoreanCheck(a, b, c))
+
+
+# This command give the options for the user to work with two fractions,
+# They can get the GCD, LCD from the fractions, as well as multiply, divide, subtract and add
+# and return the result in simplified form
+@tree.command(name = "fraction", description = "Fraction operations")
+@app_commands.describe(fraction1 = "Please enter the two fractions that you want to work with. Ex: 1/2", operation = "Enter one of the following : LCD, GCD, Add, Subtract, Multiply, Divide")
+async def fraction(interaction: discord.Interaction, fraction1: str, fraction2: str, operation: str):
+    if operation == "LCD":
+        await interaction.response.send_message("LCD : " + str(calc.lcd(fraction1, fraction2)))
+    elif operation == "GCD":
+        await interaction.response.send_message("GCD : " + str(calc.gcd(fraction1, fraction2)))
+    elif operation == "Add":
+        await interaction.response.send_message("Final fraction : " + calc.addFraction(fraction1, fraction2))
+    elif operation == "Subtract":
+        await interaction.response.send_message("Final fraction : " + calc.subtractFraction(fraction1, fraction2))
+    elif operation == "Multiply":
+        await interaction.response.send_message("Final fraction : " + calc.multiplyFraction(fraction1, fraction2))
+    elif operation == "Divide":
+        await interaction.response.send_message("Final fraction : " + calc.divideFraction(fraction1, fraction2))
+    else:
+        await interaction.response.send_message("Operation that was entered is not recognized. Try again.")
+
  # calculate simple equation
-@tree.command(name = "equation", description= "Simple equation")
+@tree.command(name = "equation", description = "Simple equation")
 @app_commands.describe(simple = "Please enter a simple equation with each spaces in between")
 async def equation(interaction: discord.Interaction, simple: str):
     equation = list(simple.split(" "))
-    if(reason := calc.simpleCheack(equation)) != True:
+    print(equation)
+    if (reason := calc.simpleCheck(equation)) != True:
+        print(reason)
         await interaction.response.send_message("The equation sent in not a valid simple equation. Try again.\nReason: " + reason)
+    #result = checker(equation)
     else:
         await interaction.response.send_message(calc.checker(equation))
         
  # calculate algebra equation, needs specification of what to do
 @tree.command(name = "algebra", description = "Algebra calculator with several options")
-@app_commands.describe(equation = "Please enter an algebra equation with spaces in between", answer = "Enter the following: (slope) - slope intercept form, ")
+@app_commands.describe(equation = "Please enter an algebra equation with spaces in between", answer = "Enter the following: (slope) - slope intercept form, (simplify) - simplify the equation")
 async def algebra(interaction: discord.Interaction, equation: str, answer: str):
     equation = list(equation.split(" "))
-    result = (calc.algebra(equation, answer))
-    slope = result[0]
-    intercept = result[1]
-    await interaction.response.send_message("The slope of the equation is " + str(slope) + ".\nThe y-intercept of the equation is " + str(intercept))
+    if answer == "slope":
+        result = (calc.slope(equation, answer))
+        slope = result[0]
+        intercept = result[1]
+        await interaction.response.send_message("The slope of the equation is " + str(slope) + ".\nThe y-intercept of the equation is " + str(intercept))
+    elif answer == "simplify":
+        result = calc.tupleList(equation)
+        print(result)
+        result = calc.algebraSimplify(result)
+        print(result)
+        await interaction.response.send_message("The simplify equation is " + result)
+    #result = (calc.algebra(equation, answer))
+    #slope = result[0]
+    #intercept = result[1]
 
 
 # HELP COMMAND MASTER FUNCTION , PUT ALL COMMAND SPECS HERE
