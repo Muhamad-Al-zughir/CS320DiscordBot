@@ -4,7 +4,6 @@ import math
 import basic.methods as bm
 from discord.ui import Button, View  
 from time import sleep 
-from datetime import time
 import os
 import datetime
 from datetime import datetime, timedelta
@@ -205,7 +204,7 @@ async def view_profile(interaction: discord.Interaction, profile_name: str):
     
     async def sunday_callback(interaction):
         nonlocal day_of_week
-        disable_button(day_of_week, sunday_btn, monday_btn, tuesday_btn, wednesday_btn, thursday_btn, friday_btn, saturday_btn)
+        reenable_button(day_of_week, sunday_btn, monday_btn, tuesday_btn, wednesday_btn, thursday_btn, friday_btn, saturday_btn)
         sunday_btn.disabled = True
         day_of_week = 1
 
@@ -220,7 +219,7 @@ async def view_profile(interaction: discord.Interaction, profile_name: str):
 
     async def monday_callback(interaction):
         nonlocal day_of_week
-        disable_button(day_of_week, sunday_btn, monday_btn, tuesday_btn, wednesday_btn, thursday_btn, friday_btn, saturday_btn)
+        reenable_button(day_of_week, sunday_btn, monday_btn, tuesday_btn, wednesday_btn, thursday_btn, friday_btn, saturday_btn)
         monday_btn.disabled = True
         day_of_week = 2
 
@@ -235,7 +234,7 @@ async def view_profile(interaction: discord.Interaction, profile_name: str):
 
     async def tuesday_callback(interaction):
         nonlocal day_of_week
-        disable_button(day_of_week, sunday_btn, monday_btn, tuesday_btn, wednesday_btn, thursday_btn, friday_btn, saturday_btn)
+        reenable_button(day_of_week, sunday_btn, monday_btn, tuesday_btn, wednesday_btn, thursday_btn, friday_btn, saturday_btn)
         tuesday_btn.disabled = True
         day_of_week = 3
 
@@ -250,7 +249,7 @@ async def view_profile(interaction: discord.Interaction, profile_name: str):
 
     async def wednesday_callback(interaction):
         nonlocal day_of_week
-        disable_button(day_of_week, sunday_btn, monday_btn, tuesday_btn, wednesday_btn, thursday_btn, friday_btn, saturday_btn)
+        reenable_button(day_of_week, sunday_btn, monday_btn, tuesday_btn, wednesday_btn, thursday_btn, friday_btn, saturday_btn)
         wednesday_btn.disabled = True
         day_of_week = 4
 
@@ -265,7 +264,7 @@ async def view_profile(interaction: discord.Interaction, profile_name: str):
 
     async def thursday_callback(interaction):
         nonlocal day_of_week
-        disable_button(day_of_week, sunday_btn, monday_btn, tuesday_btn, wednesday_btn, thursday_btn, friday_btn, saturday_btn)
+        reenable_button(day_of_week, sunday_btn, monday_btn, tuesday_btn, wednesday_btn, thursday_btn, friday_btn, saturday_btn)
         thursday_btn.disabled = True
         day_of_week = 5
 
@@ -280,7 +279,7 @@ async def view_profile(interaction: discord.Interaction, profile_name: str):
 
     async def friday_callback(interaction):
         nonlocal day_of_week
-        disable_button(day_of_week, sunday_btn, monday_btn, tuesday_btn, wednesday_btn, thursday_btn, friday_btn, saturday_btn)
+        reenable_button(day_of_week, sunday_btn, monday_btn, tuesday_btn, wednesday_btn, thursday_btn, friday_btn, saturday_btn)
         friday_btn.disabled = True
         day_of_week = 6
     
@@ -295,7 +294,7 @@ async def view_profile(interaction: discord.Interaction, profile_name: str):
 
     async def saturday_callback(interaction):
         nonlocal day_of_week
-        disable_button(day_of_week, sunday_btn, monday_btn, tuesday_btn, wednesday_btn, thursday_btn, friday_btn, saturday_btn)
+        reenable_button(day_of_week, sunday_btn, monday_btn, tuesday_btn, wednesday_btn, thursday_btn, friday_btn, saturday_btn)
         saturday_btn.disabled = True
         day_of_week = 7
 
@@ -575,32 +574,67 @@ async def google_calendar(interaction: discord.Interaction, profile_name: str):
         # Making the calendar public
         created_rule = service.acl().insert(calendarId=calendar_id, body=rules).execute()
         
-        # # Adding all the events to the calendar
+        # Adding all the events to the calendar
 
-        # # Setting the recurrence of all the events to be weekly
-        # recurrence = [
-        #     'RRULE:FREQ=WEEKLY;'
-        # ]
+        # Setting the recurrence of all the events to be weekly
+        recurrence = [
+            'RRULE:FREQ=WEEKLY;'
+        ]
 
-        # # Time adjustment because we are dealing with Pacific time in this case, in truth this doesn't really matter for our purposes tbh but just in case
-        # hour_adjustment = -7
+        # Time adjustment because we are dealing with Pacific time in this case, in truth this doesn't really matter for our purposes tbh but just in case
+        hour_adjustment = 7
 
-        # # Creating the event 
-        # for event in selectedProfile["events"]:
-        #     date = findDate(event["day"] - 2)
-        #     day = date.day
-        #     month = date.month
-        #     year = date.year
-        #     start_hour = event["start_hour"]
-        #     start_min = event["start_min"]
-        #     end_hour = event["end_hour"]
-        #     end_min = event["end_min"]
+        # Creating the event 
+        for event in selectedProfile["events"]:
+            date = findDate(event["day"] - 2)
+            start_day = date.day
+            end_day = date.day
+            month = date.month
+            year = date.year
+            start_hour = event["start_hour"]
+            start_min = event["start_min"]
+            end_hour = event["end_hour"]
+            end_min = event["end_min"]
+            event_name = event["name"]
+            event_notes = event["notes"]
+            
+            # Flag that tells us whether we need to increment the day at all, 0 if we don't, 1 if we do. 
+            
 
-        #     event_request_body = {
-        #         'start': {
-        #             'dateTime': convert_to_RFC_datetime(year, month, day, start_hour + hour_adjustment, start_min)
-        #         }
-        #     }
+            # Dealing with case where the hour adjustment will result in an hour time greater than 23
+            if(start_hour > (23 - hour_adjustment)):
+                start_hour = (start_hour + hour_adjustment) % 24
+                start_day = start_day + 1
+            else: 
+                start_hour = start_hour + hour_adjustment
+
+            # Dealing with case where the hour adjustment will result in an hour time greater than 23
+            if(end_hour > (23 - hour_adjustment)):
+                end_hour = (end_hour + hour_adjustment) % 24
+                end_day = end_day + 1
+            else:
+                end_hour = end_hour + hour_adjustment
+            
+            
+            print(f"Event: {event}\nStart date: {month}/{start_day}/{year}\n End date: {month}/{start_day}/{year}")
+
+            event_request_body = {
+                'start': {
+                    'dateTime': convert_to_RFC_datetime(year, month, start_day, start_hour, start_min),
+                    'timeZone': 'America/Los_Angeles'
+                },
+                'end': {
+                    'dateTime': convert_to_RFC_datetime(year, month, end_day, end_hour, end_min),
+                    'timeZone': 'America/Los_Angeles'
+                },
+                'summary': event_name,
+                'description': event_notes,
+                'recurrence': recurrence
+            }
+            response = service.events().insert(
+                calendarId = calendar_id,
+                body = event_request_body
+            ).execute()
 
 
 
@@ -618,6 +652,8 @@ async def google_calendar(interaction: discord.Interaction, profile_name: str):
     with open("mycroppedscreenshot.png", "rb") as f:
         screenshot = discord.File(f)
         await interaction.followup.send(f"{public_url}", file=screenshot)
+        f.close()
+        return
     
     return
 
@@ -677,11 +713,12 @@ def crop_image(top_crop, bottom_crop):
     # Crop the image
     cropped_img = img.crop((left, top, right, bottom))
     cropped_img.save("mycroppedscreenshot.png")
+    img.close()
     
     return 
 
-def disable_button(day_of_week, sunday_btn, monday_btn, tuesday_btn, wednesday_btn, thursday_btn, friday_btn, saturday_btn):
-    # using day of week to know which button to disable
+def reenable_button(day_of_week, sunday_btn, monday_btn, tuesday_btn, wednesday_btn, thursday_btn, friday_btn, saturday_btn):
+    # using day of week to know which button to reenable
         if(day_of_week == 1):
             sunday_btn.disabled=False
             return
@@ -863,3 +900,9 @@ def valid_event(start_hour, start_min, end_hour, end_min, day):
         return "End time of the event should not be before or same as start time of the event!"
     
     return 1
+
+# THIS CODE IS NOT MINE
+# Credit Goes to Jie Jenn from https://learndataanalysis.org/google-py-file-source-code/
+def convert_to_RFC_datetime(year=1900, month=1, day=1, hour=0, minute=0):
+    dt = datetime(year, month, day, hour, minute, 0).isoformat() + 'Z'
+    return dt
