@@ -832,10 +832,6 @@ async def rp_message_goldf(message):
         return
 #       ======
 
-# fix later already spend an ungodly amount of time
-# need to learn how to go thorugh list
-# learn how to remove roles from list
-# have main logicx down just need to see if syntax exist to let me do what i want 
 #   ============
 #   update roles 
 async def rp_update_roles_function(interaction: discord.Interaction, client):
