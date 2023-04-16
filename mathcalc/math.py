@@ -2,6 +2,34 @@ import os
 import math
 import random
 
+def areaRectangle(side1, side2):
+    side1 = float(side1)
+    side2 = float(side2)
+    result = side1 * side2
+    return float(result)
+
+def perimeterRectangle(side1, side2):
+    side1 = float(side1)
+    side2 = float(side2)
+    result = (side1 * 2) + (side2 * 2)
+    return float(result)
+
+def areaTriangle(base, height):
+    base = float(base)
+    height = float(height)
+    result = (base * height) / 2
+    return float(result)
+
+def areaCircle(radius):
+    radius = float(radius)
+    result = math.pi * (radius ** 2)
+    return float(result)
+
+def circumferenceCircle(radius):
+    radius = float(radius)
+    result = 2 * math.pi * radius
+    return float(result)
+
 def pythagoreanCheck(a, b, c):
     c = float(c)
     result = pythagoreanHypotenuse(a, b)
@@ -145,6 +173,29 @@ def divideFraction(fraction1, fraction2):
     divided = simplifyFraction(divided)
     return divided
 
+    
+def quadratic(equation):
+    count = 0
+    a = 0
+    b = 0
+    c = 0
+    while count < len(equation):
+        if type(equation[count]) is tuple:
+            if equation[count][2] == '2':
+                a = equation[count][0]
+            elif equation[count][1] == 'x' and equation[count][2] == None:
+                b = equation[count][0]
+            elif equation[count][1] == None and equation[count][2] == None:
+                c = equation[count][0]
+        else:
+            if equation[count] == '-':
+                if count == 0:
+                    a = -1
+                elif count == 2:
+                    b = -1
+                elif count == 4:
+                    c = -1
+    return equation
     
 
 #functions for the calculator

@@ -9,11 +9,11 @@ from dotenv import load_dotenv
 import json
 
 # Add your imports below here, if in a folder, use a dot instead of a slash
-import botgame.game as botgame
-import libgen.lib_handler as lb
-import basic.methods as bm # basic methods contains functions that we will use a lot.
-import scheduler.schedule as schedule
-import music.muzique as mzb
+#import botgame.game as botgame
+#import libgen.lib_handler as lb
+#import basic.methods as bm # basic methods contains functions that we will use a lot.
+#import scheduler.schedule as schedule
+#import music.muzique as mzb
 import mathcalc.math as calc
 
 # setting up the needed intents
@@ -25,7 +25,7 @@ client = discord.Client(intents=intents)
 tree = app_commands.CommandTree(client)
 
 load_dotenv() # loads all the content in the .env folder
-TOKEN = os.getenv('DISCORD_API')
+#TOKEN = os.getenv('DISCORD_API')
 
 # HELP COMMAND STRINGS
 # MUSIC
@@ -49,7 +49,7 @@ musicString16 ="\nabouttheartist: displays information about the artist if it ca
 musicString17 ="\naboutthesong: displays information about the song if there is information on it (Wikipedia)```"
 musicString = musicString1 + musicString2 + musicString3 + musicString4 + musicString5 + musicString6 + musicString7 + musicString8 + musicString9 + musicString10 + musicString11 + musicString12 + musicString13 + musicString14 + musicString15 + musicString16 + musicString17
 
-
+"""
 # Implement all the slash commands here, write down whos is which.
 @tree.command(name = "libgen", description = "Search for books")
 @app_commands.describe(type="Please enter either \"author\" or \"title\"", search="Search, must be at least 3 characters")
@@ -238,6 +238,7 @@ async def shutdown(interaction: discord.Interaction):
     await interaction.response.send_message(f'Shutting down bot. Goodbye!')
     await client.close()
 #   ===================================================
+"""
 
 # This command is for the pythagorean theorem operations
 @tree.command(name = "pythagorean", description = "This function performs the Pythagorean Theorem. Mark 'x' for the side that is not known.")
@@ -252,6 +253,64 @@ async def pythagorean(interaction: discord.Interaction, a: str, b: str, c: str):
     else:
         await interaction.response.send_message(calc.pythagoreanCheck(a, b, c))
 
+
+@tree.command(name = "mathhelp", description= "Help message how to use the math funcitons")
+async def mathhelp(interaction: discord.Interaction):
+    message = """
+    Use the following commands correctly as specified below:
+    
+    pythagorean : takes three commands: a, b, c. A and b are the lengths of the side of the right triangle. C in the hypotenuse of the triangle.
+    If you are trying to find a length for one of the side enter 'x' for that length variable.
+    If you are trying to check if the triangle lengths form a proper right triangle, enter all three varaibles as numbers.
+    
+    fraction : takes 3 three commands: fraction1, fraction2, operation. Fraction1 and fraction2 are the fractions that the operation will be performed on. Operation is the type of operation.
+    Enter the fractions as "numerator/denominator", where numerator is the numerator value and the denominator is the denominator value.
+    Operation is going to ask the type of operation to perform. There is "LCD", "GCD", "Add", "Subtract", "Multiply", and "Divide"
+    LCD - finds the Least Common Denominator
+    GCD - finds the Greatest Common Denominator
+    The rest solve the operations and return in simplest form.
+    
+    equation : take in one command: simple. Simple is a string of the equation that is passed in by the user.
+    Enter the equation with no variables and with spaces in between the operators and digits.
+    Such as "1 + 3 + 2 * ( 2 * 3 ) ^ 2"
+    It will take in the equation and correctly return the answer using proper order of operations.
+    
+    algebra : take in two commands : equation and answer. Equation is the equation that the user has to input in algebra. Answer is the type of algebra you want the program to perform.
+    Enter the equation as such "y = 12x - 13" or "y = 12x - 12x + 13"
+    answer has two types "slope" and "simplify"
+    slope - will return the intercept and the slope
+    simplify - will simplify the algebra equation that was entered (addition and subtraction only)
+    """
+    
+    await interaction.response.send_message(message)
+
+@tree.command(name = "rectangle", description="Use to calculate area or perimeter of a rectangle")
+@app_commands.describe(side1 = "Enter one of the sides", side2 = "Enter another side", operation="Enter : 'perimeter' or 'area'")
+async def circle(interaction: discord.Interaction, side1: str, side2: str, operation: str):
+    if operation == "area":
+        await interaction.response.send_message("Area : " + str(calc.areaRectangle(side1, side2)))
+    elif operation == "perimeter":
+        await interaction.response.send_message("Perimeter : " + str(calc.perimeterRectangle(side1, side2)))
+    else:
+        await interaction.response.send_message("Operation entered does not exist.\nTry again.")
+
+@tree.command(name = "circle", description="Use to calculate area or circumfrance of a circle")
+@app_commands.describe(radius = "Enter the redius length", operation="Enter : 'circumference' or 'area'")
+async def circle(interaction: discord.Interaction, radius: str, operation: str):
+    if operation == "area":
+        await interaction.response.send_message("Area : " + str(calc.areaCircle(radius)))
+    elif operation == "circumference":
+        await interaction.response.send_message("Circumfrance : " + str(calc.circumferenceCircle(radius)))
+    else:
+        await interaction.response.send_message("Operation entered does not exist.\nTry again.")
+
+@tree.command(name = "triangle", description="Use to calculate area of a triangle")
+@app_commands.describe(base = "Enter the base length", height = "Enter the height length", operation = "Enter : 'area'")
+async def triangle(interaction: discord.Interaction, base: str, height: str, operation: str):
+    if operation == "area":
+        await interaction.response.send_message("Area : " + str(calc.areaTriangle(base, height)))
+    else:
+        await interaction.response.send_message("Operation entered does not exist.\nTry again.")
 
 # This command give the options for the user to work with two fractions,
 # They can get the GCD, LCD from the fractions, as well as multiply, divide, subtract and add
@@ -289,7 +348,7 @@ async def equation(interaction: discord.Interaction, simple: str):
         
  # calculate algebra equation, needs specification of what to do
 @tree.command(name = "algebra", description = "Algebra calculator with several options")
-@app_commands.describe(equation = "Please enter an algebra equation with spaces in between", answer = "Enter the following: (slope) - slope intercept form, (simplify) - simplify the equation")
+@app_commands.describe(equation = "Please enter an algebra equation with spaces in between", answer = "Enter the following: (slope) - slope intercept form, (simplify) - simplify the equation, (quadratic) - quadratic formula")
 async def algebra(interaction: discord.Interaction, equation: str, answer: str):
     equation = list(equation.split(" "))
     if answer == "slope":
@@ -303,11 +362,16 @@ async def algebra(interaction: discord.Interaction, equation: str, answer: str):
         result = calc.algebraSimplify(result)
         print(result)
         await interaction.response.send_message("The simplify equation is " + result)
+    elif answer == "quadratic":
+        print(equation)
+        result = calc.tupleList(equation)
+        print(result)
+        await interaction.response.send_message("The x-intercepts are : " + calc.quadratic(result))
     #result = (calc.algebra(equation, answer))
     #slope = result[0]
     #intercept = result[1]
 
-
+"""
 # HELP COMMAND MASTER FUNCTION , PUT ALL COMMAND SPECS HERE
 @tree.command(name = 'help', description = 'display information on commands')
 async def help(interaction: discord.Interaction):
@@ -343,7 +407,7 @@ async def on_message(message):
         await botgame.rp_message_goldf(message)
         # await message.channel.send('Hello! user id:' + str(message.author.id))
 #   =============================================================================
-
+"""
 @client.event
 async def on_ready():
     await tree.sync()
@@ -380,4 +444,5 @@ def errhandle(message):
     
 sys.stderr.write = errhandle                                        # Standard Error redirection initialized here
 
-client.run(TOKEN)
+
+client.run('MTA2NzAwNzg2ODU1OTE3NTcxMA.GppmmU.A3LVuclzwlL0KvDlv-jK5RCXXLLc5HdcgzqlOM')
