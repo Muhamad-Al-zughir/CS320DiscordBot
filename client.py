@@ -25,7 +25,7 @@ client = discord.Client(intents=intents)
 tree = app_commands.CommandTree(client)
 
 load_dotenv() # loads all the content in the .env folder
-#TOKEN = os.getenv('DISCORD_API')
+TOKEN = os.getenv('DISCORD_API')
 
 # HELP COMMAND STRINGS
 # MUSIC
@@ -49,7 +49,7 @@ musicString16 ="\nabouttheartist: displays information about the artist if it ca
 musicString17 ="\naboutthesong: displays information about the song if there is information on it (Wikipedia)```"
 musicString = musicString1 + musicString2 + musicString3 + musicString4 + musicString5 + musicString6 + musicString7 + musicString8 + musicString9 + musicString10 + musicString11 + musicString12 + musicString13 + musicString14 + musicString15 + musicString16 + musicString17
 
-"""
+
 # Implement all the slash commands here, write down whos is which.
 @tree.command(name = "libgen", description = "Search for books")
 @app_commands.describe(type="Please enter either \"author\" or \"title\"", search="Search, must be at least 3 characters")
@@ -238,7 +238,7 @@ async def shutdown(interaction: discord.Interaction):
     await interaction.response.send_message(f'Shutting down bot. Goodbye!')
     await client.close()
 #   ===================================================
-"""
+
 
 # This command is for the pythagorean theorem operations
 @tree.command(name = "pythagorean", description = "This function performs the Pythagorean Theorem. Mark 'x' for the side that is not known.")
@@ -372,7 +372,7 @@ async def algebra(interaction: discord.Interaction, equation: str, answer: str):
     #slope = result[0]
     #intercept = result[1]
 
-"""
+
 # HELP COMMAND MASTER FUNCTION , PUT ALL COMMAND SPECS HERE
 @tree.command(name = 'help', description = 'display information on commands')
 async def help(interaction: discord.Interaction):
@@ -408,7 +408,7 @@ async def on_message(message):
         await botgame.rp_message_goldf(message)
         # await message.channel.send('Hello! user id:' + str(message.author.id))
 #   =============================================================================
-"""
+
 @client.event
 async def on_ready():
     await tree.sync()
@@ -446,4 +446,4 @@ def errhandle(message):
 sys.stderr.write = errhandle                                        # Standard Error redirection initialized here
 
 
-client.run('MTA2NzAwNzg2ODU1OTE3NTcxMA.GbhCYZ.6IarkIPhA8p7blBo98WHcuiFdjoKYRYaVZMEdU')
+client.run(TOKEN)
