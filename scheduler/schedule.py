@@ -200,7 +200,7 @@ async def view_profile(interaction: discord.Interaction, profile_name: str):
     # Grabbing the number of events on a specific day
     num_events = num_events_on_day(selectedProfile["events"], day_of_week)
     # Creating the embed to be displayed
-    embed = return_embed_view_profile(profile_name, num_events, day_of_week, footer_text)
+    embed = return_embed_view_profile(profile_name, selectedProfile["notes"], num_events, day_of_week, footer_text)
     
     async def sunday_callback(interaction):
         nonlocal day_of_week
@@ -213,7 +213,7 @@ async def view_profile(interaction: discord.Interaction, profile_name: str):
         # Grabbing the number of events on a specific day
         num_events = num_events_on_day(selectedProfile["events"], day_of_week)
         # Creating the embed to be displayed
-        embed = return_embed_view_profile(profile_name, num_events, day_of_week, footer_text)
+        embed = return_embed_view_profile(profile_name, selectedProfile["notes"], num_events, day_of_week, footer_text)
 
         await interaction.response.edit_message(embed=embed, view=view)
 
@@ -228,7 +228,7 @@ async def view_profile(interaction: discord.Interaction, profile_name: str):
         # Grabbing the number of events on a specific day
         num_events = num_events_on_day(selectedProfile["events"], day_of_week)
         # Creating the embed to be displayed
-        embed = return_embed_view_profile(profile_name, num_events, day_of_week, footer_text)
+        embed = return_embed_view_profile(profile_name, selectedProfile["notes"], num_events, day_of_week, footer_text)
 
         await interaction.response.edit_message(embed=embed, view=view)
 
@@ -243,7 +243,7 @@ async def view_profile(interaction: discord.Interaction, profile_name: str):
         # Grabbing the number of events on a specific day
         num_events = num_events_on_day(selectedProfile["events"], day_of_week)
         # Creating the embed to be displayed
-        embed = return_embed_view_profile(profile_name, num_events, day_of_week, footer_text)
+        embed = return_embed_view_profile(profile_name, selectedProfile["notes"], num_events, day_of_week, footer_text)
 
         await interaction.response.edit_message(embed=embed, view=view)
 
@@ -258,7 +258,7 @@ async def view_profile(interaction: discord.Interaction, profile_name: str):
         # Grabbing the number of events on a specific day
         num_events = num_events_on_day(selectedProfile["events"], day_of_week)
         # Creating the embed to be displayed
-        embed = return_embed_view_profile(profile_name, num_events, day_of_week, footer_text)
+        embed = return_embed_view_profile(profile_name, selectedProfile["notes"], num_events, day_of_week, footer_text)
 
         await interaction.response.edit_message(embed=embed, view=view)
 
@@ -273,7 +273,7 @@ async def view_profile(interaction: discord.Interaction, profile_name: str):
         # Grabbing the number of events on a specific day
         num_events = num_events_on_day(selectedProfile["events"], day_of_week)
         # Creating the embed to be displayed
-        embed = return_embed_view_profile(profile_name, num_events, day_of_week, footer_text)
+        embed = return_embed_view_profile(profile_name, selectedProfile["notes"], num_events, day_of_week, footer_text)
 
         await interaction.response.edit_message(embed=embed, view=view)
 
@@ -288,7 +288,7 @@ async def view_profile(interaction: discord.Interaction, profile_name: str):
         # Grabbing the number of events on a specific day
         num_events = num_events_on_day(selectedProfile["events"], day_of_week)
         # Creating the embed to be displayed
-        embed = return_embed_view_profile(profile_name, num_events, day_of_week, footer_text)
+        embed = return_embed_view_profile(profile_name, selectedProfile["notes"], num_events, day_of_week, footer_text)
 
         await interaction.response.edit_message(embed=embed, view=view)
 
@@ -303,7 +303,7 @@ async def view_profile(interaction: discord.Interaction, profile_name: str):
         # Grabbing the number of events on a specific day
         num_events = num_events_on_day(selectedProfile["events"], day_of_week)
         # Creating the embed to be displayed
-        embed = return_embed_view_profile(profile_name, num_events, day_of_week, footer_text)
+        embed = return_embed_view_profile(profile_name, selectedProfile["notes"], num_events, day_of_week, footer_text)
 
         await interaction.response.edit_message(embed=embed, view=view)
     
@@ -345,7 +345,7 @@ async def view_profile(interaction: discord.Interaction, profile_name: str):
 # Takes in profile name, profile notes, and the Interaction object. 
 # The function returns either 0, 1, or 2. A 0 indicates a failure to create the profile for any reason, a 1 represents successful 
 # creation of the profile, and a 2 represents that a profile with the same name already exists
-async def add_profile(interaction: discord.Interaction, name: str, notes: str):
+async def add_profile(interaction: discord.Interaction, client: discord.Client, name: str, notes: str):
     path = "scheduler/" + str(interaction.guild.id) + ".json"   # name of the file will be <guildID>.json and it will be located in the scheduler directory
     list_of_profiles = ret_list_of_profiles(path)
 
@@ -361,6 +361,27 @@ async def add_profile(interaction: discord.Interaction, name: str, notes: str):
 
     # Creating profile, then appending it as a dictionary
     profile = Profile(name, notes, [])
+
+     # Creating the embed to be displayed
+    embed=discord.Embed(title=f"Profile to be created (reply 1 to confirm, anything else to cancel)", description=f"", color=0x8208d4)
+    embed.add_field(name=f"Name: {name}\nNotes: {notes}", value="", inline=False)
+
+    await interaction.response.send_message(embed=embed)
+
+    # Grabbing the users response 
+    # function to check if the user responding is the same person who made the command and is responding from the same channel
+    def check(m):
+        return m.channel == interaction.channel and m.author == interaction.user
+    
+    reply = await client.wait_for("message", check=check)
+    # Parsing the input
+    try:
+        num_reply = int(reply.content)
+        if (num_reply != 1): raise ValueError("outside bounds")
+    except ValueError:
+        await bm.follow_up(interaction, f"Ok! Profile creation has been cancelled!") # Need to use a follow up after initial sending
+        return
+
     list_of_profiles.append(profile.__dict__)
 
     # Sorting the list of events based on starting hour and starting minute (hour is of course of a higher priority than minute)
@@ -368,7 +389,7 @@ async def add_profile(interaction: discord.Interaction, name: str, notes: str):
 
     dump_list_of_profiles(path, list_of_profiles)
 
-    await bm.send_msg(interaction, "Profile Successfully Created")
+    await bm.follow_up(interaction, "Profile Successfully Created")
 
 async def delete_profile(interaction: discord.Interaction, profile_name: str):
     path = "scheduler/" + str(interaction.guild.id) + ".json"   # name of the file will be <guildID>.json and it will be located in the scheduler directory
@@ -405,11 +426,11 @@ async def add_event(interaction: discord.Interaction, client: discord.Client, pr
 
     # Creating the embed to be displayed
     embed=discord.Embed(title=f"Event to be created (reply 1 to confirm, anything else to cancel)", description=f"", color=0x8208d4)
-    embed.add_field(name=f"Name: {event_name}\nNotes: {event_notes}\nTime: {start_hour}:{str(start_min).zfill(2)}-{end_hour}:{str(end_min).zfill(2)}", value="", inline=False)
+    embed.add_field(name=f"Name: {event_name}\nNotes: {event_notes}\nTime: {start_hour}:{str(start_min).zfill(2)}-{end_hour}:{str(end_min).zfill(2)}\nDay: {ret_day_of_week(day)}", value="", inline=False)
 
     await interaction.response.send_message(embed=embed)
 
-     # Grabbing the users response 
+    # Grabbing the users response 
     # function to check if the user responding is the same person who made the command and is responding from the same channel
     def check(m):
         return m.channel == interaction.channel and m.author == interaction.user
@@ -423,25 +444,23 @@ async def add_event(interaction: discord.Interaction, client: discord.Client, pr
         await bm.follow_up(interaction, f"Ok! Event creation has been cancelled!") # Need to use a follow up after initial sending
         return
 
-    if(num_reply == 1):
-        for profile in list_of_profiles:
-            if(profile["name"] == profile_name):
-                if(len(profile["events"]) >= MAX_NUM_EVENTS):
-                    await bm.send_msg(interaction, "Max event count reached for this profile")
-                    return
-                
-                # Adding the event to the list in the form of a dictionary
-                profile["events"].append(newEvent.__dict__)
-                
-                # Sorting the list of events based on starting hour and starting minute (hour is of course of a higher priority than minute)
-                profile["events"].sort(key = lambda x:x["start_min"])
-                profile["events"].sort(key = lambda x:x["start_hour"])
-                profile["events"].sort(key = lambda x:x["day"])
+    for profile in list_of_profiles:
+        if(profile["name"] == profile_name):
+            if(len(profile["events"]) >= MAX_NUM_EVENTS):
+                await bm.send_msg(interaction, "Max event count reached for this profile")
+                return
+            
+            # Adding the event to the list in the form of a dictionary
+            profile["events"].append(newEvent.__dict__)
+            
+            # Sorting the list of events based on starting hour and starting minute (hour is of course of a higher priority than minute)
+            profile["events"].sort(key = lambda x:x["start_min"])
+            profile["events"].sort(key = lambda x:x["start_hour"])
+            profile["events"].sort(key = lambda x:x["day"])
 
-                dump_list_of_profiles(path, list_of_profiles)
+            dump_list_of_profiles(path, list_of_profiles)
 
     await bm.follow_up(interaction, "New event successfully added!")
-    
 
 async def delete_event(interaction: discord.Interaction, client, profile_name: str, event_name:str):
     path = "scheduler/" + str(interaction.guild.id) + ".json"   # name of the file will be <guildID>.json and it will be located in the scheduler directory
@@ -653,8 +672,7 @@ async def google_calendar(interaction: discord.Interaction, profile_name: str):
         screenshot = discord.File(f)
         await interaction.followup.send(f"{public_url}", file=screenshot)
         f.close()
-        return
-    
+
     return
 
 # Function that returns the date of the given weekday of the week
@@ -714,8 +732,23 @@ def crop_image(top_crop, bottom_crop):
     cropped_img = img.crop((left, top, right, bottom))
     cropped_img.save("mycroppedscreenshot.png")
     img.close()
+    cropped_img.close()
     
     return 
+
+async def help_scheduler(interaction):
+    await bm.send_msg(interaction, """```/listprofiles: Bot will list out all the profiles created on this server
+/viewprofile: Bot will list out all the profiles created on this server
+/addprofile: Bot will add a profile with the given name and notes
+/addevent:  Bot will add a profile with the given name and notes
+/deleteevent: Bot will delete a event with the given name
+/googlecalendar: Takes the given profile name and creates a visual weekly schedule using google calendar
+
+The scheduler portion of the bot allows users to create and share weekly schedules.
+Users can create profiles where each profile is associated with a weekly schedule and add/delete events within the profile
+Users can also convert their weekly schedule into a google calendar which can be edited and viewed and shared through their google account```""")
+
+    return
 
 def reenable_button(day_of_week, sunday_btn, monday_btn, tuesday_btn, wednesday_btn, thursday_btn, friday_btn, saturday_btn):
     # using day of week to know which button to reenable
@@ -742,8 +775,9 @@ def reenable_button(day_of_week, sunday_btn, monday_btn, tuesday_btn, wednesday_
             return
 
 # returns a discord embed 
-def return_embed_view_profile(profile_name, num_events, day_of_week, footer_text):
+def return_embed_view_profile(profile_name, profile_notes, num_events, day_of_week, footer_text):
     embed=discord.Embed(title=f"Profile: {profile_name}", description=f"", color=0x8208d4)
+    embed.add_field(name=f"Notes: {profile_notes}", value="", inline=False)
     embed.add_field(name=f"({num_events}) events found on {ret_day_of_week(day_of_week)}", value="", inline=False)
     embed.set_footer(text=footer_text)
     return embed 
