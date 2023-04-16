@@ -240,6 +240,9 @@ async def shutdown(interaction: discord.Interaction):
 #   ===================================================
 
 
+#@tree.command(name = "integrate", description="This function performs basic integration")
+
+
 # This command is for the pythagorean theorem operations
 @tree.command(name = "pythagorean", description = "This function performs the Pythagorean Theorem. Mark 'x' for the side that is not known.")
 @app_commands.describe(a = "One of the side lengths", b = "Another side length", c = "Hypotenuse")
@@ -258,52 +261,14 @@ async def pythagorean(interaction: discord.Interaction, a: str, b: str, c: str):
 @app_commands.describe(number = "Enter 1 or 2 to see the pages to see how to use the math funcitons.")
 async def mathhelp(interaction: discord.Interaction, number: str):
     if number == '1':
-        message = """
-        Use the following commands correctly as specified below:
-    
-        rectangle : takes in three commands: side1, side2, operation. Side1 is one of the sides of the rectangle and side2 is the length of the adjacent side. Operation Takes two commands:
-        Enter 'area': in order to get the area of the rectangle
-        Enter 'perimeter': calculates the perimeter of the rectangle
-    
-        circle : takes in two commands : radius, operation. Radius is the length of the radius of the circle. Operation takes in two commands: 'circumference' and 'area'
-        Circumference will calculate the circumference of the circle
-        Area will calculate the area of the circle
-    
-        triangle : takes in three commands: base, height, operation. Base is the lenght of the base of the triangle. Height is the length of the triangle.
-        Operation takes in one command: 'area': it calculates the area of a triangle
-    
-        pythagorean : takes three commands: a, b, c. A and b are the lengths of the side of the right triangle. C in the hypotenuse of the triangle.
-        If you are trying to find a length for one of the side enter 'x' for that length variable.
-        If you are trying to check if the triangle lengths form a proper right triangle, enter all three varaibles as numbers.
-
-        fraction : takes 3 three commands: fraction1, fraction2, operation. Fraction1 and fraction2 are the fractions that the operation will be performed on. Operation is the type of operation.
-        Enter the fractions as "numerator/denominator", where numerator is the numerator value and the denominator is the denominator value.
-        Operation is going to ask the type of operation to perform. There is "LCD", "GCD", "Add", "Subtract", "Multiply", and "Divide"
-        LCD - finds the Least Common Denominator
-        GCD - finds the Greatest Common Denominator
-        The rest solve the operations and return in simplest form.
-        """
+        message = calc.message1()
     elif number == '2':
-        message = """
-        equation : take in one command: simple. Simple is a string of the equation that is passed in by the user.
-        Enter the equation with no variables and with spaces in between the operators and digits.
-        Such as "1 + 3 + 2 * ( 2 * 3 ) ^ 2"
-        It will take in the equation and correctly return the answer using proper order of operations.
-    
-        algebra : take in two commands : equation and answer. Equation is the equation that the user has to input in algebra. Answer is the type of algebra you want the program to perform.
-        Enter the equation as such "y = 12x - 13" or "y = 12x - 12x + 13"
-        answer has two types "slope" and "simplify"
-        slope - will return the intercept and the slope
-        simplify - will simplify the algebra equation that was entered (addition and subtraction only)
-        quadratic - will take in a quadratic in the following form, Ex: '- 12x^2 + 12x - 13'
-        
-        polynomialtwo : takes in two commands: equation1 and equation2 are both equation that have two variables 'x' and 'y'
-        Enter the equations in the following form 'ax + by = c' and Ex. '- 12x + 13y = -35'.
-        """
+        message = calc.message2()
     else:
         await interaction.response.send_message("Try again.")
     
     await interaction.response.send_message(message)
+
 
 @tree.command(name = "rectangle", description="Use to calculate area or perimeter of a rectangle")
 @app_commands.describe(side1 = "Enter one of the sides", side2 = "Enter another side", operation="Enter : 'perimeter' or 'area'")
@@ -315,6 +280,7 @@ async def circle(interaction: discord.Interaction, side1: str, side2: str, opera
     else:
         await interaction.response.send_message("Operation entered does not exist.\nTry again.")
 
+
 @tree.command(name = "circle", description="Use to calculate area or circumfrance of a circle")
 @app_commands.describe(radius = "Enter the redius length", operation="Enter : 'circumference' or 'area'")
 async def circle(interaction: discord.Interaction, radius: str, operation: str):
@@ -325,6 +291,7 @@ async def circle(interaction: discord.Interaction, radius: str, operation: str):
     else:
         await interaction.response.send_message("Operation entered does not exist.\nTry again.")
 
+
 @tree.command(name = "triangle", description="Use to calculate area of a triangle")
 @app_commands.describe(base = "Enter the base length", height = "Enter the height length", operation = "Enter : 'area'")
 async def triangle(interaction: discord.Interaction, base: str, height: str, operation: str):
@@ -332,6 +299,7 @@ async def triangle(interaction: discord.Interaction, base: str, height: str, ope
         await interaction.response.send_message("Area : " + str(calc.areaTriangle(base, height)))
     else:
         await interaction.response.send_message("Operation entered does not exist.\nTry again.")
+
 
 # This command give the options for the user to work with two fractions,
 # They can get the GCD, LCD from the fractions, as well as multiply, divide, subtract and add
@@ -354,6 +322,7 @@ async def fraction(interaction: discord.Interaction, fraction1: str, fraction2: 
     else:
         await interaction.response.send_message("Operation that was entered is not recognized. Try again.")
 
+
 @tree.command(name = "polynomialtwo", description="Enter two equations with each having two variables: x and y")
 @app_commands.describe(equation1 = "Enter the first equation", equation2 = "Enter in the second equation")
 async def polynomialtwo(interaction: discord.Interaction, equation1: str, equation2: str):
@@ -363,6 +332,7 @@ async def polynomialtwo(interaction: discord.Interaction, equation1: str, equati
     if x == 0 and y == 0:
         await interaction.response.send_message("Please try another pair of equations")
     await interaction.response.send_message("X = " + str(x) + "\nY = " + str(y))
+
 
  # calculate simple equation
 @tree.command(name = "equation", description = "Simple equation")
@@ -376,6 +346,7 @@ async def equation(interaction: discord.Interaction, simple: str):
     #result = checker(equation)
     else:
         await interaction.response.send_message(calc.checker(equation))
+       
         
  # calculate algebra equation, needs specification of what to do
 @tree.command(name = "algebra", description = "Algebra calculator with several options")

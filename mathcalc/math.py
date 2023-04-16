@@ -2,6 +2,54 @@ import os
 import math
 import random
 
+def message1():
+    message = """
+        Use the following commands correctly as specified below:
+    
+        rectangle : takes in three commands: side1, side2, operation. Side1 is one of the sides of the rectangle and side2 is the length of the adjacent side. Operation Takes two commands:
+        Enter 'area': in order to get the area of the rectangle
+        Enter 'perimeter': calculates the perimeter of the rectangle
+    
+        circle : takes in two commands : radius, operation. Radius is the length of the radius of the circle. Operation takes in two commands: 'circumference' and 'area'
+        Circumference will calculate the circumference of the circle
+        Area will calculate the area of the circle
+    
+        triangle : takes in three commands: base, height, operation. Base is the lenght of the base of the triangle. Height is the length of the triangle.
+        Operation takes in one command: 'area': it calculates the area of a triangle
+    
+        pythagorean : takes three commands: a, b, c. A and b are the lengths of the side of the right triangle. C in the hypotenuse of the triangle.
+        If you are trying to find a length for one of the side enter 'x' for that length variable.
+        If you are trying to check if the triangle lengths form a proper right triangle, enter all three varaibles as numbers.
+
+        fraction : takes 3 three commands: fraction1, fraction2, operation. Fraction1 and fraction2 are the fractions that the operation will be performed on. Operation is the type of operation.
+        Enter the fractions as "numerator/denominator", where numerator is the numerator value and the denominator is the denominator value.
+        Operation is going to ask the type of operation to perform. There is "LCD", "GCD", "Add", "Subtract", "Multiply", and "Divide"
+        LCD - finds the Least Common Denominator
+        GCD - finds the Greatest Common Denominator
+        The rest solve the operations and return in simplest form.
+        """
+    return message
+
+
+def message2():
+    message = """
+        equation : take in one command: simple. Simple is a string of the equation that is passed in by the user.
+        Enter the equation with no variables and with spaces in between the operators and digits.
+        Such as "1 + 3 + 2 * ( 2 * 3 ) ^ 2"
+        It will take in the equation and correctly return the answer using proper order of operations.
+    
+        algebra : take in two commands : equation and answer. Equation is the equation that the user has to input in algebra. Answer is the type of algebra you want the program to perform.
+        Enter the equation as such "y = 12x - 13" or "y = 12x - 12x + 13"
+        answer has two types "slope" and "simplify"
+        slope - will return the intercept and the slope
+        simplify - will simplify the algebra equation that was entered (addition and subtraction only)
+        quadratic - will take in a quadratic in the following form, Ex: '- 12x^2 + 12x - 13'
+        
+        polynomialtwo : takes in two commands: equation1 and equation2 are both equation that have two variables 'x' and 'y'
+        Enter the equations in the following form 'ax + by = c' and Ex. '- 12x + 13y = -35'.
+        """
+    return message
+
 
 def areaRectangle(side1, side2):
     side1 = float(side1)
