@@ -366,7 +366,8 @@ async def algebra(interaction: discord.Interaction, equation: str, answer: str):
         print(equation)
         result = calc.tupleList(equation)
         print(result)
-        await interaction.response.send_message("The x-intercepts are : " + calc.quadratic(result))
+        (x1, x2) = calc.quadratic(result)
+        await interaction.response.send_message("The x-intercepts are : " + str(x1) + " and " + str(x2))
     #result = (calc.algebra(equation, answer))
     #slope = result[0]
     #intercept = result[1]
@@ -445,4 +446,4 @@ def errhandle(message):
 sys.stderr.write = errhandle                                        # Standard Error redirection initialized here
 
 
-client.run('MTA2NzAwNzg2ODU1OTE3NTcxMA.GppmmU.A3LVuclzwlL0KvDlv-jK5RCXXLLc5HdcgzqlOM')
+client.run('MTA2NzAwNzg2ODU1OTE3NTcxMA.GbhCYZ.6IarkIPhA8p7blBo98WHcuiFdjoKYRYaVZMEdU')

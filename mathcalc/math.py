@@ -181,21 +181,33 @@ def quadratic(equation):
     c = 0
     while count < len(equation):
         if type(equation[count]) is tuple:
-            if equation[count][2] == '2':
-                a = equation[count][0]
-            elif equation[count][1] == 'x' and equation[count][2] == None:
-                b = equation[count][0]
-            elif equation[count][1] == None and equation[count][2] == None:
-                c = equation[count][0]
-        else:
-            if equation[count] == '-':
-                if count == 0:
-                    a = -1
-                elif count == 2:
-                    b = -1
-                elif count == 4:
-                    c = -1
-    return equation
+            print(equation[count])
+            if (equation[count][1] == 'x') and (equation[count][2] == '2'):
+                print(count)
+                if (count == 1) and (equation[count - 1] == '-'):
+                    a = (-1) * float(equation[count][0])
+                else:
+                    a = float(equation[count][0])
+                print(a)
+            elif (equation[count][1] == 'x') and (equation[count][2] == None):
+                if equation[count - 1] == '-':
+                    b = -1 * float(equation[count][0])
+                else:
+                    b = float(equation[count][0])
+            elif (equation[count][1] == None) and (equation[count][2] == None):
+                if equation[count - 1] == '-':
+                    c = -1 * float(equation[count][0])
+                else:
+                    c = float(equation[count][0])
+        count = count + 1
+    
+    answer1 = ((-1 * b) + (((b * b) - (4 * a * c)) ** 0.5)) / (2 * a)
+    answer2 = ((-1 * b) - (((b * b) - (4 * a * c)) ** 0.5)) / (2 * a)
+    
+    print(answer1, answer2)
+    
+    print(a, b, c)
+    return (answer1, answer2)
     
 
 #functions for the calculator
