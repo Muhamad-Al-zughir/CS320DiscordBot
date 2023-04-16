@@ -2,11 +2,13 @@ import os
 import math
 import random
 
+
 def areaRectangle(side1, side2):
     side1 = float(side1)
     side2 = float(side2)
     result = side1 * side2
     return float(result)
+
 
 def perimeterRectangle(side1, side2):
     side1 = float(side1)
@@ -14,21 +16,25 @@ def perimeterRectangle(side1, side2):
     result = (side1 * 2) + (side2 * 2)
     return float(result)
 
+
 def areaTriangle(base, height):
     base = float(base)
     height = float(height)
     result = (base * height) / 2
     return float(result)
 
+
 def areaCircle(radius):
     radius = float(radius)
     result = math.pi * (radius ** 2)
     return float(result)
 
+
 def circumferenceCircle(radius):
     radius = float(radius)
     result = 2 * math.pi * radius
     return float(result)
+
 
 def pythagoreanCheck(a, b, c):
     c = float(c)
@@ -38,13 +44,16 @@ def pythagoreanCheck(a, b, c):
     else: 
         return "The triangle entered is an invalid right triangle"
 
+
 def pythagoreanSide(a, b):
     c = ( (float(b) * float(b)) - (float(a) * float(a)) ) ** 0.5
     return c
 
+
 def pythagoreanHypotenuse(a, b):
     c = ( (float(a) * float(a)) + (float(b) * float(b)) ) ** 0.5
     return c
+
 
 #the parseFraction funciton breaks the passed fraction into denominator and denomitor and then return the result in a tuple
 def parseFraction(fraction):
@@ -62,6 +71,7 @@ def parseFraction(fraction):
             denom += fraction[count]
         count += 1
     return(int(num), int(denom))
+    
        
 def simplifyFraction(fraction):
     (a, b) = parseFraction(fraction)
@@ -79,6 +89,7 @@ def simplifyFraction(fraction):
     simplified += str(int(denom)) 
     return simplified  
 
+
 def gcd(fraction1, fraction2):
     (a, b) = parseFraction(fraction1)
     (c, d) = parseFraction(fraction2)
@@ -86,12 +97,25 @@ def gcd(fraction1, fraction2):
         b, d = d, b % d
     return int(b)   
      
+     
 # The LCD funciton works with fractions in order to find the least common denominator of the two given fractions
 def lcd(fraction1, fraction2):
     (a, b) = parseFraction(fraction1)
     (c, d) = parseFraction(fraction2)
     greatest = gcd(fraction1, fraction2)
     least = (b * d) / greatest
+    return int(least)
+
+
+def gcd_values(value1, value2):
+    while value2 != 0:
+        value1, value2 = value2, value1 % value2
+    return int(value1) 
+
+
+def lcd_values(value1, value2):
+    greatest = gcd_values(value1, value2)
+    least = (value1 * value2) / greatest
     return int(least)
 
 
@@ -121,8 +145,7 @@ def addFraction(fraction1, fraction2):
         addedFunction += str(commonDenom)
         
     return addedFunction
-    
-    
+     
     
 def subtractFraction(fraction1, fraction2):
     (num1, denom1) = parseFraction(fraction1)
@@ -149,6 +172,7 @@ def subtractFraction(fraction1, fraction2):
         
     return subtractedFunc
 
+
 def multiplyFraction(fraction1, fraction2):
     (num1, denom1) = parseFraction(fraction1)
     (num2, denom2) = parseFraction(fraction2)
@@ -160,6 +184,7 @@ def multiplyFraction(fraction1, fraction2):
     multiplied += str(denoms)
     multiplied = simplifyFraction(multiplied)
     return multiplied
+    
     
 def divideFraction(fraction1, fraction2):
     (num1, denom1) = parseFraction(fraction1)
@@ -349,6 +374,7 @@ def algebraSimplify(equation):
         count += 1
     return turnBackToString(equation)
 
+
 def turnBackToString(equation):
     print("This is the turnBackToString function", equation)
     stringEquation = ""
@@ -378,6 +404,108 @@ def turnBackToString(equation):
         stringEquation += ' '
         count += 1
     return(stringEquation)
+   
+    
+def multiplyPoly(x, y, number, multiple):
+    x *= multiple
+    y *= multiple
+    number *= multiple
+    return x, y, number
+
+
+def subtractPoly(x_eq1, x_eq2, y_eq1, y_eq2, number_eq1, number_eq2):
+    x_result = x_eq1 - x_eq2
+    y_result = y_eq1 - y_eq2
+    number_result = number_eq1 - number_eq2
+    print(x_result, y_result, number_result)
+    return x_result, y_result, number_result
+ 
+    
+def addPoly(x_eq1, x_eq2, y_eq1, y_eq2, number_eq1, number_eq2):
+    x_result = x_eq1 + x_eq2
+    y_result = y_eq1 + y_eq2
+    number_result = number_eq1 + number_eq2
+    print(x_result, y_result, number_result)
+    return x_result, y_result, number_result        
+
+    
+def polynomialTwo(equation1, equation2):
+    print(equation1)
+    print(equation2)
+    count = 0
+    x_eq1 = 0
+    x_eq2 = 0
+    y_eq1 = 0
+    y_eq2 = 0
+    number_eq1 = 0
+    number_eq2 = 0
+    while count < len(equation1):
+        if type(equation1[count]) is tuple:
+            if equation1[count][1] == 'x':
+                if (count >= 1) and (equation1[count - 1] == '-'):
+                    x_eq1 = (-1) * float(equation1[count][0])
+                else:
+                    x_eq1 = float(equation1[count][0])
+            elif equation1[count][1] == 'y':
+                if (count >= 1) and (equation1[count - 1] == '-'):
+                    y_eq1 = (-1) * float(equation1[count][0])
+                else:
+                    y_eq1 = float(equation1[count][0])
+            else:
+                if (count >= 1) and (equation1[count - 1] == '-'):
+                    number_eq1 = (-1) * float(equation1[count][0])
+                else:
+                    number_eq1 = float(equation1[count][0])
+        count += 1
+    count = 0
+    print(x_eq1, y_eq1, number_eq1)
+    while count < len(equation2):
+        if type(equation2[count]) is tuple:
+            if equation2[count][1] == 'x':
+                if (count >= 1) and (equation2[count - 1] == '-'):
+                    x_eq2 = (-1) * float(equation2[count][0])
+                else:
+                    x_eq2 = float(equation2[count][0])
+            elif equation2[count][1] == 'y':
+                if (count >= 1) and (equation2[count - 1] == '-'):
+                    y_eq2 = (-1) * float(equation2[count][0])
+                else:
+                    y_eq2 = float(equation2[count][0])
+            else:
+                if (count >= 1) and (equation2[count - 1] == '-'):
+                    number_eq2 = (-1) * float(equation2[count][1])
+                else:
+                    number_eq2 = float(equation2[count][0])
+        count += 1
+    print(x_eq2, y_eq2, number_eq2) 
+    
+          
+    x_lcd = lcd_values(abs(x_eq1), abs(x_eq2))
+    if (x_lcd / abs(x_eq1)) != 1:
+        x_eq1, y_eq1, number_eq1 = multiplyPoly(x_eq1, y_eq1, number_eq1, x_lcd / abs(x_eq1))
+    if (x_lcd / abs(x_eq2)) != 1:
+        x_eq2, y_eq2, number_eq2 = multiplyPoly(x_eq2, y_eq2, number_eq2, x_lcd / abs(x_eq2))
+        
+    if ((x_eq1 < 0) and (x_eq2 < 0)) or ((x_eq1 > 0) and (x_eq2 > 0)):
+        x_result, y_result, number_result =  subtractPoly(x_eq1, x_eq2, y_eq1, y_eq2, number_eq1, number_eq2)
+    else:
+        x_result, y_result, number_result = addPoly(x_eq1, x_eq2, y_eq1, y_eq2, number_eq1, number_eq2)
+    
+    if(x_result == 0) and (y_result == 0):
+        return(0, 0)
+    
+    y = number_result / y_result
+    if y_eq1 < 0:
+        result = number_eq1 - (y * y_eq1)
+    else:
+        result = number_eq1 + (y * y_eq1)
+    x = result / x_eq1
+    
+    
+    print("Y : ", y)
+    print("X : ", x)
+    
+    return (x, y)
     
 
 #makes a list of tuples with (digit, varaible, degree, side) if operator then just an operator sign
@@ -400,10 +528,12 @@ def makeTuples(element, side):
     if digit == "":
         digit = "1"
     return (digit, variable, degree, side)
+    
             
 def isOperator(operator):
     if operator == '+' or operator == '-' or operator == '*' or operator == '/' or operator == '^' or operator == '(' or operator == ')':
         return True  
+
 
 def tupleList(equation):
     print("tupleList :", equation)
@@ -435,7 +565,6 @@ def tupleList(equation):
     return newList
         
         
-
 def simpleCheck(equation):
     length = len(equation)
     count = 0
@@ -529,6 +658,7 @@ def exponent(equation):
             count = 0
         count+=1
     return equation
+
 
 def multdiv(equation):
     count = 1
