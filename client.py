@@ -9,11 +9,11 @@ from dotenv import load_dotenv
 import json
 
 # Add your imports below here, if in a folder, use a dot instead of a slash
-#import botgame.game as botgame
-#import libgen.lib_handler as lb
-#import basic.methods as bm # basic methods contains functions that we will use a lot.
-#import scheduler.schedule as schedule
-#import music.muzique as mzb
+import botgame.game as botgame
+import libgen.lib_handler as lb
+import basic.methods as bm # basic methods contains functions that we will use a lot.
+import scheduler.schedule as schedule
+import music.muzique as mzb
 import mathcalc.math as calc
 
 # setting up the needed intents
@@ -241,6 +241,9 @@ async def shutdown(interaction: discord.Interaction):
 
 
 #@tree.command(name = "integrate", description="This function performs basic integration")
+#@app_commands.describe(equation = "The equation that will be operated", low = "The lower bound, leave 'x' if not using", high = "The high bound, leave 'x' if not using")
+#async def integrate(interaction: discord.Interaction, equation: str, low: str, high: str):
+    
 
 
 # This command is for the pythagorean theorem operations
