@@ -442,7 +442,7 @@ def turnBackToString(equation):
                 stringEquation += equation[count][1]
             if equation[count][2] != None:
                 stringEquation += '^'
-                stringEquation += equation[count][3]
+                stringEquation += equation[count][2]
         else:
             if equation[count + 1][3] == 'r' and flag == 1:
                 stringEquation += '='
@@ -762,3 +762,80 @@ def subtract(equation):
     return equation
 
 #helpuse function
+
+def calculateIntegral(equation, bound):
+    count = 0
+    count = 0
+    value = 0
+    while count < len(equation):
+        if type(equation[count]) is tuple:
+            digit = float(equation[count][0])
+            if equation[count][2] == None:
+                degree = 1
+            else:
+                degree = float(equation[count][2])
+            value = digit * ((float(bound)) ** degree)
+            equation[count] = value
+        count += 1
+    count = 0
+    result = 0
+    while count < len(equation):
+        print(result)
+        if count == 0 and equation[count] == '-':
+            print("1")
+            result = (-1) * equation[count + 1]
+            count += 1
+        elif equation[count] == '-':
+            print("2")
+            result -= equation[count + 1]
+            count += 1
+        elif equation[count] == '+':
+            print("3")
+            result += equation[count + 1]
+            count += 1
+        else:
+            print("4")
+            result = equation[count]
+        count += 1
+    print(result)
+    return result
+            
+            
+    
+
+def integrate(equation, low, high):
+    #print(equation, low, high)
+    count = 0
+    while count < len(equation):
+        if type(equation[count]) is tuple:
+            digit = float(equation[count][0])
+            variable = equation[count][1]
+            degree = equation[count][2]
+            if (variable != None) and (degree == None):
+                degree = 1
+            elif variable == None:
+                degree = 0
+                variable = 'x'
+            else:
+                degree = float(degree)
+            if degree == 0:
+                newdegree = None
+            else:
+                newdegree = str(degree + 1)
+            newTuple = (str(digit / (degree + 1)), variable, newdegree, equation[count][3])
+            equation[count] = newTuple
+        count += 1
+    if low == 'x' and high == 'x':
+        result = turnBackToString(equation)
+        result += '+ C'
+        return result
+    else:
+        count = 0
+        equation1 = equation[:]
+        print(equation)
+        lowvalue = calculateIntegral(equation, low)
+        print(equation1)
+        highvalue = calculateIntegral(equation1, high)
+        
+        print(lowvalue, highvalue, highvalue - lowvalue)
+        return str(highvalue - lowvalue)
