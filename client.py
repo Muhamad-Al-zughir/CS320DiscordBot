@@ -82,7 +82,7 @@ async def view_profile_cmd(interaction: discord.Interaction, name: str):
 @tree.command(name = 'addprofile', description = 'Bot will add a profile with the given name and notes')
 @app_commands.describe(name="Name of the profile to be created (NAME MUST NOT ALREADY BE IN USE)", notes="Any important notes regarding the profile")
 async def add_profile_cmd(interaction: discord.Interaction, name: str, notes: str):
-    await schedule.add_profile(interaction, name, notes)
+    await schedule.add_profile(interaction, client, name, notes)
 
 # deleteprofile command: Takes in profile name. After running the command the bot will delete the profile with the given name
 # Name of the profile must be of an existing profile
@@ -107,6 +107,21 @@ async def add_event_cmd(interaction: discord.Interaction, profile_name: str, eve
                        event_name="Name of event to be deleted (EVENT MUST ALREADY EXIST)")
 async def delete_event_cmd(interaction: discord.Interaction, profile_name: str, event_name: str):
     await schedule.delete_event(interaction, client, profile_name, event_name)
+
+# googlecalendar
+@tree.command(name = 'googlecalendar', description = 'Takes the given profile name and creates a visual weekly schedule using google calendar')
+@app_commands.describe(profile_name="Name of the profile to be used")
+async def google_calendar_cmd(interaction: discord.Interaction, profile_name: str):
+    await interaction.response.defer()
+    await schedule.google_calendar(interaction, profile_name)
+    os.remove("myscreenshot.png")
+    os.remove("mycroppedscreenshot.png")
+
+# viewprofile command: After the running of the command the bot will list out all of the events of a given profile with the list of events for each given day of the week. 
+@tree.command(name = 'helpscheduler', description = 'Bot will bring forth a help page detailing all of the commands and how to use them')
+async def help_scheduler_cmd(interaction: discord.Interaction): 
+    # responding by printing out the profiles using discord embed features
+    await schedule.help_scheduler(interaction)
 
 # Bot will join Discord Voice channel
 @tree.command(name = 'move', description = 'Bot will join your voice channel')
@@ -239,73 +254,25 @@ async def shutdown(interaction: discord.Interaction):
     await client.close()
 #   ===================================================
 
-# This command is for the pythagorean theorem operations
-@tree.command(name = "pythagorean", description = "This function performs the Pythagorean Theorem. Mark 'x' for the side that is not known.")
-@app_commands.describe(a = "One of the side lengths", b = "Another side length", c = "Hypotenuse")
-async def pythagorean(interaction: discord.Interaction, a: str, b: str, c: str):
-    if a == "x":
-        await interaction.response.send_message("The 'a' side is " + str(calc.pythagoreanSide(b, c)))
-    elif b == "x":
-        await interaction.response.send_message("The 'b' side is " + str(calc.pythagoreanSide(a, c)))
-    elif c == "x":
-        await interaction.response.send_message("The 'c' side (hypotenuse) is " + str(calc.pythagoreanHypotenuse(a, b)))
-    else:
-        await interaction.response.send_message(calc.pythagoreanCheck(a, b, c))
-
-
-# This command give the options for the user to work with two fractions,
-# They can get the GCD, LCD from the fractions, as well as multiply, divide, subtract and add
-# and return the result in simplified form
-@tree.command(name = "fraction", description = "Fraction operations")
-@app_commands.describe(fraction1 = "Please enter the two fractions that you want to work with. Ex: 1/2", operation = "Enter one of the following : LCD, GCD, Add, Subtract, Multiply, Divide")
-async def fraction(interaction: discord.Interaction, fraction1: str, fraction2: str, operation: str):
-    if operation == "LCD":
-        await interaction.response.send_message("LCD : " + str(calc.lcd(fraction1, fraction2)))
-    elif operation == "GCD":
-        await interaction.response.send_message("GCD : " + str(calc.gcd(fraction1, fraction2)))
-    elif operation == "Add":
-        await interaction.response.send_message("Final fraction : " + calc.addFraction(fraction1, fraction2))
-    elif operation == "Subtract":
-        await interaction.response.send_message("Final fraction : " + calc.subtractFraction(fraction1, fraction2))
-    elif operation == "Multiply":
-        await interaction.response.send_message("Final fraction : " + calc.multiplyFraction(fraction1, fraction2))
-    elif operation == "Divide":
-        await interaction.response.send_message("Final fraction : " + calc.divideFraction(fraction1, fraction2))
-    else:
-        await interaction.response.send_message("Operation that was entered is not recognized. Try again.")
-
  # calculate simple equation
-@tree.command(name = "equation", description = "Simple equation")
+@tree.command(name = "equation", description= "Simple equation")
 @app_commands.describe(simple = "Please enter a simple equation with each spaces in between")
 async def equation(interaction: discord.Interaction, simple: str):
     equation = list(simple.split(" "))
-    print(equation)
-    if (reason := calc.simpleCheck(equation)) != True:
-        print(reason)
+    if(reason := calc.simpleCheack(equation)) != True:
         await interaction.response.send_message("The equation sent in not a valid simple equation. Try again.\nReason: " + reason)
-    #result = checker(equation)
     else:
         await interaction.response.send_message(calc.checker(equation))
         
  # calculate algebra equation, needs specification of what to do
 @tree.command(name = "algebra", description = "Algebra calculator with several options")
-@app_commands.describe(equation = "Please enter an algebra equation with spaces in between", answer = "Enter the following: (slope) - slope intercept form, (simplify) - simplify the equation")
+@app_commands.describe(equation = "Please enter an algebra equation with spaces in between", answer = "Enter the following: (slope) - slope intercept form, ")
 async def algebra(interaction: discord.Interaction, equation: str, answer: str):
     equation = list(equation.split(" "))
-    if answer == "slope":
-        result = (calc.slope(equation, answer))
-        slope = result[0]
-        intercept = result[1]
-        await interaction.response.send_message("The slope of the equation is " + str(slope) + ".\nThe y-intercept of the equation is " + str(intercept))
-    elif answer == "simplify":
-        result = calc.tupleList(equation)
-        print(result)
-        result = calc.algebraSimplify(result)
-        print(result)
-        await interaction.response.send_message("The simplify equation is " + result)
-    #result = (calc.algebra(equation, answer))
-    #slope = result[0]
-    #intercept = result[1]
+    result = (calc.algebra(equation, answer))
+    slope = result[0]
+    intercept = result[1]
+    await interaction.response.send_message("The slope of the equation is " + str(slope) + ".\nThe y-intercept of the equation is " + str(intercept))
 
 
 # HELP COMMAND MASTER FUNCTION , PUT ALL COMMAND SPECS HERE
@@ -349,35 +316,35 @@ async def on_ready():
     await tree.sync()
     print(f'{client.user} has connected to Discord!')
 
-# Send Standard Error to Discord Channel
-async def errorLogs(message):
-    channel = await client.fetch_channel(1094498464710262865)         # Discord Channel Specified Here
+# # Send Standard Error to Discord Channel
+# async def errorLogs(message):
+#     channel = await client.fetch_channel(1094498464710262865)         # Discord Channel Specified Here
 
-    spam = ['rate limited', 'logging in', 'connected to Gateway',     # spam and incorrectly labeled "error messages" in stderr
-            'handshake complete','Starting voice','voice...'
-            'ffmpeg process', 'should have terminated', 'has not terminated']     
+#     spam = ['rate limited', 'logging in', 'connected to Gateway',     # spam and incorrectly labeled "error messages" in stderr
+#             'handshake complete','Starting voice','voice...'
+#             'ffmpeg process', 'should have terminated', 'has not terminated']     
 
-    if any(substring in message for substring in spam ):              # Ignore Spam
-        return
+#     if any(substring in message for substring in spam ):              # Ignore Spam
+#         return
 
 
-    if len(str(message)) < 1900:                                                # Due to discord limitations, need to print description 2000 at a time
-        await channel.send(f"**STDERR Output:**\n```\n{str(message)}\n```")     # If less than 1900, send immediately
-    else:
-        await channel.send(f'**STDERR Output:**\n')
-        newerr = ''                                # Else, declare new variable to track 1900 chars at a time
-        while len(message) > 1900:                 # Iterate 2000 at a time while geniusLyrics is greater than 2000 **
+#     if len(str(message)) < 1900:                                                # Due to discord limitations, need to print description 2000 at a time
+#         await channel.send(f"**STDERR Output:**\n```\n{str(message)}\n```")     # If less than 1900, send immediately
+#     else:
+#         await channel.send(f'**STDERR Output:**\n')
+#         newerr = ''                                # Else, declare new variable to track 1900 chars at a time
+#         while len(message) > 1900:                 # Iterate 2000 at a time while geniusLyrics is greater than 2000 **
                     
-            newerr = message[:1900]                # string slicing to grab 1900 and send
-            await channel.send(f"```\n{str(newerr)}\n```")
-            message = message[1900:]               # Error Updated Here                                     **    
+#             newerr = message[:1900]                # string slicing to grab 1900 and send
+#             await channel.send(f"```\n{str(newerr)}\n```")
+#             message = message[1900:]               # Error Updated Here                                     **    
 
-        await channel.send(f"\n```\n{str(message)}\n```")
+#         await channel.send(f"\n```\n{str(message)}\n```")
 
-def errhandle(message):
-    # Call the async function to send the error message to the Discord channel
-    client.loop.create_task(errorLogs(message))
+# def errhandle(message):
+#     # Call the async function to send the error message to the Discord channel
+#     client.loop.create_task(errorLogs(message))
     
-sys.stderr.write = errhandle                                        # Standard Error redirection initialized here
+# sys.stderr.write = errhandle                                        # Standard Error redirection initialized here
 
 client.run(TOKEN)
