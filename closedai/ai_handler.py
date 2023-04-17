@@ -1,6 +1,7 @@
 # shbang
 # Judah Tanninen
 # In between handler for discord to openai
+# testing: Apperantly not having my email set up means github doesn't see me as a contribuiter.
 
 # Imports
 import closedai.ai as ai
