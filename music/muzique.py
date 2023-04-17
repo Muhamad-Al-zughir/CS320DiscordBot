@@ -666,14 +666,15 @@ async def shuffleQueue(interaction: discord.Interaction, client: discord.Client)
 # but you're thinking "Oh hey, that part halfway in the song was pretty good, lets go to that part"
 async def percentageShift(interaction: discord.Interaction, client: discord.Client, percent: int):
     await interaction.response.defer()
-    local = interaction.guild                                                                   # Establish server context
+    local = interaction.guild                                                                  # Establish server context
     voicechan = local.voice_client   
-    #global currentSongTime
+
     print("CURRENT SONG LISTS ARE")
     print(songList)
     print("Reached Shift Percentage")                                                          # Establish related voice channel
 
-    if (percent == 0):
+                                                                                               # Percentage Cases , 0 is 0, calculate for rest, 100 skips song
+    if (percent == 0):                                                                         
         seconds = 0
 
     elif (percent == 1):
@@ -973,25 +974,23 @@ async def percentageShift(interaction: discord.Interaction, client: discord.Clie
     elif (percent == 99):
         seconds = (0.99 * currentSongObj.songTime)
     
-    elif (percent == 100):
+    elif (percent == 100):                                                                              # Skip song in 100 case
         voicechan.stop()
         await interaction.followup.send(f'100% Entered. Skipping song...')
 
     else:
-        await interaction.followup.send(f'Invalid Percentage Value entered!')
+        await interaction.followup.send(f'Invalid Percentage Value entered!')                           # Debug Interaction
 
 
     # =================================================================== # 
     seconds = int(seconds)
-    if currentSongUrl !='':                               # NOte: ADD condition for Song Obj existing here, else display error                          
+    if currentSongUrl !='':                                                                             # Song needs to exist before continuing             
         print("If condition met in Fast forward")
         if (seconds < currentSongObj.songTime):
-            #currentSongTime = ((time.time()) - currentSongTime) + seconds
             print("Before retrieving YouTube Object...")    
             print("Song Urls Before Appending")   
 
-            # current song url update        
-   
+            # Update Current Song URL        
             print(f'Updated var is {currentSongUrl}')          
             if (currentSongUrl.startswith('https://open.spotify.com/')) :                               # Check if Spotify Link
                 track_id = currentSongUrl.split('/')[-1]                                                # Strip '/' and strings after '?'
@@ -1017,12 +1016,11 @@ async def percentageShift(interaction: discord.Interaction, client: discord.Clie
                 print("Search...")
                 filename = await YouTube_linkobj.from_search(currentSongUrl, loop=client.loop, stream=True, start=seconds)
 
-            songList.appendleft(filename)
+            songList.appendleft(filename) 
             print("SONGLISTS after are")
             print(songList)
             voicechan.stop()
             print("Music stopped. New fast forward song added")
-            #currentSongTime = time.time()
             print("Time reset in Shift")
             await interaction.followup.send(f'Shifting Track to {percent}% of total runtime ({seconds} seconds)')
         
@@ -1115,13 +1113,13 @@ async def aboutTheSong(interaction: discord.Interaction, client: discord.Client)
                 displayPage = displayPage[2000:]                        # YT description updated here          
             
             
-            await logChannel.send(displayPage)                              # Send remainder of description
+            await logChannel.send(displayPage)                          # Send remainder of description
 
 
 
 # About the Album
 async def aboutTheAlbum(interaction: discord.Interaction, client: discord.Client):
-    #spotifyobj
+    
     await interaction.response.defer()
     if currentSongObj is None:
         await interaction.followup.send("Can't gather information from current song. No song is playing!")
@@ -1129,7 +1127,7 @@ async def aboutTheAlbum(interaction: discord.Interaction, client: discord.Client
     else:
         logId = interaction.channel_id
         logChannel = client.get_channel(logId)
-        #titleToSearch = currentSongObj.title
+        
         
         songSearchFirst = spotifyObj.search(q=currentSongObj.title, type="track")
         songTrack = songSearchFirst["tracks"]["items"][0]
@@ -1216,49 +1214,55 @@ async def aboutTheAlbum(interaction: discord.Interaction, client: discord.Client
                 displayPage = displayPage[2000:]                        # YT description updated here          
             
             
-            await logChannel.send(displayPage)                              # Send remainder of description
+            await logChannel.send(displayPage)                          # Send remainder of description
 
 
 
-        #print(displayPage)
 
 async def aboutTheArtist(interaction: discord.Interaction, client: discord.Client):
-    #spotifyobj
+                                                                        # Song object Needs to exist before continuing
     await interaction.response.defer()
-    if currentSongObj is None:
+    if currentSongObj is None:                              
         await interaction.followup.send("Can't gather information from current song. No song is playing!")
 
     else:
         logId = interaction.channel_id
         logChannel = client.get_channel(logId)
         initTitle = currentSongObj.title
-        Title2 = initTitle.split(" - ")[0]
-
-        if '"' in Title2:
+        Title2 = initTitle.split(" - ")[0]                              # Split on - Separator (vast majority of youtube Videos)
+        
+                                                                        # Split on Quotes 
+        if '"' in Title2:                                               
             Title2 = Title2.replace('"', '')
 
+                                                                        # Search Spotify Artist field for New title
         titleToSearch = Title2
         searchResults = spotifyObj.search(q=titleToSearch, type="artist")
 
+                                                                        # Case for no artist , Stop program execution
         if searchResults == {}:
             await interaction.followup.send("Error with Spotify Link Search: No Artists could be found")
             return
 
+                                                                        # Acquire first Artist name from spotify Search
         artistSearch = searchResults["artists"]["items"][0]["external_urls"]["spotify"]
-        artistDetails = spotifyObj.artist(artistSearch)
+        artistDetails = spotifyObj.artist(artistSearch)                 # Return Artist object given name from spotify
 
-        if "error" in artistDetails:
+                                                                        # Artist search failed here , stop program execution
+        if "error" in artistDetails:                                    
             await interaction.followup.send("Error with Spotify Artist Search: Artist ID nonexistent")
             return
 
+                                                                        # Acquire Artist name from Artist details field
         artistName = artistDetails["name"]
-        print(artistDetails)                     # Debug
+        print(artistDetails)                                            # Debug
 
-        wikiInit = wikipediaapi.Wikipedia('en')
-        artistPage = wikiInit.page(artistName)
+        wikiInit = wikipediaapi.Wikipedia('en')                         # Search Wiki in English language for Artist Description
+        artistPage = wikiInit.page(artistName)                          # Get first page given artist name 
 
-        displayPage = artistPage.summary
-
+        displayPage = artistPage.summary                                # Get wikipedia Summary From page
+        
+        # Begin Sends here
         await interaction.followup.send("Information Found!")
         await logChannel.send(f'1. Artist Name: {artistDetails["name"]}')
         await logChannel.send(f'2. Artist Popularity: {artistDetails["popularity"]}')
@@ -1273,7 +1277,7 @@ async def aboutTheArtist(interaction: discord.Interaction, client: discord.Clien
                     
                 newdisplay = displayPage[:2000]                                # string slicing to grab 2000 and send
                 await logChannel.send(newdisplay)
-                displayPage = displayPage[2000:]                               # YT description updated here          
+                displayPage = displayPage[2000:]                               # Wiki Description Updated here          
             
             
             await logChannel.send(displayPage)                                 # Send remainder of description
