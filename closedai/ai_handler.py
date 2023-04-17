@@ -146,3 +146,14 @@ def genConvoItem(prompt):
         "role": "user",
         "content": prompt
     }
+
+async def sendCaiOptions(interaction):
+    str = '**Closed AI Options**\n'
+    str += "listmodels: Visual Only, lists all current models availble to the completion API, for testing only\n"
+    str += "listsettings: Lists the current settings for the cai gpt completions\n"
+    str += "changesetting: Change any of the settings listed in the listsettings function\n"
+    str += "caioptions: This function.\n"
+    str += "caigpt: Essentially chatgpt, uses the gpt-3.5-turbo model, takes in prompts and keeps track of the conversation. Uses the settings listed in listsettings\n"
+    str += "dalle: DALL-E image generation, generates n number of images for the given prompt\n"
+    await interaction.response.send_message(str)
+    

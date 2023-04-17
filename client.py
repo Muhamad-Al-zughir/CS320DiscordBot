@@ -75,6 +75,11 @@ async def change_setting(interaction: discord.Interaction, key: str, value: str)
     caiSettings[key] = val
     await interaction.response.send_message('Setting Changed.')
 
+# List the commands available to closed ai, and what they do.
+@tree.command(name='caioptions', description="List all of the functionalities related to the closed ai")
+async def cai_options(interaction: discord.Interaction):
+    await aih.sendCaiOptions(interaction)
+
 # Completion call, takes in a prompt, and generates a response with it. NOTE: uses the caiSettings
 @tree.command(name='caigpt', description="Takes in a prompt, returns a GPT-3.5 response, keeps track of conversation")
 @app_commands.describe(prompt="Text prompt, can be anything, should not be empty")
