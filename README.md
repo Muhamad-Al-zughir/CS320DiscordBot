@@ -44,9 +44,13 @@ pip install youtube-dl
 pip install PyNaCl
 pip install ffmpeg
 pip install spotipy
-pip install discord.py
+pip install apscheduler
 pip install lyricsgenius
 pip install pydub
+pip install selenium
+pip install Pillow
+pip install --upgrade google-api-python-client google-auth-httplib2 google-auth-oauthlib
+pip install discord.py
 pip install asyncio
 pip install windows-curses
 ```
