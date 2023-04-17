@@ -55,6 +55,28 @@ songList = deque()
 currentSongUrl = ''
 currentSongObj = None
 
+# Music Strings for Help Command
+# Initialize once outside of function
+musicString1 = "```**Music**\nmove: Moves a bot to a voice channel if you are already located in one"
+musicString2 = "\nplay: Plays from a YouTube, Soundcloud, Or Spotify Link, or a general search query"
+musicString3 = "\nclear: clears all songs from queue and leaves voice channel"
+musicString4 = "\npause-unpause: pauses song if currently playing, unpauses if paused already"
+musicString5 = "\nskip: skips currently playing song"
+musicString6 = "\nqueue: Displays currently queued songs in order"
+musicString7 = "\nshuffle: Shuffles current queue of music into random order"
+musicString8 = "\nshiftsong: Shifts song to set time in track"
+musicString9 = "\nencore: Repeats currently playing song"
+musicString10 ="\nswap: swaps two indexes of a queue"
+musicString11 ="\ndisplayInfo: displays YouTube Info of currently playing song"
+musicString12 ="\ndisplayLyrics: displays Lyrics of currently playing song if available"
+musicString13 ="\nshiftsong_percent: Shifts song to a set percentage in track"
+musicString14 ="\naddplaylist: adds YouTube playlist to queue ONLY if there is a currently playing song"
+musicString15 ="\naboutthealbum: displays information about the album if the track belongs to one"
+musicString16 ="\nabouttheartist: displays information about the artist if it can be found (Wikipedia)"
+musicString17 ="\nabouttheartist: displays information about the artist if it can be found (Wikipedia)"
+musicString18 ="\naddnext: queues a song to be next played```"
+musicString = musicString1 + musicString2 + musicString3 + musicString4 + musicString5 + musicString6 + musicString7 + musicString8 + musicString9 + musicString10 + musicString11 + musicString12 + musicString13 + musicString14 + musicString15 + musicString16 + musicString17 + musicString18
+
 
 # ** NOTE **
 # Class YouTube_linkobj below is borrowed from https://github.com/Rapptz/discord.py/blob/master/examples/basic_voice.py 
@@ -64,7 +86,7 @@ currentSongObj = None
 class YouTube_linkobj(discord.PCMVolumeTransformer):
     def __init__(self, source, *, data):
         super().__init__(source)
-       
+                                        # Declare Music data fields for songs that can be acquired
         self.data = data
         self.title = data.get('title')
         self.url = data.get('url')
@@ -110,6 +132,8 @@ class YouTube_linkobj(discord.PCMVolumeTransformer):
         filename = data['url'] if stream else yt_streamObj.prepare_filename(data)
         return cls(discord.FFmpegPCMAudio(filename, **ff_params), data=data)
     
+    # Added this method independently. Used to search for Playlists and gets song data and title one by one
+    # Note: Returns list of songs, audio objects not playable. Need to use titles and call upon from_search or from_link in class
     @classmethod
     async def yt_playlist(cls, url, *, loop=None, stream=False, start=0):
         loop = loop or asyncio.get_event_loop()
@@ -138,11 +162,11 @@ async def clear(interaction: discord.Interaction):
     await interaction.response.defer()
     server = interaction.guild
     voice_channel = server.voice_client
-
+                                                                            # Check that voice_cleint is established
     if voice_channel is None:
         await interaction.followup.send(f'There is no music to clear!')
     else:
-        await voice_channel.disconnect()
+        await voice_channel.disconnect()                                    # If so, Leave voice channel and clear queue
         songList.clear()
         await interaction.followup.send(f'Music has been stopped & the queue has been cleared')
 
@@ -150,6 +174,7 @@ async def clear(interaction: discord.Interaction):
 async def pause_yt(interaction: discord.Interaction):
     await interaction.response.defer()
     vcstatus = interaction.guild.voice_client
+                                                                            # Check voice_client is established, if so: pause
     if vcstatus is None:
         await interaction.followup.send('Nothing is currently playing')
     elif vcstatus.is_playing():
@@ -297,11 +322,11 @@ async def skipSong(interaction: discord.Interaction, client: discord.Client):
     local = interaction.guild                                                                   # Establish server context
     voicechan = local.voice_client                                                              # Establish related voice channel
 
-    if voicechan is None:
+    if voicechan is None:                                                                       # Check song exists
         await interaction.followup.send(f'No current song playing to skip!')
     elif voicechan.is_playing():
         await interaction.followup.send(f'Skipping song')
-        voicechan.stop()
+        voicechan.stop()                                                                        # If it does, stop song, nextSong called
     else:
         await interaction.followup.send(f'Unknown error in SKIP occured')
     #print("After Skip") 
@@ -322,25 +347,6 @@ async def displayQueue(interaction: discord.Interaction, client: discord.Client)
             i = i+1
     else: 
         await interaction.followup.send(f'No active Queue to be displayed!')
-
-# Shuffles the Current Queue of Songs and Redisplays it
-async def shuffleQueue(interaction: discord.Interaction, client: discord.Client):
-    await interaction.response.defer()
-    if len(songList) != 0:
-        await interaction.followup.send(f'Queue Shuffled. Current Queue is now:')
-
-        random.shuffle(songList)
-        
-        logId = interaction.channel_id
-        logChannel = client.get_channel(logId)
-        i = 1
-        for songs in songList:
-            display = songs.title
-            display = str(i) + ": " + display
-            await logChannel.send(display)
-            i = i+1
-    else:
-        await interaction.followup.send(f'No active Queue to be shuffled!')
 
 
 # Shifting The Track
@@ -439,9 +445,13 @@ async def encore(interaction: discord.Interaction, client: discord.Client):
 async def swap(interaction: discord.Interaction, client: discord.Client, indexone: int, indextwo: int):
     await interaction.response.defer()
     if (len(songList) > 1) and indexone !=0 and indextwo !=0:
+
+        # Use python Value swap format (x,y = y,x) to swap index values
         songList[indexone-1], songList[indextwo-1] = songList[indextwo-1], songList[indexone-1]
         await interaction.followup.send(f'Index {indexone} and Index {indextwo} are now swapped! Current Index is now:')
+        
 
+        # Send Updated Queue Here
         logId = interaction.channel_id
         logChannel = client.get_channel(logId)
         i = 1
@@ -465,10 +475,12 @@ async def displayInfo(interaction: discord.Interaction, client: discord.Client):
                     'May', 'June', 'July', 'August',
                     'September', 'October', 'November', 'December']
         
+        # Process Date using Commands below
         uploadYear = processYear(currentSongObj.uploadDate)
         uploadMonth = processMonth(currentSongObj.uploadDate)
         uploadDay = processDay(currentSongObj.uploadDate)
 
+        # Month cases here
         if uploadMonth == '01':
             uploadMonth = calendar[0]
         elif uploadMonth == '02':
@@ -494,9 +506,11 @@ async def displayInfo(interaction: discord.Interaction, client: discord.Client):
         elif uploadMonth == '12':
             uploadMonth = calendar[11]
 
+        # Change seconds to minutes, grab remaining seconds after minutes 
         totalMinutes = int(currentSongObj.songTime/60)
         totalSeconds = currentSongObj.songTime % 60
 
+        # Begin sending Info here
         await interaction.followup.send('Current Song Information:')
         await logChannel.send(f'1. Title: {currentSongObj.title}')
         await logChannel.send(f'2. Song Duration: {totalMinutes} minutes, {totalSeconds} seconds')
@@ -518,7 +532,7 @@ async def displayInfo(interaction: discord.Interaction, client: discord.Client):
                 desc = desc[2000:]                      # YT description updated here                                     **
             
             
-            await logChannel.send(desc)                     # Send remainder of description
+            await logChannel.send(desc)                 # Send remainder of description
 
     else:
         await interaction.followup.send('No song is currently playing to display information for!')
@@ -541,7 +555,7 @@ async def displayLyrics(interaction: discord.Interaction, client: discord.Client
         finalTitle = filterTitle(filteredTitle)
         
         geniusSong = geniusClient.search_song(title = finalTitle)   # Search with new filtered title ** Note: THIS IS NOT PERFECTLY WORKING, GENIUS API SEARCH IS NOT STELLAR ** 
-        logId = interaction.channel_id                                  # Channel ID acquisition to send lyrics to
+        logId = interaction.channel_id                              # Channel ID acquisition to send lyrics to
         logChannel = client.get_channel(logId)
         print("Lyrics search has been conducted")
 
@@ -562,14 +576,14 @@ async def displayLyrics(interaction: discord.Interaction, client: discord.Client
                     geniusLyrics = geniusLyrics[2000:]              # genius lyrics updated here                                     **
             
             
-                await logChannel.send(geniusLyrics)                     # Send remainder of lyrics
+                await logChannel.send(geniusLyrics)                 # Send remainder of lyrics
             
         
         else:
             await interaction.followup.send('Lyrics for this song could not be found')
 
 
-
+# Filter title from typical youtube Styling things
 def filterTitle(filteredTitle:str):
         # https://www.w3schools.com/python/ref_string_strip.asp     Strip method for whitespaces found here
         filteredTitle1 = filteredTitle.split('[')[0]                 # Filter stylistic things from title
@@ -581,7 +595,7 @@ def filterTitle(filteredTitle:str):
         filteredTitle7 = filteredTitle6.split('featuring')[0]
         return filteredTitle7
 
-
+# Slice string for the month, return Month name (not numbers)
 def processMonth(garbledStr:str):
         calendar = ['January', 'February', 'March', 'April',
                     'May', 'June', 'July', 'August',
@@ -616,43 +630,29 @@ def processMonth(garbledStr:str):
 
         return uploadMonth
 
+# Slice String to Acquire Day
 def processDay(garbledStr:str):
     uploadDay = garbledStr[6:]
     return uploadDay
 
+# Slice String to acquire year 
 def processYear(garbledStr:str):
     uploadYear = garbledStr[:4]
     return uploadYear
 
 
-# Shift by Percentage
-async def shiftPercent(interaction: discord.Interaction, client: discord.Client):
-    await interaction.response.defer()
-    if len(songList) != 0:                                                           
-        await interaction.followup.send(f'Current Queue is:')
-        logId = interaction.channel_id
-        logChannel = client.get_channel(logId)
-        i = 1
-        for songs in songList:
-            display = songs.title
-            display = str(i) + ": " + display
-            await logChannel.send(display)
-            i = i+1
-    else: 
-        await interaction.followup.send(f'No active Queue to be displayed!')
-
 # Shuffles the Current Queue of Songs and Redisplays it
 async def shuffleQueue(interaction: discord.Interaction, client: discord.Client):
     await interaction.response.defer()
-    if len(songList) != 0:
+    if len(songList) != 0:                                                              # Check that Song list is not empty
         await interaction.followup.send(f'Queue Shuffled. Current Queue is now:')
 
-        random.shuffle(songList)
+        random.shuffle(songList)                                                        # call upon random.shuffle for easy dequeue shuffling
         
-        logId = interaction.channel_id
+        logId = interaction.channel_id                                                  # Get interaction Channel
         logChannel = client.get_channel(logId)
         i = 1
-        for songs in songList:
+        for songs in songList:                                                          # Begin sending songs and updated queue to channel
             display = songs.title
             display = str(i) + ": " + display
             await logChannel.send(display)
@@ -666,14 +666,15 @@ async def shuffleQueue(interaction: discord.Interaction, client: discord.Client)
 # but you're thinking "Oh hey, that part halfway in the song was pretty good, lets go to that part"
 async def percentageShift(interaction: discord.Interaction, client: discord.Client, percent: int):
     await interaction.response.defer()
-    local = interaction.guild                                                                   # Establish server context
+    local = interaction.guild                                                                  # Establish server context
     voicechan = local.voice_client   
-    #global currentSongTime
+
     print("CURRENT SONG LISTS ARE")
     print(songList)
     print("Reached Shift Percentage")                                                          # Establish related voice channel
 
-    if (percent == 0):
+                                                                                               # Percentage Cases , 0 is 0, calculate for rest, 100 skips song
+    if (percent == 0):                                                                         
         seconds = 0
 
     elif (percent == 1):
@@ -973,25 +974,23 @@ async def percentageShift(interaction: discord.Interaction, client: discord.Clie
     elif (percent == 99):
         seconds = (0.99 * currentSongObj.songTime)
     
-    elif (percent == 100):
+    elif (percent == 100):                                                                              # Skip song in 100 case
         voicechan.stop()
         await interaction.followup.send(f'100% Entered. Skipping song...')
 
     else:
-        await interaction.followup.send(f'Invalid Percentage Value entered!')
+        await interaction.followup.send(f'Invalid Percentage Value entered!')                           # Debug Interaction
 
 
     # =================================================================== # 
     seconds = int(seconds)
-    if currentSongUrl !='':                               # NOte: ADD condition for Song Obj existing here, else display error                          
+    if currentSongUrl !='':                                                                             # Song needs to exist before continuing             
         print("If condition met in Fast forward")
         if (seconds < currentSongObj.songTime):
-            #currentSongTime = ((time.time()) - currentSongTime) + seconds
             print("Before retrieving YouTube Object...")    
             print("Song Urls Before Appending")   
 
-            # current song url update        
-   
+            # Update Current Song URL        
             print(f'Updated var is {currentSongUrl}')          
             if (currentSongUrl.startswith('https://open.spotify.com/')) :                               # Check if Spotify Link
                 track_id = currentSongUrl.split('/')[-1]                                                # Strip '/' and strings after '?'
@@ -1017,12 +1016,11 @@ async def percentageShift(interaction: discord.Interaction, client: discord.Clie
                 print("Search...")
                 filename = await YouTube_linkobj.from_search(currentSongUrl, loop=client.loop, stream=True, start=seconds)
 
-            songList.appendleft(filename)
+            songList.appendleft(filename) 
             print("SONGLISTS after are")
             print(songList)
             voicechan.stop()
             print("Music stopped. New fast forward song added")
-            #currentSongTime = time.time()
             print("Time reset in Shift")
             await interaction.followup.send(f'Shifting Track to {percent}% of total runtime ({seconds} seconds)')
         
@@ -1037,17 +1035,22 @@ async def addPlaylist(interaction: discord.Interaction, client: discord.Client, 
     # Add check on next commit, need thorough testing
     await interaction.response.defer()
 
+    # Song needs to be playing before adding a song to playlist
     if (currentSongObj is not None):
 
-
-        if ((url.startswith('https://www.youtube.com/playlist'))):
+        # Begin Search here if a valid playlist link is given
+        # List returned to local list with song names in playlist
+        if ((url.startswith('https://www.youtube.com/playlist'))  or ('/sets/' in url)):
             locallist = await YouTube_linkobj.yt_playlist(url, loop=client.loop, stream=True, start=0)
 
+            # Debug
             print(locallist)
             print("Local list received. Iterating now")
+
+            # Call Upon youtube Link acquisition function for each item in the list
             for items in locallist:
                 playlistsong = await YouTube_linkobj.from_url(items.url, loop=client.loop, stream=True, start=0)
-                songList.append(playlistsong)
+                songList.append(playlistsong)                                # Append to main song List / queue
 
             await interaction.followup.send("Playlist added to queue")
         else:
@@ -1064,40 +1067,46 @@ async def aboutTheSong(interaction: discord.Interaction, client: discord.Client)
     if currentSongObj is None:
         await interaction.followup.send("Can't gather information from current song. No song is playing!")
 
+                                                                        # Song is playing, get interaction channel to send there
     else:
         logId = interaction.channel_id
         logChannel = client.get_channel(logId)
         titleToSearch = currentSongObj.title
 
+                                                                        # Begin Spotify Query, get Track title, artist, and album name
         searchResults = spotifyObj.search(q=titleToSearch, type="track")
         songTrack = searchResults["tracks"]["items"][0]["name"]
         songTrackArtist = searchResults["tracks"]["items"][0]["artists"][0]["name"]
         songAlbum = searchResults["tracks"]["items"][0]["album"]["name"]
 
+
         wikiInit = wikipediaapi.Wikipedia('en')
         albumPage = wikiInit.page(songTrack)
         #displayPage = albumPage.summary
         
+                                                                        # Set Flag, begin iterating categories in page
         found_link = False
         if albumPage.exists():
-            for cats in albumPage.categories:
+            for cats in albumPage.categories:                           # secondary check follows IF disambiguation page
                 if "disambiguation pages" in cats or "Disambiguation pages" in cats:
                     print("IN DISAMBIG PAGE\n")
                     links = albumPage.links
-                    for link in links:
+                    for link in links:                                  # Check if links in disambiguation page match artist title
                         if ("song" and songTrack.lower() and songTrackArtist.lower()) in link.lower():
                             print(link.lower())
                             print("HIT SONG")
                             albumPage = wikiInit.page(link)
                             print("HIT LINK")
-                            found_link = True
+                            found_link = True                           # If so, set flag and break
                             break
                 if found_link:
                     break
-            displayPage = albumPage.summary
+            displayPage = albumPage.summary                             # Update Wikipedia Page here if needed
         else:
             displayPage = "No Song Information found"
         
+        
+        # Begin sending Info here
         await interaction.followup.send("Information Found!")
         await logChannel.send(f"1. Track Name is {songTrack}")
         await logChannel.send(f"2. Artist Name is {songTrackArtist}")
@@ -1105,6 +1114,8 @@ async def aboutTheSong(interaction: discord.Interaction, client: discord.Client)
 
         if len(displayPage) < 2000:                                     # Due to discord limitations, need to print description 2000 at a time
             await logChannel.send(f'4. Description: {displayPage}')     # If less than 2000, send immediately
+        elif (displayPage == ""):
+            await logChannel.send(f'4. Description: None found from Genius')
         else:
             await logChannel.send(f'4. Description: ')
             newdisplay = ''                                             # Else, declare new variable to track 2000 chars at a time
@@ -1115,33 +1126,35 @@ async def aboutTheSong(interaction: discord.Interaction, client: discord.Client)
                 displayPage = displayPage[2000:]                        # YT description updated here          
             
             
-            await logChannel.send(displayPage)                              # Send remainder of description
+            await logChannel.send(displayPage)                          # Send remainder of description
 
 
 
 # About the Album
 async def aboutTheAlbum(interaction: discord.Interaction, client: discord.Client):
-    #spotifyobj
+    
     await interaction.response.defer()
     if currentSongObj is None:
         await interaction.followup.send("Can't gather information from current song. No song is playing!")
 
     else:
         logId = interaction.channel_id
-        logChannel = client.get_channel(logId)
-        #titleToSearch = currentSongObj.title
+        logChannel = client.get_channel(logId)                          # Send data to channel interaction was called from
         
+                                                                        # Search Spotify DB for track title and grab first
         songSearchFirst = spotifyObj.search(q=currentSongObj.title, type="track")
         songTrack = songSearchFirst["tracks"]["items"][0]
 
-        titleToSearch = songTrack["album"]["name"]
+                                                                        # Grab the first album name from search
+        titleToSearch = songTrack["album"]["name"]                  
 
-        searchResults = spotifyObj.search(q=titleToSearch, type="album")
+        searchResults = spotifyObj.search(q=titleToSearch, type="album")# Return Spotify search query to search Results
 
         if searchResults == {}:
             await interaction.followup.send("Error with Spotify Link Search: No Albums could be found")
             return
 
+                                                                        # acquire album name from searchResults spotify object and get album object
         albumSearch = searchResults["albums"]["items"][0]["external_urls"]["spotify"]
         albumDetails = spotifyObj.album(albumSearch)
 
@@ -1149,65 +1162,60 @@ async def aboutTheAlbum(interaction: discord.Interaction, client: discord.Client
             await interaction.followup.send("Error with Spotify Album Search: Album ID nonexistent")
             return
 
-        albumName = albumDetails["name"]
+        albumName = albumDetails["name"]    
         print(albumDetails)                     # Debug
 
+
+                                                                        # Begin wikipedia initialization, get page from name
         wikiInit = wikipediaapi.Wikipedia('en')
         albumPage = wikiInit.page(albumName)
         #displayPage = albumPage.summary
         
-        found_link = False
+        found_link = False                                              # Custom flag for exiting disambig. page
         if albumPage.exists():
-            for cats in albumPage.categories:
+            for cats in albumPage.categories:                           # Iterate categories in Wikipedia page, if dsiambig. search for title
                 if "disambiguation pages" in cats or "Disambiguation pages" in cats:
                     print("IN DISAMBIG PAGE\n")
                     links = albumPage.links
-                    for link in links:
+                    for link in links:                                  # In this field, if title is found, change wiki page to non disambig. page 
                         if "album" and albumDetails["artists"][0]["name"].lower() in link.lower():
                             print(link.lower())
                             print("HIT ALBUM")
                             albumPage = wikiInit.page(link)
                             print("HIT LINK")
-                            found_link = True
+                            found_link = True                           # Set flag and break
                             break
                 if found_link:
                     break
-            displayPage = albumPage.summary
+            displayPage = albumPage.summary                             # Wikipedia Page Changed here
         else:
             displayPage = "No Album Information found"
 
 
+        # Begin Sending info Here
         await interaction.followup.send("Information Found!")
         await logChannel.send(f'1. Album Name: {albumDetails["name"]}')
         await logChannel.send(f'2. Album Type: {albumDetails["album_type"]}')
 
-        
+        # If multiple artists, send multiple
         if len(albumDetails["artists"]) > 1:
             await logChannel.send(f'3. Album Artists:')
             for artists in albumDetails["artists"]:
-                await logChannel.send(f'\t{artists["name"]}')
+                await logChannel.send(f'    {artists["name"]}')
         else:
             await logChannel.send(f'3. Album Artist: {albumDetails["artists"][0]["name"]}')
         
 
-        if len(albumDetails["genres"]) > 1:
-            await logChannel.send(f'4. Album Genres:')
-            for genres in albumDetails["genres"]:
-                await logChannel.send(f'\t{genres}')
-        elif len(albumDetails["genres"]) == 1:
-            await logChannel.send(f'4. Album Genre: {albumDetails["genres"]}')
-        else:
-            await logChannel.send(f'4. No Album Genre found')
-
-        await logChannel.send(f'5. Release Date: {albumDetails["release_date"]}')
-        await logChannel.send(f'6. Number of Tracks: {albumDetails["total_tracks"]}')
-        await logChannel.send(f'7. Album Label: {albumDetails["label"]}')
-        await logChannel.send(f'8. Album Popularity: {albumDetails["popularity"]}')
+        # Send rest of info
+        await logChannel.send(f'4. Release Date: {albumDetails["release_date"]}')
+        await logChannel.send(f'5. Number of Tracks: {albumDetails["total_tracks"]}')
+        await logChannel.send(f'6. Album Label: {albumDetails["label"]}')
+        await logChannel.send(f'7. Album Popularity: {albumDetails["popularity"]}')
 
         if len(displayPage) < 2000:                                     # Due to discord limitations, need to print description 2000 at a time
-            await logChannel.send(f'9. Description: {displayPage}')     # If less than 2000, send immediately
+            await logChannel.send(f'8. Description: {displayPage}')     # If less than 2000, send immediately
         else:
-            await logChannel.send(f'9. Description: ')
+            await logChannel.send(f'8. Description: ')
             newdisplay = ''                                             # Else, declare new variable to track 2000 chars at a time
             while len(displayPage) > 2000:                              # Iterate 2000 at a time 
                     
@@ -1216,67 +1224,144 @@ async def aboutTheAlbum(interaction: discord.Interaction, client: discord.Client
                 displayPage = displayPage[2000:]                        # YT description updated here          
             
             
-            await logChannel.send(displayPage)                              # Send remainder of description
+            await logChannel.send(displayPage)                          # Send remainder of description
 
 
 
-        #print(displayPage)
 
 async def aboutTheArtist(interaction: discord.Interaction, client: discord.Client):
-    #spotifyobj
+                                                                        # Song object Needs to exist before continuing
     await interaction.response.defer()
-    if currentSongObj is None:
+    if currentSongObj is None:                              
         await interaction.followup.send("Can't gather information from current song. No song is playing!")
 
     else:
         logId = interaction.channel_id
         logChannel = client.get_channel(logId)
         initTitle = currentSongObj.title
-        Title2 = initTitle.split(" - ")[0]
-
-        if '"' in Title2:
+        Title2 = initTitle.split(" - ")[0]                              # Split on - Separator (vast majority of youtube Videos)
+        
+                                                                        # Split on Quotes 
+        if '"' in Title2:                                               
             Title2 = Title2.replace('"', '')
 
+                                                                        # Search Spotify Artist field for New title
         titleToSearch = Title2
         searchResults = spotifyObj.search(q=titleToSearch, type="artist")
 
+                                                                        # Case for no artist , Stop program execution
         if searchResults == {}:
             await interaction.followup.send("Error with Spotify Link Search: No Artists could be found")
             return
 
+                                                                        # Acquire first Artist name from spotify Search
         artistSearch = searchResults["artists"]["items"][0]["external_urls"]["spotify"]
-        artistDetails = spotifyObj.artist(artistSearch)
+        artistDetails = spotifyObj.artist(artistSearch)                 # Return Artist object given name from spotify
 
-        if "error" in artistDetails:
+                                                                        # Artist search failed here , stop program execution
+        if "error" in artistDetails:                                    
             await interaction.followup.send("Error with Spotify Artist Search: Artist ID nonexistent")
             return
 
+                                                                        # Acquire Artist name from Artist details field
         artistName = artistDetails["name"]
-        print(artistDetails)                     # Debug
+        print(artistDetails)                                            # Debug
 
-        wikiInit = wikipediaapi.Wikipedia('en')
-        artistPage = wikiInit.page(artistName)
+        wikiInit = wikipediaapi.Wikipedia('en')                         # Search Wiki in English language for Artist Description
+        
+        artistTypeFlag = ""
+        artistGenres = artistDetails["genres"]
 
-        displayPage = artistPage.summary
+        if len(artistGenres)> 0:                                       # Check for artist genre and add appropriate identifier for searching Wiki
+            if any("rock" in genre.lower() or "metal" in genre.lower() for genre in artistGenres):
+                artistTypeFlag = " (band)"
+            elif any("gangsta rap" in genre.lower() or "hip hop" in genre.lower() for genre in artistGenres):
+                artistTypeFlag = " (rapper)"
 
+        if len(artistName.split()) > 1:                                # If one word, ignore. query is specific enough
+            pass
+        else:                                                          # Query is not specific enough, capitalize and add flag for search
+            artistName = artistName.title()
+            artistName = artistName + artistTypeFlag
+        
+        print(artistName)                              # Debug
+        artistPage = wikiInit.page(artistName)         # Get first page given artist name 
+        displayPage = artistPage.summary                                # Get wikipedia Summary From page
+        print("Display Page:" + displayPage)                                              # Debug
+
+        # Begin Sends here
         await interaction.followup.send("Information Found!")
         await logChannel.send(f'1. Artist Name: {artistDetails["name"]}')
         await logChannel.send(f'2. Artist Popularity: {artistDetails["popularity"]}')
         await logChannel.send(f'3. Artist Followers: {artistDetails["followers"]["total"]}')
 
-        if len(displayPage) < 2000:                                            # Due to discord limitations, need to print description 2000 at a time
-            await logChannel.send(f'4. Artist Description: {displayPage}')     # If less than 2000, send immediately
+        # If multiple Genres, Send multiple
+        if len(artistDetails["genres"]) > 1:
+            await logChannel.send(f'4. Artist Genres:')
+            for genres in artistDetails["genres"]:
+                await logChannel.send(f'    {genres}')
+        elif len(artistDetails["genres"]) == 1:
+            await logChannel.send(f'4. Artist Genre: {artistDetails["genres"]}')
         else:
-            await logChannel.send(f'4. Artist Description: ')
+            await logChannel.send(f'4. No Album Genre found')
+
+        if len(displayPage) < 2000:                                            # Due to discord limitations, need to print description 2000 at a time
+            await logChannel.send(f'5. Artist Description: {displayPage}')     # If less than 2000, send immediately
+        else:
+            await logChannel.send(f'5. Artist Description: ')
             newdisplay = ''                                                    # Else, declare new variable to track 2000 chars at a time
             while len(displayPage) > 2000:                                     # Iterate 2000 at a time 
                     
                 newdisplay = displayPage[:2000]                                # string slicing to grab 2000 and send
                 await logChannel.send(newdisplay)
-                displayPage = displayPage[2000:]                               # YT description updated here          
+                displayPage = displayPage[2000:]                               # Wiki Description Updated here          
             
             
             await logChannel.send(displayPage)                                 # Send remainder of description
+
+# Music Help Command function, displays all relevant functions for the music portion of the bot
+async def musichelp(interaction: discord.Interaction):
+    await interaction.response.defer()
+    await interaction.followup.send("**Music Help Master Sheet**\n")
+    await interaction.followup.send(musicString)
+
+# Adds a song to the front of the queue
+async def addNext(interaction: discord.Interaction, client: discord.Client, url:str):
+    await interaction.response.defer()
+    global currentSongObj
+    if currentSongObj != None and currentSongUrl!= '':
+        print("Beginning of addNext")
+        if (url.startswith('https://open.spotify.com/')) :                               # Check if Spotify Link
+                    track_id = url.split('/')[-1]                                                # Strip '/' and strings after '?'
+                    head, sep, tail = track_id.partition('?')                                               # So we only have Spotify Song ID
+                    track_id = head                                                                         # contained in "head" variable
+                    
+                    track_info = spotifyObj.track(track_id)                                                 # acquire track info given ID
+                    track_name = track_info['name']                                                         # Acquire track name, parse for artist names
+                    track_artists = [artist['name'] for artist in track_info['artists']]                    # In the event of multiple artists
+                    artistsList = ' '.join(track_artists)
+                    final = track_name + " by " + artistsList                                               # Join Title and Artists and perform YT search query
+                    filename = await YouTube_linkobj.from_search(final, loop=client.loop, stream=True, start=0)
+
+                                                                                                            # Check if YouTube or Soundcloud Link
+                                                                                                            # Note: YouTube_linkobj shares functionality
+                                                                                                            #       with both YouTube and SoundCloud links
+                                                                                                            #       So we can share logic here 
+        elif ((url.startswith('https://www.youtube.com/')) or url.startswith('https://soundcloud.com/') ):   
+                    print("Link...")
+                    filename = await YouTube_linkobj.from_url(url, loop=client.loop, stream=True, start=0)
+                
+        else:                                                                                       # Else, perform General Search Query (YouTube)
+                    print("Search...")
+                    filename = await YouTube_linkobj.from_search(url, loop=client.loop, stream=True, start=0)
+            
+        songList.appendleft(filename)                                                               # Append new YouTube obj to top of the list
+        print("Playnext: Song Appended")
+        await interaction.followup.send(f'{filename.title} queued to play next ')
+    
+    else:
+        await interaction.followup.send(' No song is currently playing. No queue to add song to! ')
+
 
 
 # ============================================================================================================
