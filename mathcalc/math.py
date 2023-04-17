@@ -2,6 +2,36 @@ import os
 import math
 import random
 
+
+#A simplified version for the command discription
+def simplehelp():
+    message = """
+    algebra : can do slope, simplify, and quadratic
+    
+    circle : does circle operations
+    
+    differentiate : does simple differentiation
+    
+    equation : does simple math equations
+    
+    fraction : does operations of fractions
+    
+    integrate : does simple integration
+    
+    polynomialtwo : solves two variables from two equations
+    
+    pythagorean : works with the Pythagorean Theorem
+    
+    rectangle : does operations with rectangles
+    
+    tempconversion : Converts temperature between Celsius, Kelvin, and Fahrenheit
+    
+    triangle : Does operations with triangles
+    """
+    return message
+
+
+#Page 1 of the detailed command description
 def message1():
     message = """
         Use the following commands correctly as specified below:
@@ -31,6 +61,7 @@ def message1():
     return message
 
 
+#Page 2 of the detailed command description
 def message2():
     message = """
         equation : take in one command: simple. Simple is a string of the equation that is passed in by the user.
@@ -47,10 +78,20 @@ def message2():
         
         polynomialtwo : takes in two commands: equation1 and equation2 are both equation that have two variables 'x' and 'y'
         Enter the equations in the following form 'ax + by = c' and Ex. '- 12x + 13y = -35'.
+        
+        tempconversion : takes in three commands: temperature, current, conversion. Temperature is the value of the current temperature. Current is what temperature to use.
+        Conversion is what temperature that you want to convert to. Use 'K' for Kelvin, 'C' for Celsius, 'F' for Fahrenheit.
+        
+        integrate : take in three commands: equation, low, high. Equation is the equatio that you want to integrate. Low is the lower bound if you want to use it.
+        High is the higher bound. Use 'x' if you do not want to use bounds. Enter equation as such "12x^2 - 13x - 14"
+        
+        differentiate : take in one comman: equation. This command, uses simple differentiation on the equation.
+        Enter the equation as usually. Ex "12x^2 - 13x - 14"
         """
     return message
 
 
+#Converts between different temperatures
 def temperature(temp, curr, convert):
     if curr == 'K' and convert == 'C':
         temp = temp - 273.15
@@ -72,6 +113,7 @@ def temperature(temp, curr, convert):
         return temp
 
 
+#Finds the area of a rectangle
 def areaRectangle(side1, side2):
     side1 = float(side1)
     side2 = float(side2)
@@ -79,6 +121,7 @@ def areaRectangle(side1, side2):
     return float(result)
 
 
+#Finds the perimeter of a rectangle
 def perimeterRectangle(side1, side2):
     side1 = float(side1)
     side2 = float(side2)
@@ -86,6 +129,7 @@ def perimeterRectangle(side1, side2):
     return float(result)
 
 
+#Finds the area of a triangle
 def areaTriangle(base, height):
     base = float(base)
     height = float(height)
@@ -93,18 +137,21 @@ def areaTriangle(base, height):
     return float(result)
 
 
+#Finds the area of a circle
 def areaCircle(radius):
     radius = float(radius)
     result = math.pi * (radius ** 2)
     return float(result)
 
 
+#Finds the circumference of a circle
 def circumferenceCircle(radius):
     radius = float(radius)
     result = 2 * math.pi * radius
     return float(result)
 
 
+#Checks if the entered triangle is a valid right triangle through using Pythagorean Theorem
 def pythagoreanCheck(a, b, c):
     c = float(c)
     result = pythagoreanHypotenuse(a, b)
@@ -114,11 +161,13 @@ def pythagoreanCheck(a, b, c):
         return "The triangle entered is an invalid right triangle"
 
 
+#Computes the missing side of the right triangle
 def pythagoreanSide(a, b):
     c = ( (float(b) * float(b)) - (float(a) * float(a)) ) ** 0.5
     return c
 
 
+#Computes the hypotenuse of the right triangle
 def pythagoreanHypotenuse(a, b):
     c = ( (float(a) * float(a)) + (float(b) * float(b)) ) ** 0.5
     return c
@@ -141,7 +190,8 @@ def parseFraction(fraction):
         count += 1
     return(int(num), int(denom))
     
-       
+
+#Simplifies the fraction to its simplified form       
 def simplifyFraction(fraction):
     (a, b) = parseFraction(fraction)
     num = a
@@ -159,6 +209,7 @@ def simplifyFraction(fraction):
     return simplified  
 
 
+#Greatest common denominator of two fractions
 def gcd(fraction1, fraction2):
     (a, b) = parseFraction(fraction1)
     (c, d) = parseFraction(fraction2)
@@ -176,12 +227,14 @@ def lcd(fraction1, fraction2):
     return int(least)
 
 
+#Greatest common factor with just values
 def gcd_values(value1, value2):
     while value2 != 0:
         value1, value2 = value2, value1 % value2
     return int(value1) 
 
 
+#least common multiple with just values
 def lcd_values(value1, value2):
     greatest = gcd_values(value1, value2)
     least = (value1 * value2) / greatest
@@ -215,7 +268,8 @@ def addFraction(fraction1, fraction2):
         
     return addedFunction
      
-    
+
+#subtracts fractions    
 def subtractFraction(fraction1, fraction2):
     (num1, denom1) = parseFraction(fraction1)
     (num2, denom2) = parseFraction(fraction2)
@@ -242,6 +296,7 @@ def subtractFraction(fraction1, fraction2):
     return subtractedFunc
 
 
+#multiplies fractions
 def multiplyFraction(fraction1, fraction2):
     (num1, denom1) = parseFraction(fraction1)
     (num2, denom2) = parseFraction(fraction2)
@@ -255,6 +310,7 @@ def multiplyFraction(fraction1, fraction2):
     return multiplied
     
     
+#divides fractions    
 def divideFraction(fraction1, fraction2):
     (num1, denom1) = parseFraction(fraction1)
     (num2, denom2) = parseFraction(fraction2)
@@ -267,7 +323,8 @@ def divideFraction(fraction1, fraction2):
     divided = simplifyFraction(divided)
     return divided
 
-    
+
+#takes in the equation and uses quadratic formula to find the x-intercept    
 def quadratic(equation):
     count = 0
     a = 0
@@ -308,6 +365,7 @@ def quadratic(equation):
 #(digit, varaible, degree, side)
 # Simplifies the list of tuples algebra equation as much as it can
 
+#simplifies tuples that are the same
 def simplifyTuples(equation, first, second):
     print("First :", first, "Second :", second)
     copy = equation
@@ -404,6 +462,7 @@ def simplifyTuples(equation, first, second):
         return equation
                  
 
+#calls the make simplify function, which breaks and sees which tuples are the same
 def algebraSimplify(equation):
     print("AlgrebraSimplify: ", equation)
     count = 0
@@ -444,6 +503,7 @@ def algebraSimplify(equation):
     return turnBackToString(equation)
 
 
+#Turns the list of tuples back to a single string
 def turnBackToString(equation):
     print("This is the turnBackToString function", equation)
     stringEquation = ""
@@ -475,6 +535,7 @@ def turnBackToString(equation):
     return(stringEquation)
    
     
+#multiplies the polynomials    
 def multiplyPoly(x, y, number, multiple):
     x *= multiple
     y *= multiple
@@ -482,6 +543,7 @@ def multiplyPoly(x, y, number, multiple):
     return x, y, number
 
 
+#subtracts polynomials
 def subtractPoly(x_eq1, x_eq2, y_eq1, y_eq2, number_eq1, number_eq2):
     x_result = x_eq1 - x_eq2
     y_result = y_eq1 - y_eq2
@@ -489,7 +551,8 @@ def subtractPoly(x_eq1, x_eq2, y_eq1, y_eq2, number_eq1, number_eq2):
     print(x_result, y_result, number_result)
     return x_result, y_result, number_result
  
-    
+
+#adds polynomials    
 def addPoly(x_eq1, x_eq2, y_eq1, y_eq2, number_eq1, number_eq2):
     x_result = x_eq1 + x_eq2
     y_result = y_eq1 + y_eq2
@@ -497,7 +560,8 @@ def addPoly(x_eq1, x_eq2, y_eq1, y_eq2, number_eq1, number_eq2):
     print(x_result, y_result, number_result)
     return x_result, y_result, number_result        
 
-    
+
+#This is the main polynomial funciton where it work with two equations and simplifies it    
 def polynomialTwo(equation1, equation2):
     print(equation1)
     print(equation2)
@@ -598,12 +662,14 @@ def makeTuples(element, side):
         digit = "1"
     return (digit, variable, degree, side)
     
-            
+
+#Simple check function that checks whether is a valid operator            
 def isOperator(operator):
     if operator == '+' or operator == '-' or operator == '*' or operator == '/' or operator == '^' or operator == '(' or operator == ')':
         return True  
 
 
+#Contains the who list of tuples and calls to make tuples
 def tupleList(equation):
     print("tupleList :", equation)
     count = 0
@@ -633,7 +699,8 @@ def tupleList(equation):
         count += 1
     return newList
         
-        
+
+#chekcs whether valid equation        
 def simpleCheck(equation):
     length = len(equation)
     count = 0
@@ -654,6 +721,7 @@ def simpleCheck(equation):
     return True
 
 
+#slope intercept form equation
 def slope(equation, answer):
     newList = tupleList(equation)
     #algebraSimplify(newList)
@@ -675,6 +743,7 @@ def slope(equation, answer):
     return(slope, intercept)
 
 
+#main function for the paranthesis, recursive
 def checker(equation):
     while '(' in equation:
         #print(equation)
@@ -717,6 +786,7 @@ def checker(equation):
     return equation[0]
 
 
+# does the exponent part of the order of operations
 def exponent(equation):         
     count = 1
     while count < len(equation):
@@ -729,6 +799,7 @@ def exponent(equation):
     return equation
 
 
+#does the multiplication and division of the order of operations
 def multdiv(equation):
     count = 1
     while count < len(equation):
@@ -748,14 +819,17 @@ def multdiv(equation):
     return equation
 
 
+#multiplies two values
 def multiply(first, second):
     return float(first) * float(second)
 
 
+#divides two values
 def divide(first, second):
     return float(first) / float(second)
 
 
+#Does the addition of the order of operations
 def add(equation):
     count = 1
     while count < len(equation):
@@ -769,6 +843,7 @@ def add(equation):
     return equation
 
 
+#does the subtraction of the order of operations
 def subtract(equation):
     count = 1
     while count < len(equation):
@@ -782,8 +857,8 @@ def subtract(equation):
         count+=1
     return equation
 
-#helpuse function
 
+#Does the calculation of the already integrate equation
 def calculateIntegral(equation, bound):
     count = 0
     count = 0
@@ -822,6 +897,7 @@ def calculateIntegral(equation, bound):
     return result
              
 
+#Does teh integrate itself, returns if no bounds, if there is, calls the funciton to calculate each of the bounds
 def integrate(equation, low, high):
     #print(equation, low, high)
     count = 0
@@ -860,6 +936,7 @@ def integrate(equation, low, high):
         return str(highvalue - lowvalue)
     
 
+#does the simple differentiation
 def differentiate(equation):
     count = 0
     while count < len(equation):

@@ -240,6 +240,13 @@ async def shutdown(interaction: discord.Interaction):
 #   ===================================================
 
 
+#This command does the simple description of the math commands
+@tree.command(name = "simplemathhelp", description="Simplified version of instructions")
+async def simplemathhelp(interaction: discord.Interaction):
+    await interaction.response.send_message(calc.simplehelp())
+
+
+#This convert from one temperature to another : K, F, C
 @tree.command(name = "tempconversion", description="Convert between Kelvin, Celsius, and Fahrenheit")
 @app_commands.describe(temperature = "Enter the temperture.", current = "Select K, C, F to specify current", convert = "Select K, C, F to what to convert")
 async def tempconversion(interaction: discord.Interaction, temperature: float, current: str, convert: str):
@@ -252,6 +259,7 @@ async def tempconversion(interaction: discord.Interaction, temperature: float, c
     await interaction.response.send_message(str(temperature) + ' ' + current + " is equal to " + str(calc.temperature(temperature, current, convert)) + " " + convert)
 
 
+#Calls the simple integration functions
 @tree.command(name = "integrate", description="This function performs basic integration")
 @app_commands.describe(equation = "The equation that will be operated", low = "The lower bound, leave 'x' if not using", high = "The high bound, leave 'x' if not using")
 async def integrate(interaction: discord.Interaction, equation: str, low: str, high: str):
@@ -261,14 +269,18 @@ async def integrate(interaction: discord.Interaction, equation: str, low: str, h
         await interaction.response.send_message("The bounds are not correct.")
     
     await interaction.response.send_message("The result for the integration is " + calc.integrate(equation, low, high))
-    
+  
+  
+#Calls the simple differentiation functions    
 @tree.command(name = "differentiate", description="Enter a equation to differentiate on 'x'")
 @app_commands.describe(equation = "The equation that you want to differentiate")
 async def differentiate(interaction: discord.Interaction, equation: str):
     equation = calc.tupleList(equation.split(" "))
     await interaction.response.send_message("After differentiation : " + calc.differentiate(equation))
 
+
 # This command is for the pythagorean theorem operations
+#Can check whether valid right triangle and calculate missing sides
 @tree.command(name = "pythagorean", description = "This function performs the Pythagorean Theorem. Mark 'x' for the side that is not known.")
 @app_commands.describe(a = "One of the side lengths", b = "Another side length", c = "Hypotenuse")
 async def pythagorean(interaction: discord.Interaction, a: str, b: str, c: str):
@@ -282,6 +294,7 @@ async def pythagorean(interaction: discord.Interaction, a: str, b: str, c: str):
         await interaction.response.send_message(calc.pythagoreanCheck(a, b, c))
 
 
+#More detailed description of the math commands
 @tree.command(name = "mathhelp", description= "Help message how to use the math funcitons")
 @app_commands.describe(number = "Enter 1 or 2 to see the pages to see how to use the math funcitons.")
 async def mathhelp(interaction: discord.Interaction, number: str):
@@ -295,6 +308,7 @@ async def mathhelp(interaction: discord.Interaction, number: str):
     await interaction.response.send_message(message)
 
 
+#Does the rectangle operations and calls their functions
 @tree.command(name = "rectangle", description="Use to calculate area or perimeter of a rectangle")
 @app_commands.describe(side1 = "Enter one of the sides", side2 = "Enter another side", operation="Enter : 'perimeter' or 'area'")
 async def circle(interaction: discord.Interaction, side1: str, side2: str, operation: str):
@@ -306,6 +320,7 @@ async def circle(interaction: discord.Interaction, side1: str, side2: str, opera
         await interaction.response.send_message("Operation entered does not exist.\nTry again.")
 
 
+#Does the circle operations and calls their functions
 @tree.command(name = "circle", description="Use to calculate area or circumfrance of a circle")
 @app_commands.describe(radius = "Enter the redius length", operation="Enter : 'circumference' or 'area'")
 async def circle(interaction: discord.Interaction, radius: str, operation: str):
@@ -317,6 +332,7 @@ async def circle(interaction: discord.Interaction, radius: str, operation: str):
         await interaction.response.send_message("Operation entered does not exist.\nTry again.")
 
 
+#Does the other triangle operations, area.
 @tree.command(name = "triangle", description="Use to calculate area of a triangle")
 @app_commands.describe(base = "Enter the base length", height = "Enter the height length", operation = "Enter : 'area'")
 async def triangle(interaction: discord.Interaction, base: str, height: str, operation: str):
@@ -348,6 +364,7 @@ async def fraction(interaction: discord.Interaction, fraction1: str, fraction2: 
         await interaction.response.send_message("Operation that was entered is not recognized. Try again.")
 
 
+#takes in two polynomials, each having two variable. and returns the calculated values of the variables that will make the equations equal
 @tree.command(name = "polynomialtwo", description="Enter two equations with each having two variables: x and y")
 @app_commands.describe(equation1 = "Enter the first equation", equation2 = "Enter in the second equation")
 async def polynomialtwo(interaction: discord.Interaction, equation1: str, equation2: str):
@@ -359,7 +376,7 @@ async def polynomialtwo(interaction: discord.Interaction, equation1: str, equati
     await interaction.response.send_message("X = " + str(x) + "\nY = " + str(y))
 
 
- # calculate simple equation
+ # calculate simple equation using proper order of operations
 @tree.command(name = "equation", description = "Simple equation")
 @app_commands.describe(simple = "Please enter a simple equation with each spaces in between")
 async def equation(interaction: discord.Interaction, simple: str):
@@ -374,6 +391,9 @@ async def equation(interaction: discord.Interaction, simple: str):
        
         
  # calculate algebra equation, needs specification of what to do
+ #slope - slope- intercept form
+ #simplify - simplifies the algebra equation to its simplest form
+ #quadratic - finds the x - intercepts using teh quadratic formula
 @tree.command(name = "algebra", description = "Algebra calculator with several options")
 @app_commands.describe(equation = "Please enter an algebra equation with spaces in between", answer = "Enter the following: (slope) - slope intercept form, (simplify) - simplify the equation, (quadratic) - quadratic formula")
 async def algebra(interaction: discord.Interaction, equation: str, answer: str):
@@ -395,9 +415,7 @@ async def algebra(interaction: discord.Interaction, equation: str, answer: str):
         print(result)
         (x1, x2) = calc.quadratic(result)
         await interaction.response.send_message("The x-intercepts are : " + str(x1) + " and " + str(x2))
-    #result = (calc.algebra(equation, answer))
-    #slope = result[0]
-    #intercept = result[1]
+
 
 
 # HELP COMMAND MASTER FUNCTION , PUT ALL COMMAND SPECS HERE
