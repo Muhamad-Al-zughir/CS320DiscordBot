@@ -903,7 +903,8 @@ async def rp_update_roles_function(interaction: discord.Interaction, client):
                 await tempMember.remove_roles(role2)
                 await tempMember.remove_roles(role3)
         
-    await interaction.response.send_message("UPDATED ROLES")
+    # await interaction.response.send_message("UPDATED ROLES")
+    await interaction.followup.send("UPDATED ROLES")
 #   ========================================================
 
 #   try to add to allplayerslist 
@@ -1207,10 +1208,9 @@ async def clearDaily_rpg(interaction: discord.Interaction, client: discord.Clien
 
 #   initializing scheduler
     scheduler =  AsyncIOScheduler()# comes from apscheduler 
-
-#   schedular add job(function, args, trigger setting, minute, hour) example for (minute '*/1' and hours '*')
+#     val = "*" triggers on every val
     # scheduler.add_job(wrapperForDaily,args=[client, interaction],trigger='cron', minute=00, hour=00) # So add interaction arg and see changes to wrapper
-    scheduler.add_job(wrapperForDaily,args=[client],trigger='cron', minute=00, hour=00) 
+    scheduler.add_job(wrapperForDaily,args=[client],trigger='cron', minute=00,hour=00)
     
 #   run scheduler
     scheduler.start()

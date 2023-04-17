@@ -22,7 +22,6 @@ from spotipy.oauth2 import SpotifyClientCredentials
 
 # Loads all the content in the .env folder
 load_dotenv() 
-TOKEN = os.getenv('DISCORD_API')
 
 # Member list of people in channel to be streamed to (used later)
 streaming_members = {}
@@ -138,7 +137,6 @@ async def clear(interaction: discord.Interaction):
     await interaction.response.defer()
     server = interaction.guild
     voice_channel = server.voice_client
-
     if voice_channel is None:
         await interaction.followup.send(f'There is no music to clear!')
     else:
