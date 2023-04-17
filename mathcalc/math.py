@@ -51,6 +51,27 @@ def message2():
     return message
 
 
+def temperature(temp, curr, convert):
+    if curr == 'K' and convert == 'C':
+        temp = temp - 273.15
+        return temp
+    elif curr == 'K' and convert == 'F':
+        temp = (temp - 273.15) * 1.8 + 32
+        return temp
+    elif curr == 'C' and convert == 'K':
+        temp = temp + 273.15
+        return temp
+    elif curr == 'C' and convert == 'F':
+        temp = temp * 1.8 + 32
+        return temp
+    elif curr == 'F' and convert == 'C':
+        temp = (temp - 32) / 1.8
+        return temp
+    elif curr == 'F' and convert == 'K':
+        temp = (temp - 32) / 1.8 + 273.15
+        return temp
+
+
 def areaRectangle(side1, side2):
     side1 = float(side1)
     side2 = float(side2)
@@ -799,9 +820,7 @@ def calculateIntegral(equation, bound):
         count += 1
     print(result)
     return result
-            
-            
-    
+             
 
 def integrate(equation, low, high):
     #print(equation, low, high)
@@ -839,3 +858,37 @@ def integrate(equation, low, high):
         
         print(lowvalue, highvalue, highvalue - lowvalue)
         return str(highvalue - lowvalue)
+    
+
+def differentiate(equation):
+    count = 0
+    while count < len(equation):
+        if type(equation[count]) is tuple:
+            digit = float(equation[count][0])
+            variable = equation[count][1]
+            degree = equation[count][2]
+            if degree == None and variable == None:
+                digit = 0
+                if count == 0:
+                    equation.pop(count)
+                    count -= 1
+                else:
+                    equation.pop(count - 1)
+                    equation.pop(count - 1)
+                    count -= 2
+                #newTuple = (str(digit), variable, degree, equation[count][3])
+            elif degree == None:
+                variable = None
+                newTuple = (str(digit), variable, degree, equation[count][3])
+                equation[count] = newTuple
+            elif degree == '2':
+                degree = None
+                newTuple = (str(float(digit) * 2), variable, degree, equation[count][3])
+                equation[count] = newTuple
+            else:
+                newTuple = (str(float(digit) * float(degree)), variable, str(float(degree) - 1), equation[count][3])
+                equation[count] = newTuple
+            #equation[count] = newTuple
+        count += 1
+    print(equation)
+    return turnBackToString(equation)
