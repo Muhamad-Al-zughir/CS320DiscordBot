@@ -27,28 +27,6 @@ tree = app_commands.CommandTree(client)
 load_dotenv() # loads all the content in the .env folder
 TOKEN = os.getenv('DISCORD_API')
 
-# HELP COMMAND STRINGS
-# MUSIC
-
-musicString1 = "```**Music**\nmove: Moves a bot to a voice channel if you are already located in one"
-musicString2 = "\nplay: Plays from a YouTube, Soundcloud, Or Spotify Link, or a general search query"
-musicString3 = "\nclear: clears all songs from queue and leaves voice channel"
-musicString4 = "\npause-unpause: pauses song if currently playing, unpauses if paused already"
-musicString5 = "\nskip: skips currently playing song"
-musicString6 = "\nqueue: Displays currently queued songs in order"
-musicString7 = "\nshuffle: Shuffles current queue of music into random order"
-musicString8 = "\nshiftsong: Shifts song to set time in track"
-musicString9 = "\nencore: Repeats currently playing song"
-musicString10 ="\nswap: swaps two indexes of a queue"
-musicString11 ="\ndisplayInfo: displays YouTube Info of currently playing song"
-musicString12 ="\ndisplayLyrics: displays Lyrics of currently playing song if available"
-musicString13 ="\nshiftsong_percent: Shifts song to a set percentage in track"
-musicString14 ="\naddplaylist: adds YouTube playlist to queue ONLY if there is a currently playing song"
-musicString15 ="\naboutthealbum: displays information about the album if the track belongs to one"
-musicString16 ="\nabouttheartist: displays information about the artist if it can be found (Wikipedia)"
-musicString17 ="\naboutthesong: displays information about the song if there is information on it (Wikipedia)```"
-musicString = musicString1 + musicString2 + musicString3 + musicString4 + musicString5 + musicString6 + musicString7 + musicString8 + musicString9 + musicString10 + musicString11 + musicString12 + musicString13 + musicString14 + musicString15 + musicString16 + musicString17
-
 
 # Implement all the slash commands here, write down whos is which.
 @tree.command(name = "libgen", description = "Search for books")
@@ -229,6 +207,19 @@ async def aboutTheSong(interaction: discord.Interaction):
     await mzb.aboutTheSong(interaction,client)
  #  ==================================================
 
+ # Music Help Command Function
+@tree.command(name = 'musichelp', description = 'display information on commands')
+async def musichelp(interaction: discord.Interaction):
+    await mzb.musichelp(interaction)
+#  ==================================================
+
+ # Add Next function for muisc
+@tree.command(name = 'addnext', description = 'add a song to the front of the queue')
+async def addnext(interaction: discord.Interaction, url:str):
+    await mzb.addNext(interaction, client, url)
+#  ==================================================
+
+
 #   dropdown menu for character selection
 @tree.command(name = "rp_store", description = "store for rp game")
 async def rp_store(interaction: discord.Interaction):
@@ -300,16 +291,6 @@ async def algebra(interaction: discord.Interaction, equation: str, answer: str):
     intercept = result[1]
     await interaction.response.send_message("The slope of the equation is " + str(slope) + ".\nThe y-intercept of the equation is " + str(intercept))
 
-
-# HELP COMMAND MASTER FUNCTION , PUT ALL COMMAND SPECS HERE
-@tree.command(name = 'help', description = 'display information on commands')
-async def help(interaction: discord.Interaction):
-    await interaction.response.defer()
-
-    await interaction.followup.send("**Discord Bot 320 Master Command Sheet**\n")
-
-    await interaction.followup.send(musicString)
-#  ==================================================
 
 # client event to take place whenever the client joins a server.
 # it will create a new json file in the scheduler directory to store the data associated with this newly joined guild
