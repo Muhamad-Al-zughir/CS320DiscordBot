@@ -4,6 +4,7 @@
 
 # Imports
 import closedai.ai as ai
+import discord
 
 # Basic image generation function, takes in a prompt, as well as a number of results
 # Returns an array of urls to the generated images
@@ -90,7 +91,28 @@ async def sendResponses(interaction, completion, settings):
     compStr = '**Completion(s)**\n'
     comp = genCompletionsStr(completion['completions'])
     compStr += comp
-    await  interaction.followup.send(compStr)
+
+    # Attempt to send the completion string to the discord
+    try:
+        await interaction.followup.send(compStr)
+    except: # IF IT FAILS, create an output md file, then send that instead.
+        genOutFile(compStr) # Create/overwrite the file
+        await interaction.followup.send( # Send the response, with an output file instead of the normal response
+            content="**Response over 2k characters, creating output file**",
+            file=discord.File('output.md'),
+        )
+
+
+# For when the response from gpt is over 2k characters, we will need to send a file instead.
+# File should be a .md file so the markdown is respected.
+def genOutFile(str):
+    # Create a file
+    f = open('output.md', 'w') # Should empty the file
+    # Write the output string to the file
+    f.write(str)
+    # Close the file
+    f.close()
+
 
 # Takes in the settings and completion response, and does some work to make a little string
 # for the discord to get
