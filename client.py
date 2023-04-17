@@ -2,7 +2,6 @@
 # Started 1/18/2023
 
 import os
-import sys
 import discord
 from discord import app_commands
 from dotenv import load_dotenv
@@ -11,7 +10,7 @@ import json
 # Add your imports below here, if in a folder, use a dot instead of a slash
 import botgame.game as botgame
 import libgen.lib_handler as lb
-import basic.methods as bm # basic methods contains functions that we will use a lot.
+import closedai.ai_handler as aih
 import scheduler.schedule as schedule
 import music.muzique as mzb
 import mathcalc.math as calc
@@ -27,9 +26,7 @@ tree = app_commands.CommandTree(client)
 load_dotenv() # loads all the content in the .env folder
 TOKEN = os.getenv('DISCORD_API')
 
-# HELP COMMAND STRINGS
-# MUSIC
-
+# Global variables to be used by commands.
 musicString1 = "```**Music**\nmove: Moves a bot to a voice channel if you are already located in one"
 musicString2 = "\nplay: Plays from a YouTube, Soundcloud, Or Spotify Link, or a general search query"
 musicString3 = "\nclear: clears all songs from queue and leaves voice channel"
@@ -49,12 +46,93 @@ musicString16 ="\nabouttheartist: displays information about the artist if it ca
 musicString17 ="\naboutthesong: displays information about the song if there is information on it (Wikipedia)```"
 musicString = musicString1 + musicString2 + musicString3 + musicString4 + musicString5 + musicString6 + musicString7 + musicString8 + musicString9 + musicString10 + musicString11 + musicString12 + musicString13 + musicString14 + musicString15 + musicString16 + musicString17
 
+# Openai variables
+caiSettings = {
+    'temp': 0.6,
+    'results': 1,
+    'maxTokens': 1000,
+}
+messages = [] # Array of the conversation with closedai
 
 # Implement all the slash commands here, write down whos is which.
 @tree.command(name = "libgen", description = "Search for books")
 @app_commands.describe(type="Please enter either \"author\" or \"title\"", search="Search, must be at least 3 characters")
 async def basic_libgen(interaction, type: str, search: str): # Set the arguments here to get options on the slash commands.
     await lb.handleLibSearch(interaction, type, search)
+
+@tree.command(name = 'listmodels', description="List all models available by closedai")
+async def list_models(interaction: discord.Interaction): # Set the arguments here to get options on the slash commands.
+    # Get the list of models from the handler, which just formats the list of models into a nice string
+    str = aih.getModels()
+    cool_str = aih.codefiy(str)
+    await interaction.response.send_message(cool_str)
+
+@tree.command(name = 'listsettings', description='List the current settings for closedai')
+async def list_settings(interaction: discord.Interaction):
+    settings = caiSettings # Closed ai settings
+    str = ''
+    # Loop through the dictionary, creating a cool string
+    for key in settings:
+        newStr = f"{key}: {settings[key]}"
+        str += f"\n{newStr}"
+    cool_str = aih.codefiy(str)
+    await interaction.response.send_message(cool_str)
+
+# Change a setting
+@tree.command(name='changesetting', description='Change a particular setting, related to the closed ai completion prompts')
+@app_commands.describe(key="Should be one of the keys listed in \"listsettings\"", value="Depends on the setting, should be a number")
+async def change_setting(interaction: discord.Interaction, key: str, value: str):
+    # Gets the allowed keys from the dict
+    allowed = list(caiSettings.keys())
+
+    # Check if the key sent is one of the allowed
+    if (key not in allowed):
+        await interaction.response.send_message('Setting not found')
+        return
+    val = aih.convertToFloatOrInt(value)
+    caiSettings[key] = val
+    await interaction.response.send_message('Setting Changed.')
+
+# Completion call, takes in a prompt, and generates a response with it. NOTE: uses the caiSettings
+@tree.command(name='caigpt', description="Takes in a prompt, returns a GPT-3.5 response, keeps track of conversation")
+@app_commands.describe(prompt="Text prompt, can be anything, should not be empty")
+async def cai_completion(interaction: discord.Interaction, prompt: str):
+    # Immediately respond, (could just defer), as larger API calls can cause timeouts
+    await interaction.response.send_message('Prompt Recieved, Loading...')
+    item = aih.genConvoItem(prompt)
+    messages.append(item)
+
+    # Get a completion from the handler, hand it the messages array and the settings
+    res = aih.getCompletion(messages, caiSettings)
+    if not res:
+        await interaction.followup.send('An error occured while creating a completion')
+        return
+    
+    # Loop through the completions, add all the messages to the messages array
+    for val in res['completions']:
+        messages.append(val['message'])
+    # The above allows for gpt to have access to the whole conversation, making it more chatlike.
+
+    await aih.sendResponses(interaction, res, caiSettings)
+
+# Image generation, uses openai's DALLE program, should be pretty neat
+@tree.command(name='dalle', description="Generates images based on a given prompt, using closedais DALL-E")
+@app_commands.describe(prompt="Text prompt, should describe the desired image", results="Number of results, should be between 1-10")
+async def dalle_gen(interaction: discord.Interaction, prompt: str, results: int):
+    # Verify the integer given is between 1 & 10
+    if (results < 1 or results > 10):
+        await interaction.response.send_message('Result param must be between 1-10')
+        return
+
+    # Send a message anyway (could defer) to stop timeouts
+    await interaction.response.send_message('Recieved Prompt, Loading...')
+    # Hand prompt and desired result amount to the genImages function
+    urls = aih.genImages(prompt, results)
+    if not urls:
+        await interaction.followup.send('An error occured while generating images')
+        return
+
+    # Loop through 
 
 
 # Add new slash commands beneath this

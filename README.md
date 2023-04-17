@@ -40,6 +40,7 @@ Custom discord bot, features and functionalities to be determined as the project
 apt install python3-pip
 apt install python-dotenv
 pip install libgen-api
+pip install --upgrade openai
 pip install youtube-dl
 pip install PyNaCl
 pip install ffmpeg
