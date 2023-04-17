@@ -2,6 +2,156 @@ import os
 import math
 import random
 
+
+#A simplified version for the command discription
+def simplehelp():
+    message = """
+    algebra : can do slope, simplify, and quadratic
+    
+    circle : does circle operations
+    
+    differentiate : does simple differentiation
+    
+    equation : does simple math equations
+    
+    fraction : does operations of fractions
+    
+    integrate : does simple integration
+    
+    polynomialtwo : solves two variables from two equations
+    
+    pythagorean : works with the Pythagorean Theorem
+    
+    rectangle : does operations with rectangles
+    
+    tempconversion : Converts temperature between Celsius, Kelvin, and Fahrenheit
+    
+    triangle : Does operations with triangles
+    """
+    return message
+
+
+#Page 1 of the detailed command description
+def message1():
+    message = """
+        Use the following commands correctly as specified below:
+    
+        rectangle : takes in three commands: side1, side2, operation. Side1 is one of the sides of the rectangle and side2 is the length of the adjacent side. Operation Takes two commands:
+        Enter 'area': in order to get the area of the rectangle
+        Enter 'perimeter': calculates the perimeter of the rectangle
+    
+        circle : takes in two commands : radius, operation. Radius is the length of the radius of the circle. Operation takes in two commands: 'circumference' and 'area'
+        Circumference will calculate the circumference of the circle
+        Area will calculate the area of the circle
+    
+        triangle : takes in three commands: base, height, operation. Base is the lenght of the base of the triangle. Height is the length of the triangle.
+        Operation takes in one command: 'area': it calculates the area of a triangle
+    
+        pythagorean : takes three commands: a, b, c. A and b are the lengths of the side of the right triangle. C in the hypotenuse of the triangle.
+        If you are trying to find a length for one of the side enter 'x' for that length variable.
+        If you are trying to check if the triangle lengths form a proper right triangle, enter all three varaibles as numbers.
+
+        fraction : takes 3 three commands: fraction1, fraction2, operation. Fraction1 and fraction2 are the fractions that the operation will be performed on. Operation is the type of operation.
+        Enter the fractions as "numerator/denominator", where numerator is the numerator value and the denominator is the denominator value.
+        Operation is going to ask the type of operation to perform. There is "LCD", "GCD", "Add", "Subtract", "Multiply", and "Divide"
+        LCD - finds the Least Common Denominator
+        GCD - finds the Greatest Common Denominator
+        The rest solve the operations and return in simplest form.
+        """
+    return message
+
+
+#Page 2 of the detailed command description
+def message2():
+    message = """
+        equation : take in one command: simple. Simple is a string of the equation that is passed in by the user.
+        Enter the equation with no variables and with spaces in between the operators and digits.
+        Such as "1 + 3 + 2 * ( 2 * 3 ) ^ 2"
+        It will take in the equation and correctly return the answer using proper order of operations.
+    
+        algebra : take in two commands : equation and answer. Equation is the equation that the user has to input in algebra. Answer is the type of algebra you want the program to perform.
+        Enter the equation as such "y = 12x - 13" or "y = 12x - 12x + 13"
+        answer has two types "slope" and "simplify"
+        slope - will return the intercept and the slope
+        simplify - will simplify the algebra equation that was entered (addition and subtraction only)
+        quadratic - will take in a quadratic in the following form, Ex: '- 12x^2 + 12x - 13'
+        
+        polynomialtwo : takes in two commands: equation1 and equation2 are both equation that have two variables 'x' and 'y'
+        Enter the equations in the following form 'ax + by = c' and Ex. '- 12x + 13y = -35'.
+        
+        tempconversion : takes in three commands: temperature, current, conversion. Temperature is the value of the current temperature. Current is what temperature to use.
+        Conversion is what temperature that you want to convert to. Use 'K' for Kelvin, 'C' for Celsius, 'F' for Fahrenheit.
+        
+        integrate : take in three commands: equation, low, high. Equation is the equatio that you want to integrate. Low is the lower bound if you want to use it.
+        High is the higher bound. Use 'x' if you do not want to use bounds. Enter equation as such "12x^2 - 13x - 14"
+        
+        differentiate : take in one comman: equation. This command, uses simple differentiation on the equation.
+        Enter the equation as usually. Ex "12x^2 - 13x - 14"
+        """
+    return message
+
+
+#Converts between different temperatures
+def temperature(temp, curr, convert):
+    if curr == 'K' and convert == 'C':
+        temp = temp - 273.15
+        return temp
+    elif curr == 'K' and convert == 'F':
+        temp = (temp - 273.15) * 1.8 + 32
+        return temp
+    elif curr == 'C' and convert == 'K':
+        temp = temp + 273.15
+        return temp
+    elif curr == 'C' and convert == 'F':
+        temp = temp * 1.8 + 32
+        return temp
+    elif curr == 'F' and convert == 'C':
+        temp = (temp - 32) / 1.8
+        return temp
+    elif curr == 'F' and convert == 'K':
+        temp = (temp - 32) / 1.8 + 273.15
+        return temp
+
+
+#Finds the area of a rectangle
+def areaRectangle(side1, side2):
+    side1 = float(side1)
+    side2 = float(side2)
+    result = side1 * side2
+    return float(result)
+
+
+#Finds the perimeter of a rectangle
+def perimeterRectangle(side1, side2):
+    side1 = float(side1)
+    side2 = float(side2)
+    result = (side1 * 2) + (side2 * 2)
+    return float(result)
+
+
+#Finds the area of a triangle
+def areaTriangle(base, height):
+    base = float(base)
+    height = float(height)
+    result = (base * height) / 2
+    return float(result)
+
+
+#Finds the area of a circle
+def areaCircle(radius):
+    radius = float(radius)
+    result = math.pi * (radius ** 2)
+    return float(result)
+
+
+#Finds the circumference of a circle
+def circumferenceCircle(radius):
+    radius = float(radius)
+    result = 2 * math.pi * radius
+    return float(result)
+
+
+#Checks if the entered triangle is a valid right triangle through using Pythagorean Theorem
 def pythagoreanCheck(a, b, c):
     c = float(c)
     result = pythagoreanHypotenuse(a, b)
@@ -10,13 +160,18 @@ def pythagoreanCheck(a, b, c):
     else: 
         return "The triangle entered is an invalid right triangle"
 
+
+#Computes the missing side of the right triangle
 def pythagoreanSide(a, b):
     c = ( (float(b) * float(b)) - (float(a) * float(a)) ) ** 0.5
     return c
 
+
+#Computes the hypotenuse of the right triangle
 def pythagoreanHypotenuse(a, b):
     c = ( (float(a) * float(a)) + (float(b) * float(b)) ) ** 0.5
     return c
+
 
 #the parseFraction funciton breaks the passed fraction into denominator and denomitor and then return the result in a tuple
 def parseFraction(fraction):
@@ -34,7 +189,9 @@ def parseFraction(fraction):
             denom += fraction[count]
         count += 1
     return(int(num), int(denom))
-       
+    
+
+#Simplifies the fraction to its simplified form       
 def simplifyFraction(fraction):
     (a, b) = parseFraction(fraction)
     num = a
@@ -51,6 +208,8 @@ def simplifyFraction(fraction):
     simplified += str(int(denom)) 
     return simplified  
 
+
+#Greatest common denominator of two fractions
 def gcd(fraction1, fraction2):
     (a, b) = parseFraction(fraction1)
     (c, d) = parseFraction(fraction2)
@@ -58,12 +217,27 @@ def gcd(fraction1, fraction2):
         b, d = d, b % d
     return int(b)   
      
+     
 # The LCD funciton works with fractions in order to find the least common denominator of the two given fractions
 def lcd(fraction1, fraction2):
     (a, b) = parseFraction(fraction1)
     (c, d) = parseFraction(fraction2)
     greatest = gcd(fraction1, fraction2)
     least = (b * d) / greatest
+    return int(least)
+
+
+#Greatest common factor with just values
+def gcd_values(value1, value2):
+    while value2 != 0:
+        value1, value2 = value2, value1 % value2
+    return int(value1) 
+
+
+#least common multiple with just values
+def lcd_values(value1, value2):
+    greatest = gcd_values(value1, value2)
+    least = (value1 * value2) / greatest
     return int(least)
 
 
@@ -93,9 +267,9 @@ def addFraction(fraction1, fraction2):
         addedFunction += str(commonDenom)
         
     return addedFunction
-    
-    
-    
+     
+
+#subtracts fractions    
 def subtractFraction(fraction1, fraction2):
     (num1, denom1) = parseFraction(fraction1)
     (num2, denom2) = parseFraction(fraction2)
@@ -121,6 +295,8 @@ def subtractFraction(fraction1, fraction2):
         
     return subtractedFunc
 
+
+#multiplies fractions
 def multiplyFraction(fraction1, fraction2):
     (num1, denom1) = parseFraction(fraction1)
     (num2, denom2) = parseFraction(fraction2)
@@ -133,6 +309,8 @@ def multiplyFraction(fraction1, fraction2):
     multiplied = simplifyFraction(multiplied)
     return multiplied
     
+    
+#divides fractions    
 def divideFraction(fraction1, fraction2):
     (num1, denom1) = parseFraction(fraction1)
     (num2, denom2) = parseFraction(fraction2)
@@ -145,12 +323,49 @@ def divideFraction(fraction1, fraction2):
     divided = simplifyFraction(divided)
     return divided
 
+
+#takes in the equation and uses quadratic formula to find the x-intercept    
+def quadratic(equation):
+    count = 0
+    a = 0
+    b = 0
+    c = 0
+    while count < len(equation):
+        if type(equation[count]) is tuple:
+            print(equation[count])
+            if (equation[count][1] == 'x') and (equation[count][2] == '2'):
+                print(count)
+                if (count == 1) and (equation[count - 1] == '-'):
+                    a = (-1) * float(equation[count][0])
+                else:
+                    a = float(equation[count][0])
+                print(a)
+            elif (equation[count][1] == 'x') and (equation[count][2] == None):
+                if equation[count - 1] == '-':
+                    b = -1 * float(equation[count][0])
+                else:
+                    b = float(equation[count][0])
+            elif (equation[count][1] == None) and (equation[count][2] == None):
+                if equation[count - 1] == '-':
+                    c = -1 * float(equation[count][0])
+                else:
+                    c = float(equation[count][0])
+        count = count + 1
+    
+    answer1 = ((-1 * b) + (((b * b) - (4 * a * c)) ** 0.5)) / (2 * a)
+    answer2 = ((-1 * b) - (((b * b) - (4 * a * c)) ** 0.5)) / (2 * a)
+    
+    print(answer1, answer2)
+    
+    print(a, b, c)
+    return (answer1, answer2)
     
 
 #functions for the calculator
 #(digit, varaible, degree, side)
 # Simplifies the list of tuples algebra equation as much as it can
 
+#simplifies tuples that are the same
 def simplifyTuples(equation, first, second):
     print("First :", first, "Second :", second)
     copy = equation
@@ -247,6 +462,7 @@ def simplifyTuples(equation, first, second):
         return equation
                  
 
+#calls the make simplify function, which breaks and sees which tuples are the same
 def algebraSimplify(equation):
     print("AlgrebraSimplify: ", equation)
     count = 0
@@ -286,6 +502,8 @@ def algebraSimplify(equation):
         count += 1
     return turnBackToString(equation)
 
+
+#Turns the list of tuples back to a single string
 def turnBackToString(equation):
     print("This is the turnBackToString function", equation)
     stringEquation = ""
@@ -305,7 +523,7 @@ def turnBackToString(equation):
                 stringEquation += equation[count][1]
             if equation[count][2] != None:
                 stringEquation += '^'
-                stringEquation += equation[count][3]
+                stringEquation += equation[count][2]
         else:
             if equation[count + 1][3] == 'r' and flag == 1:
                 stringEquation += '='
@@ -315,6 +533,112 @@ def turnBackToString(equation):
         stringEquation += ' '
         count += 1
     return(stringEquation)
+   
+    
+#multiplies the polynomials    
+def multiplyPoly(x, y, number, multiple):
+    x *= multiple
+    y *= multiple
+    number *= multiple
+    return x, y, number
+
+
+#subtracts polynomials
+def subtractPoly(x_eq1, x_eq2, y_eq1, y_eq2, number_eq1, number_eq2):
+    x_result = x_eq1 - x_eq2
+    y_result = y_eq1 - y_eq2
+    number_result = number_eq1 - number_eq2
+    print(x_result, y_result, number_result)
+    return x_result, y_result, number_result
+ 
+
+#adds polynomials    
+def addPoly(x_eq1, x_eq2, y_eq1, y_eq2, number_eq1, number_eq2):
+    x_result = x_eq1 + x_eq2
+    y_result = y_eq1 + y_eq2
+    number_result = number_eq1 + number_eq2
+    print(x_result, y_result, number_result)
+    return x_result, y_result, number_result        
+
+
+#This is the main polynomial funciton where it work with two equations and simplifies it    
+def polynomialTwo(equation1, equation2):
+    print(equation1)
+    print(equation2)
+    count = 0
+    x_eq1 = 0
+    x_eq2 = 0
+    y_eq1 = 0
+    y_eq2 = 0
+    number_eq1 = 0
+    number_eq2 = 0
+    while count < len(equation1):
+        if type(equation1[count]) is tuple:
+            if equation1[count][1] == 'x':
+                if (count >= 1) and (equation1[count - 1] == '-'):
+                    x_eq1 = (-1) * float(equation1[count][0])
+                else:
+                    x_eq1 = float(equation1[count][0])
+            elif equation1[count][1] == 'y':
+                if (count >= 1) and (equation1[count - 1] == '-'):
+                    y_eq1 = (-1) * float(equation1[count][0])
+                else:
+                    y_eq1 = float(equation1[count][0])
+            else:
+                if (count >= 1) and (equation1[count - 1] == '-'):
+                    number_eq1 = (-1) * float(equation1[count][0])
+                else:
+                    number_eq1 = float(equation1[count][0])
+        count += 1
+    count = 0
+    print(x_eq1, y_eq1, number_eq1)
+    while count < len(equation2):
+        if type(equation2[count]) is tuple:
+            if equation2[count][1] == 'x':
+                if (count >= 1) and (equation2[count - 1] == '-'):
+                    x_eq2 = (-1) * float(equation2[count][0])
+                else:
+                    x_eq2 = float(equation2[count][0])
+            elif equation2[count][1] == 'y':
+                if (count >= 1) and (equation2[count - 1] == '-'):
+                    y_eq2 = (-1) * float(equation2[count][0])
+                else:
+                    y_eq2 = float(equation2[count][0])
+            else:
+                if (count >= 1) and (equation2[count - 1] == '-'):
+                    number_eq2 = (-1) * float(equation2[count][1])
+                else:
+                    number_eq2 = float(equation2[count][0])
+        count += 1
+    print(x_eq2, y_eq2, number_eq2) 
+    
+          
+    x_lcd = lcd_values(abs(x_eq1), abs(x_eq2))
+    if (x_lcd / abs(x_eq1)) != 1:
+        x_eq1, y_eq1, number_eq1 = multiplyPoly(x_eq1, y_eq1, number_eq1, x_lcd / abs(x_eq1))
+    if (x_lcd / abs(x_eq2)) != 1:
+        x_eq2, y_eq2, number_eq2 = multiplyPoly(x_eq2, y_eq2, number_eq2, x_lcd / abs(x_eq2))
+        
+    if ((x_eq1 < 0) and (x_eq2 < 0)) or ((x_eq1 > 0) and (x_eq2 > 0)):
+        x_result, y_result, number_result =  subtractPoly(x_eq1, x_eq2, y_eq1, y_eq2, number_eq1, number_eq2)
+    else:
+        x_result, y_result, number_result = addPoly(x_eq1, x_eq2, y_eq1, y_eq2, number_eq1, number_eq2)
+    
+    if(x_result == 0) and (y_result == 0):
+        return(0, 0)
+    
+    y = number_result / y_result
+    if y_eq1 < 0:
+        result = number_eq1 - (y * y_eq1)
+    else:
+        result = number_eq1 + (y * y_eq1)
+    x = result / x_eq1
+    
+    
+    print("Y : ", y)
+    print("X : ", x)
+    
+    return (x, y)
     
 
 #makes a list of tuples with (digit, varaible, degree, side) if operator then just an operator sign
@@ -337,11 +661,15 @@ def makeTuples(element, side):
     if digit == "":
         digit = "1"
     return (digit, variable, degree, side)
-            
+    
+
+#Simple check function that checks whether is a valid operator            
 def isOperator(operator):
     if operator == '+' or operator == '-' or operator == '*' or operator == '/' or operator == '^' or operator == '(' or operator == ')':
         return True  
 
+
+#Contains the who list of tuples and calls to make tuples
 def tupleList(equation):
     print("tupleList :", equation)
     count = 0
@@ -371,8 +699,8 @@ def tupleList(equation):
         count += 1
     return newList
         
-        
 
+#chekcs whether valid equation        
 def simpleCheck(equation):
     length = len(equation)
     count = 0
@@ -393,6 +721,7 @@ def simpleCheck(equation):
     return True
 
 
+#slope intercept form equation
 def slope(equation, answer):
     newList = tupleList(equation)
     #algebraSimplify(newList)
@@ -414,6 +743,7 @@ def slope(equation, answer):
     return(slope, intercept)
 
 
+#main function for the paranthesis, recursive
 def checker(equation):
     while '(' in equation:
         #print(equation)
@@ -456,6 +786,7 @@ def checker(equation):
     return equation[0]
 
 
+# does the exponent part of the order of operations
 def exponent(equation):         
     count = 1
     while count < len(equation):
@@ -467,6 +798,8 @@ def exponent(equation):
         count+=1
     return equation
 
+
+#does the multiplication and division of the order of operations
 def multdiv(equation):
     count = 1
     while count < len(equation):
@@ -486,14 +819,17 @@ def multdiv(equation):
     return equation
 
 
+#multiplies two values
 def multiply(first, second):
     return float(first) * float(second)
 
 
+#divides two values
 def divide(first, second):
     return float(first) / float(second)
 
 
+#Does the addition of the order of operations
 def add(equation):
     count = 1
     while count < len(equation):
@@ -507,6 +843,7 @@ def add(equation):
     return equation
 
 
+#does the subtraction of the order of operations
 def subtract(equation):
     count = 1
     while count < len(equation):
@@ -520,4 +857,115 @@ def subtract(equation):
         count+=1
     return equation
 
-#helpuse function
+
+#Does the calculation of the already integrate equation
+def calculateIntegral(equation, bound):
+    count = 0
+    count = 0
+    value = 0
+    while count < len(equation):
+        if type(equation[count]) is tuple:
+            digit = float(equation[count][0])
+            if equation[count][2] == None:
+                degree = 1
+            else:
+                degree = float(equation[count][2])
+            value = digit * ((float(bound)) ** degree)
+            equation[count] = value
+        count += 1
+    count = 0
+    result = 0
+    while count < len(equation):
+        print(result)
+        if count == 0 and equation[count] == '-':
+            print("1")
+            result = (-1) * equation[count + 1]
+            count += 1
+        elif equation[count] == '-':
+            print("2")
+            result -= equation[count + 1]
+            count += 1
+        elif equation[count] == '+':
+            print("3")
+            result += equation[count + 1]
+            count += 1
+        else:
+            print("4")
+            result = equation[count]
+        count += 1
+    print(result)
+    return result
+             
+
+#Does teh integrate itself, returns if no bounds, if there is, calls the funciton to calculate each of the bounds
+def integrate(equation, low, high):
+    #print(equation, low, high)
+    count = 0
+    while count < len(equation):
+        if type(equation[count]) is tuple:
+            digit = float(equation[count][0])
+            variable = equation[count][1]
+            degree = equation[count][2]
+            if (variable != None) and (degree == None):
+                degree = 1
+            elif variable == None:
+                degree = 0
+                variable = 'x'
+            else:
+                degree = float(degree)
+            if degree == 0:
+                newdegree = None
+            else:
+                newdegree = str(degree + 1)
+            newTuple = (str(digit / (degree + 1)), variable, newdegree, equation[count][3])
+            equation[count] = newTuple
+        count += 1
+    if low == 'x' and high == 'x':
+        result = turnBackToString(equation)
+        result += '+ C'
+        return result
+    else:
+        count = 0
+        equation1 = equation[:]
+        print(equation)
+        lowvalue = calculateIntegral(equation, low)
+        print(equation1)
+        highvalue = calculateIntegral(equation1, high)
+        
+        print(lowvalue, highvalue, highvalue - lowvalue)
+        return str(highvalue - lowvalue)
+    
+
+#does the simple differentiation
+def differentiate(equation):
+    count = 0
+    while count < len(equation):
+        if type(equation[count]) is tuple:
+            digit = float(equation[count][0])
+            variable = equation[count][1]
+            degree = equation[count][2]
+            if degree == None and variable == None:
+                digit = 0
+                if count == 0:
+                    equation.pop(count)
+                    count -= 1
+                else:
+                    equation.pop(count - 1)
+                    equation.pop(count - 1)
+                    count -= 2
+                #newTuple = (str(digit), variable, degree, equation[count][3])
+            elif degree == None:
+                variable = None
+                newTuple = (str(digit), variable, degree, equation[count][3])
+                equation[count] = newTuple
+            elif degree == '2':
+                degree = None
+                newTuple = (str(float(digit) * 2), variable, degree, equation[count][3])
+                equation[count] = newTuple
+            else:
+                newTuple = (str(float(digit) * float(degree)), variable, str(float(degree) - 1), equation[count][3])
+                equation[count] = newTuple
+            #equation[count] = newTuple
+        count += 1
+    print(equation)
+    return turnBackToString(equation)
