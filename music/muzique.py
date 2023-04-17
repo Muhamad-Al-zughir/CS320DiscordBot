@@ -1053,6 +1053,31 @@ async def addPlaylist(interaction: discord.Interaction, client: discord.Client, 
                 songList.append(playlistsong)                                # Append to main song List / queue
 
             await interaction.followup.send("Playlist added to queue")
+        
+        elif (url.startswith('https://open.spotify.com/playlist/')):
+            print("Spotify Playlist beginning")
+            playlist_id = url.split('/')[-1]                                                # Strip '/' and strings after '?'
+            head, sep, tail = playlist_id.partition('?')                                               # So we only have Spotify Song ID
+            playlist_id = head                                                                         # contained in "head" variable
+            print(playlist_id)                                                              # Debug
+            results = spotifyObj.playlist_tracks(playlist_id)
+            print(results)                                                                  # Debug
+            tracks = results['items']
+            while results['next']:
+                results = spotifyObj.next(results)
+                tracks.extend(results['items'])
+            
+            song_names = []
+            for track in tracks:
+                song_names.append(track['track']['name'])
+            print(song_names)                                                                # Debug
+
+            for songs in song_names:
+                playlistsong = await YouTube_linkobj.from_search(songs, loop=client.loop, stream=True, start=0)
+                songList.append(playlistsong)                                # Append to main song List / queue
+            
+            await interaction.followup.send("Spotify Playlist Added to Queue")
+
         else:
             await interaction.followup.send("Invalid Playlist link")
     
