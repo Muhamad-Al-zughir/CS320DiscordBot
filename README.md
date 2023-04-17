@@ -47,6 +47,8 @@ pip install spotipy
 pip install discord.py
 pip install lyricsgenius
 pip install pydub
+pip install asyncio
+pip install windows-curses
 ```
 
 ## FFMPEG Installation Notes
