@@ -1,4 +1,4 @@
-import libgen.lib as libby
+import lbgen.lib as libby
 import basic.methods as bm
 from discord.ui import View, Button
 import discord
