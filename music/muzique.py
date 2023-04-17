@@ -1079,6 +1079,7 @@ async def aboutTheSong(interaction: discord.Interaction, client: discord.Client)
         songTrackArtist = searchResults["tracks"]["items"][0]["artists"][0]["name"]
         songAlbum = searchResults["tracks"]["items"][0]["album"]["name"]
 
+
         wikiInit = wikipediaapi.Wikipedia('en')
         albumPage = wikiInit.page(songTrack)
         #displayPage = albumPage.summary
@@ -1104,6 +1105,7 @@ async def aboutTheSong(interaction: discord.Interaction, client: discord.Client)
         else:
             displayPage = "No Song Information found"
         
+        
         # Begin sending Info here
         await interaction.followup.send("Information Found!")
         await logChannel.send(f"1. Track Name is {songTrack}")
@@ -1112,6 +1114,8 @@ async def aboutTheSong(interaction: discord.Interaction, client: discord.Client)
 
         if len(displayPage) < 2000:                                     # Due to discord limitations, need to print description 2000 at a time
             await logChannel.send(f'4. Description: {displayPage}')     # If less than 2000, send immediately
+        elif (displayPage == ""):
+            await logChannel.send(f'4. Description: None found from Genius')
         else:
             await logChannel.send(f'4. Description: ')
             newdisplay = ''                                             # Else, declare new variable to track 2000 chars at a time
@@ -1264,10 +1268,27 @@ async def aboutTheArtist(interaction: discord.Interaction, client: discord.Clien
         print(artistDetails)                                            # Debug
 
         wikiInit = wikipediaapi.Wikipedia('en')                         # Search Wiki in English language for Artist Description
-        artistPage = wikiInit.page(artistName)                          # Get first page given artist name 
-
-        displayPage = artistPage.summary                                # Get wikipedia Summary From page
         
+        artistTypeFlag = ""
+        artistGenres = artistDetails["genres"]
+
+        if len(artistGenres)> 0:                                       # Check for artist genre and add appropriate identifier for searching Wiki
+            if any("rock" in genre.lower() or "metal" in genre.lower() for genre in artistGenres):
+                artistTypeFlag = " (band)"
+            elif any("gangsta rap" in genre.lower() or "hip hop" in genre.lower() for genre in artistGenres):
+                artistTypeFlag = " (rapper)"
+
+        if len(artistName.split()) > 1:                                # If one word, ignore. query is specific enough
+            pass
+        else:                                                          # Query is not specific enough, capitalize and add flag for search
+            artistName = artistName.title()
+            artistName = artistName + artistTypeFlag
+        
+        print(artistName)                              # Debug
+        artistPage = wikiInit.page(artistName)         # Get first page given artist name 
+        displayPage = artistPage.summary                                # Get wikipedia Summary From page
+        print("Display Page:" + displayPage)                                              # Debug
+
         # Begin Sends here
         await interaction.followup.send("Information Found!")
         await logChannel.send(f'1. Artist Name: {artistDetails["name"]}')

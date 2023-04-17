@@ -156,7 +156,7 @@ async def fastForwardSong(interaction: discord.Interaction, seconds: int):
 # Repeat a song
 @tree.command(name = 'encore', description = 'Repeat the currently playing song')
 async def encore(interaction: discord.Interaction):
-    await mzb.encore(interaction,client)
+    await mzb.encore(interaction,client)    
  #  ==================================================
 
 # Swap Two Indexes for a Song queue
