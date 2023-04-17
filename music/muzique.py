@@ -73,8 +73,9 @@ musicString13 ="\nshiftsong_percent: Shifts song to a set percentage in track"
 musicString14 ="\naddplaylist: adds YouTube playlist to queue ONLY if there is a currently playing song"
 musicString15 ="\naboutthealbum: displays information about the album if the track belongs to one"
 musicString16 ="\nabouttheartist: displays information about the artist if it can be found (Wikipedia)"
-musicString17 ="\naboutthesong: displays information about the song if there is information on it (Wikipedia)```"
-musicString = musicString1 + musicString2 + musicString3 + musicString4 + musicString5 + musicString6 + musicString7 + musicString8 + musicString9 + musicString10 + musicString11 + musicString12 + musicString13 + musicString14 + musicString15 + musicString16 + musicString17
+musicString17 ="\nabouttheartist: displays information about the artist if it can be found (Wikipedia)"
+musicString18 ="\naddnext: queues a song to be next played```"
+musicString = musicString1 + musicString2 + musicString3 + musicString4 + musicString5 + musicString6 + musicString7 + musicString8 + musicString9 + musicString10 + musicString11 + musicString12 + musicString13 + musicString14 + musicString15 + musicString16 + musicString17 + musicString18
 
 
 # ** NOTE **
@@ -346,25 +347,6 @@ async def displayQueue(interaction: discord.Interaction, client: discord.Client)
             i = i+1
     else: 
         await interaction.followup.send(f'No active Queue to be displayed!')
-
-# Shuffles the Current Queue of Songs and Redisplays it
-async def shuffleQueue(interaction: discord.Interaction, client: discord.Client):
-    await interaction.response.defer()
-    if len(songList) != 0:
-        await interaction.followup.send(f'Queue Shuffled. Current Queue is now:')
-
-        random.shuffle(songList)
-        
-        logId = interaction.channel_id
-        logChannel = client.get_channel(logId)
-        i = 1
-        for songs in songList:
-            display = songs.title
-            display = str(i) + ": " + display
-            await logChannel.send(display)
-            i = i+1
-    else:
-        await interaction.followup.send(f'No active Queue to be shuffled!')
 
 
 # Shifting The Track
@@ -1215,30 +1197,21 @@ async def aboutTheAlbum(interaction: discord.Interaction, client: discord.Client
         if len(albumDetails["artists"]) > 1:
             await logChannel.send(f'3. Album Artists:')
             for artists in albumDetails["artists"]:
-                await logChannel.send(f'\t{artists["name"]}')
+                await logChannel.send(f'    {artists["name"]}')
         else:
             await logChannel.send(f'3. Album Artist: {albumDetails["artists"][0]["name"]}')
         
-        # If multiple Genres, Send multiple
-        if len(albumDetails["genres"]) > 1:
-            await logChannel.send(f'4. Album Genres:')
-            for genres in albumDetails["genres"]:
-                await logChannel.send(f'\t{genres}')
-        elif len(albumDetails["genres"]) == 1:
-            await logChannel.send(f'4. Album Genre: {albumDetails["genres"]}')
-        else:
-            await logChannel.send(f'4. No Album Genre found')
 
         # Send rest of info
-        await logChannel.send(f'5. Release Date: {albumDetails["release_date"]}')
-        await logChannel.send(f'6. Number of Tracks: {albumDetails["total_tracks"]}')
-        await logChannel.send(f'7. Album Label: {albumDetails["label"]}')
-        await logChannel.send(f'8. Album Popularity: {albumDetails["popularity"]}')
+        await logChannel.send(f'4. Release Date: {albumDetails["release_date"]}')
+        await logChannel.send(f'5. Number of Tracks: {albumDetails["total_tracks"]}')
+        await logChannel.send(f'6. Album Label: {albumDetails["label"]}')
+        await logChannel.send(f'7. Album Popularity: {albumDetails["popularity"]}')
 
         if len(displayPage) < 2000:                                     # Due to discord limitations, need to print description 2000 at a time
-            await logChannel.send(f'9. Description: {displayPage}')     # If less than 2000, send immediately
+            await logChannel.send(f'8. Description: {displayPage}')     # If less than 2000, send immediately
         else:
-            await logChannel.send(f'9. Description: ')
+            await logChannel.send(f'8. Description: ')
             newdisplay = ''                                             # Else, declare new variable to track 2000 chars at a time
             while len(displayPage) > 2000:                              # Iterate 2000 at a time 
                     
@@ -1301,10 +1274,20 @@ async def aboutTheArtist(interaction: discord.Interaction, client: discord.Clien
         await logChannel.send(f'2. Artist Popularity: {artistDetails["popularity"]}')
         await logChannel.send(f'3. Artist Followers: {artistDetails["followers"]["total"]}')
 
-        if len(displayPage) < 2000:                                            # Due to discord limitations, need to print description 2000 at a time
-            await logChannel.send(f'4. Artist Description: {displayPage}')     # If less than 2000, send immediately
+        # If multiple Genres, Send multiple
+        if len(artistDetails["genres"]) > 1:
+            await logChannel.send(f'4. Artist Genres:')
+            for genres in artistDetails["genres"]:
+                await logChannel.send(f'    {genres}')
+        elif len(artistDetails["genres"]) == 1:
+            await logChannel.send(f'4. Artist Genre: {artistDetails["genres"]}')
         else:
-            await logChannel.send(f'4. Artist Description: ')
+            await logChannel.send(f'4. No Album Genre found')
+
+        if len(displayPage) < 2000:                                            # Due to discord limitations, need to print description 2000 at a time
+            await logChannel.send(f'5. Artist Description: {displayPage}')     # If less than 2000, send immediately
+        else:
+            await logChannel.send(f'5. Artist Description: ')
             newdisplay = ''                                                    # Else, declare new variable to track 2000 chars at a time
             while len(displayPage) > 2000:                                     # Iterate 2000 at a time 
                     
