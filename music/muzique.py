@@ -1040,7 +1040,7 @@ async def addPlaylist(interaction: discord.Interaction, client: discord.Client, 
 
         # Begin Search here if a valid playlist link is given
         # List returned to local list with song names in playlist
-        if ((url.startswith('https://www.youtube.com/playlist'))):
+        if ((url.startswith('https://www.youtube.com/playlist'))  or ('/sets/' in url)):
             locallist = await YouTube_linkobj.yt_playlist(url, loop=client.loop, stream=True, start=0)
 
             # Debug
