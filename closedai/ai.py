@@ -31,3 +31,11 @@ def basicCompletion(messages, temp, results, maxTokens):
         model='gpt-3.5-turbo'
     )
     return completion
+
+def basicImage(prompt, results):
+    response = openai.Image.create(
+        prompt=prompt, 
+        n=results, 
+        size="1024x1024"
+    )
+    return response

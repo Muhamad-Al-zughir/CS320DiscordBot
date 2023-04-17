@@ -131,9 +131,15 @@ async def dalle_gen(interaction: discord.Interaction, prompt: str, results: int)
     if not urls:
         await interaction.followup.send('An error occured while generating images')
         return
-
-    # Loop through 
-
+    embeds = []
+    # Loop through the urls, and send them all to discord
+    for url in urls:
+        embed=discord.Embed(title='DALLE generated image')
+        embed.set_image(url=url)
+        embeds.append(embed)
+    str = f"Generated {len(urls)} image(s) from the prompt: *{prompt}*"
+    # Send all the images at once.
+    await interaction.followup.send(content=str, embeds=embeds)
 
 # Add new slash commands beneath this
 

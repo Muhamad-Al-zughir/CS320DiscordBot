@@ -5,8 +5,25 @@
 # Imports
 import closedai.ai as ai
 
+# Basic image generation function, takes in a prompt, as well as a number of results
+# Returns an array of urls to the generated images
+# If error occurs while generating images, function will return false
+def genImages(prompt, results):
 
-# Basic completion function, takes in a prompt, as well as the current settings, and runs a completion on them
+    # Attempt to create some images, wrap attempt in a try so we can detect errors and alert the user
+    try:
+        res = ai.basicImage(prompt, results)
+        data = res['data']
+        urls = []
+        # Loop through the data list and create a list of urls
+        for val in data:
+            url = val['url']
+            urls.append(url)
+        return urls
+    except:
+        return False
+
+# Basic completion function, takes in the messages array, as well as the current settings, and runs a completion on them
 # Returns a dict, with the following keys: completions, in_tokens, out_tokens.
 # completions is an array of dicts, which contain text, index, logprobs, and finish_reason
 def getCompletion(messages, settings):
