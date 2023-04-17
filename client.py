@@ -320,35 +320,35 @@ async def on_ready():
     print(f'{client.user} has connected to Discord!')
  #  ==================================================
 
- # Send Standard Error to Discord Channel
-async def errorLogs(message):
-    channel = await client.fetch_channel(1094498464710262865)                   # Discord Channel Specified Here
+#  # Send Standard Error to Discord Channel
+# async def errorLogs(message):
+#     channel = await client.fetch_channel(1094498464710262865)                   # Discord Channel Specified Here
 
-    spam = ['rate limited', 'logging in', 'connected to Gateway',               # spam and incorrectly labeled "error messages" in stderr
-            'handshake complete','Starting voice','voice...'
-            'ffmpeg process', 'should have terminated', 'has not terminated']     
+#     spam = ['rate limited', 'logging in', 'connected to Gateway',               # spam and incorrectly labeled "error messages" in stderr
+#             'handshake complete','Starting voice','voice...'
+#             'ffmpeg process', 'should have terminated', 'has not terminated']     
 
-    if any(substring in message for substring in spam ):                        # Ignore Spam
-        return
+#     if any(substring in message for substring in spam ):                        # Ignore Spam
+#         return
 
 
-    if len(str(message)) < 1900:                                                # Due to discord limitations, need to print description 1900 at a time
-        await channel.send(f"**STDERR Output:**\n```\n{str(message)}\n```")     # If less than 1900, send immediately
-    else:
-        await channel.send(f'**STDERR Output:**\n')
-        newerr = ''                                                             # Else, declare new variable to track 1900 chars at a time
-        while len(message) > 1900:                                              # Iterate 1900 at a time while output is greather than 1900
+#     if len(str(message)) < 1900:                                                # Due to discord limitations, need to print description 1900 at a time
+#         await channel.send(f"**STDERR Output:**\n```\n{str(message)}\n```")     # If less than 1900, send immediately
+#     else:
+#         await channel.send(f'**STDERR Output:**\n')
+#         newerr = ''                                                             # Else, declare new variable to track 1900 chars at a time
+#         while len(message) > 1900:                                              # Iterate 1900 at a time while output is greather than 1900
                     
-            newerr = message[:1900]                                             # string slicing to grab 1900 and send
-            await channel.send(f"```\n{str(newerr)}\n```")
-            message = message[1900:]                                            # Error Updated Here                                     **    
+#             newerr = message[:1900]                                             # string slicing to grab 1900 and send
+#             await channel.send(f"```\n{str(newerr)}\n```")
+#             message = message[1900:]                                            # Error Updated Here                                     **    
 
-        await channel.send(f"\n```\n{str(message)}\n```")
+#         await channel.send(f"\n```\n{str(message)}\n```")
 
-def errhandle(message):
-     # Call the async function to send the error message to the Discord channel
-     client.loop.create_task(errorLogs(message))
+# def errhandle(message):
+#      # Call the async function to send the error message to the Discord channel
+#      client.loop.create_task(errorLogs(message))
     
-sys.stderr.write = errhandle                                                    # Standard Error redirection initialized here
+# sys.stderr.write = errhandle                                                    # Standard Error redirection initialized here
 
 client.run(TOKEN)
