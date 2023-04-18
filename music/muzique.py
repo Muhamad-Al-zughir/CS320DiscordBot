@@ -165,7 +165,7 @@ async def clear(interaction: discord.Interaction):
     if voice_channel is None:
         await interaction.followup.send(f'There is no music to clear!')
     else:
-        await voice_channel.disconnect(force=True)                                    # If so, Leave voice channel and clear queue
+        await voice_channel.disconnect()                                    # If so, Leave voice channel and clear queue
         songList.clear()
         await interaction.followup.send(f'Music has been stopped & the queue has been cleared')
 
