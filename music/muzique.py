@@ -22,7 +22,6 @@ from spotipy.oauth2 import SpotifyClientCredentials
 
 # Loads all the content in the .env folder
 load_dotenv() 
-TOKEN = os.getenv('DISCORD_API')
 
 # Member list of people in channel to be streamed to (used later)
 streaming_members = {}
@@ -221,12 +220,12 @@ async def play(interaction: discord.Interaction, url:str, client: discord.Client
         voicecheck = getattr(callerID, 'voice', None)
         channelcheck = getattr(voicecheck, 'channel', None)
 
-
         if channelcheck is None:
             await interaction.followup.send(f'User is not in a voice channel!')
 
         if voicechan is None:                                                                       # If Bot is not in any voice channel, connect
-            await interaction.user.voice.channel.connect()
+            channel = interaction.user.voice.channel
+            await channel.connect()
     
         elif interaction.guild.me.voice.channel != interaction.user.voice.channel:                  # Disconnect if the bot is already in a voicechannel
             print("Bot currently not in channel\nJoining...")                                       # That is, a voice channel that's not the user that called the bot
@@ -235,7 +234,7 @@ async def play(interaction: discord.Interaction, url:str, client: discord.Client
 
         server = interaction.guild                                                                  # Re-establish server context and voice client after connection
         voice_channel = server.voice_client                                       
-        
+
         print("Before retrieving YouTube Object...")                               
         if (url.startswith('https://open.spotify.com/')) :                                          # Check if Spotify Link
             track_id = url.split('/')[-1]                                                           # Strip '/' and strings after '?'
@@ -260,7 +259,7 @@ async def play(interaction: discord.Interaction, url:str, client: discord.Client
         else:                                                                                       # Else, perform General Search Query (YouTube)
             print("Search...")
             filename = await YouTube_linkobj.from_search(url, loop=client.loop, stream=True, start=0)
-
+        
         print("Before Playing in channel...")
         if voice_channel.is_playing():                                                              # If the bot is playing, add song to a queue
             songList.append(filename)

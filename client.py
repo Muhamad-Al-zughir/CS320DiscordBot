@@ -332,15 +332,10 @@ async def rp_character_create_cmd(interaction: discord.Interaction):
     await botgame.rp_character_create(interaction)
  #  ==================================================
 
- #   create rp for character game
-@tree.command(name = "rp_challenge", description = "able to challenge a member  in rp game")
-async def rp_challenge_calling(interaction: discord.Interaction):
-    await botgame.rp_challenge(interaction)
- #  ===================================================
-
  #  update roles
 @tree.command(name = "rp_update_roles", description = "updates everyones roles in server")
 async def rp_update_roles(interaction: discord.Interaction):
+    await interaction.response.defer()
     await botgame.rp_update_roles_function(interaction,client)
  #  =========================================================
 
